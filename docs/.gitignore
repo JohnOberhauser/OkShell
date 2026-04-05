@@ -3,3 +3,4 @@ dist
 cache
 node_modules/
 package-lock.json
+public/config-schema.md

@@ -1,7 +1,8 @@
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum BarWidget {
     AudioInput,
     AudioOutput,

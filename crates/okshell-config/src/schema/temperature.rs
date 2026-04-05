@@ -1,8 +1,9 @@
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use wayle_weather::TemperatureUnit;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Store)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, Store, JsonSchema)]
 #[serde()]
 pub enum TemperatureUnitConfig {
     #[default]

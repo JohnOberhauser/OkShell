@@ -1,8 +1,9 @@
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use crate::schema::position::Orientation;
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum MenuWidget {
     AppLauncher,
     AudioInput,
@@ -98,7 +99,7 @@ impl MenuWidget {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub struct QuickActionsConfig {
     pub widgets: Vec<QuickActionWidget>
 }
@@ -111,7 +112,7 @@ impl Default for QuickActionsConfig {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum QuickActionWidget {
     AirplaneMode,
     DoNotDisturb,
@@ -158,12 +159,12 @@ impl QuickActionWidget {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub struct SpacerConfig {
     pub size: i32,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub struct ContainerConfig {
     pub widgets: Vec<MenuWidget>,
     pub spacing: i32,

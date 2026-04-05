@@ -1,9 +1,10 @@
 use std::hash::{Hash, Hasher};
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use wayle_weather::LocationQuery;
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 #[serde(tag = "type")]
 pub enum LocationQueryConfig {
     Coordinates { lat: OrdF64, lon: OrdF64 },
@@ -66,7 +67,7 @@ impl LocationQueryConfig {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, JsonSchema)]
 #[serde(transparent)]
 pub struct OrdF64(pub f64);
 

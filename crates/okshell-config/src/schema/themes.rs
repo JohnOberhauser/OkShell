@@ -1,8 +1,9 @@
 use std::fmt;
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum Themes {
     Default,
     Matugen,
@@ -114,7 +115,7 @@ impl Themes {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum MatugenPreference {
     Darkness,
     Lightness,
@@ -173,7 +174,7 @@ impl MatugenPreference {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum MatugenType {
     Content,
     Expressive,
@@ -248,7 +249,7 @@ impl MatugenType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum MatugenMode {
     Light,
     Dark,
@@ -295,7 +296,7 @@ impl MatugenMode {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Store)]
+#[derive(Clone, Debug, Serialize, Deserialize, Store, JsonSchema)]
 pub struct MatugenContrast(f64);
 
 impl MatugenContrast {
@@ -337,7 +338,7 @@ impl PartialEq for MatugenContrast {
 
 impl Eq for MatugenContrast {}
 
-#[derive(Clone, Debug, Serialize, Deserialize, Store)]
+#[derive(Clone, Debug, Serialize, Deserialize, Store, JsonSchema)]
 pub struct WindowOpacity(f64);
 
 impl WindowOpacity {

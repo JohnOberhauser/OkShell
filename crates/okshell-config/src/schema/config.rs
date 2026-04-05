@@ -1,4 +1,5 @@
 use reactive_stores::{KeyMap, Patch, PatchField, Store, StorePath};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use crate::schema::bar_widgets::BarWidget;
 use crate::schema::location_query::{LocationQueryConfig, OrdF64};
@@ -7,7 +8,7 @@ use crate::schema::position::{NotificationPosition, Position};
 use crate::schema::temperature::TemperatureUnitConfig;
 use crate::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Config {
     pub general: General,
@@ -31,7 +32,7 @@ impl Default for Config {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct General {
     pub clock_format_24_h: bool,
@@ -52,7 +53,7 @@ impl Default for General {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Theme {
     pub shell_icon_theme: String,
@@ -76,7 +77,7 @@ impl Default for Theme {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Matugen {
     pub preference: MatugenPreference,
@@ -96,7 +97,7 @@ impl Default for Matugen {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Bars {
     pub frame: Frame,
@@ -141,7 +142,7 @@ impl Default for Bars {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Menus {
     pub clock_menu: Menu,
@@ -241,7 +242,7 @@ impl Default for Menus {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Notifications {
     pub notification_position: NotificationPosition,
@@ -255,7 +256,7 @@ impl Default for Notifications {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Wallpaper {
     pub wallpaper_dir: String,
@@ -269,7 +270,7 @@ impl Default for Wallpaper {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Frame {
     pub enable_frame: bool,
@@ -285,7 +286,7 @@ impl Default for Frame {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Menu {
     pub position: Position,
@@ -303,7 +304,7 @@ impl Default for Menu {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct ScreenshareMenu {
     pub position: Position,
@@ -317,7 +318,7 @@ impl Default for ScreenshareMenu {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct HorizontalBar {
     pub minimum_height: i32,
@@ -337,7 +338,7 @@ impl Default for HorizontalBar {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct VerticalBar {
     pub minimum_width: i32,
@@ -357,7 +358,7 @@ impl Default for VerticalBar {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum VerticalMenuExpansion {
     AlwaysExpanded,
     ExpandBothWays,

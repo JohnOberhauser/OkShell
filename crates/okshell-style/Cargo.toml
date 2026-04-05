@@ -13,7 +13,6 @@ grass.workspace = true
 
 [dependencies]
 anyhow.workspace = true
-arc-swap.workspace = true
 gtk4.workspace = true
 okshell-cache.workspace = true
 okshell-config.workspace = true
