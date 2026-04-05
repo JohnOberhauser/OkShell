@@ -1,6 +1,6 @@
 # OkShell
 
-![logo](docs/assets/logo.svg)
+![logo](docs/public/assets/logo.svg)
 
 ---
 
