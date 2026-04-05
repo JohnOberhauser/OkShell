@@ -1,11 +1,10 @@
 import { defineConfig } from 'vitepress'
 
-// https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "OkShell",
+  base: "/OkShell/",
   description: "A customizable desktop shell for Hyprland",
   themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Home', link: '/' },
     ],
@@ -32,13 +31,6 @@ export default defineConfig({
           { text: 'Matugen', link: '/matugen' },
           { text: 'Style sheets', link: '/style_sheets' },
           { text: 'Icons', link: '/icons' }
-        ]
-      },
-      {
-        text: 'Dev info',
-        items: [
-          { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
         ]
       }
     ],
