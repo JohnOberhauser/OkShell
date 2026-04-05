@@ -4,6 +4,9 @@ export default defineConfig({
   title: "OkShell",
   base: "/OkShell/",
   description: "A customizable desktop shell for Hyprland",
+  head: [
+    ['link', { rel: 'icon', href: '/OkShell/assets/logo.svg' }]
+  ],
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },
