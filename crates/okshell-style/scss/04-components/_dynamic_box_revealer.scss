@@ -1,0 +1,9 @@
+.dynamic_box_revealer {
+  opacity: 0;
+  transition: opacity 150ms ease-out;
+}
+
+.dynamic_box_revealer.visible {
+  opacity: 1;
+  transition: opacity 200ms ease-in 50ms;
+}

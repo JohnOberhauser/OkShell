@@ -1,0 +1,29 @@
+[package]
+name = "okshell-screenshot"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell screenshot utility."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+dirs.workspace = true
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true
+image.workspace = true
+memmap2.workspace = true
+nix.workspace = true
+okshell-services.workspace = true
+okshell-style.workspace = true
+relm4.workspace = true
+rustix.workspace = true
+serde_json.workspace = true
+time.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tokio.workspace = true
+wayland-client.workspace = true
+wayland-protocols-wlr.workspace = true
+wayle-hyprland.workspace = true

@@ -1,0 +1,17 @@
+.revealer-button-icon-label-icon {
+  color: var(--on-surface);
+  -gtk-icon-size: 16px;
+}
+
+.revealer-button-content {
+  background-color: transparent;
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.revealer-button-content.revealed {
+  opacity: 1;
+}

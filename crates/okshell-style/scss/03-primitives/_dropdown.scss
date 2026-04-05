@@ -1,0 +1,48 @@
+@use "../03-primitives/buttons";
+
+/* The button itself */
+dropdown button {
+  @include buttons.button-base('--surface', '--on-surface');
+  border: var(--border-width) solid var(--outline);
+}
+
+dropdown button {
+  @include buttons.state-layers('--surface', '--on-surface');
+}
+
+dropdown popover > contents {
+  background-color: var(--surface);
+  border: var(--border-width) solid var(--outline);
+  border-radius: var(--radius-md);
+}
+
+/* The popover list */
+dropdown popover listview {
+  background: var(--surface);
+}
+
+dropdown popover listview label {
+  color: var(--on-surface);
+}
+
+dropdown popover listview image {
+  color: var(--on-surface-variant);
+}
+
+/* Individual rows */
+dropdown popover listview row {
+  padding: 6px 12px;
+  @include buttons.button-base('--surface', '--on-surface');
+}
+
+dropdown popover listview row {
+  @include buttons.state-layers('--surface', '--on-surface');
+}
+
+dropdown popover listview row:selected {
+  @include buttons.button-base('--primary', '--on-primary');
+}
+
+dropdown popover listview row:selected {
+  @include buttons.state-layers('--primary', '--on-primary');
+}

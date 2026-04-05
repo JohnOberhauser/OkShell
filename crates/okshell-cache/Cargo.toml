@@ -1,0 +1,13 @@
+[package]
+name = "okshell-cache"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell cache"
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+reactive_graph.workspace = true
+reactive_stores.workspace = true
+relm4.workspace = true

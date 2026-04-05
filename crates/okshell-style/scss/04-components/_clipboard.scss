@@ -1,0 +1,26 @@
+@use "../03-primitives/buttons";
+
+.clipboard-item {
+  @include buttons.button-base('--surface', '--on-surface');
+  @include buttons.state-layers('--surface', '--on-surface');
+  border: var(--outline) solid var(--border-width);
+}
+
+.clipboard-item-title {
+  color: var(--on-surface-variant);
+}
+
+.clipboard-item-image {
+  border-radius: var(--radius-md);
+  border-width: var(--border-width);
+  border-style: solid;
+  border-color: var(--outline);
+}
+
+.clipboard-copy-button {
+  all: unset;
+}
+
+.clipboard-trash-button {
+  background-color: transparent;
+}

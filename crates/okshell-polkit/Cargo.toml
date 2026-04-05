@@ -1,0 +1,18 @@
+[package]
+name = "okshell-polkit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell polkit agent"
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true
+nix.workspace = true
+relm4.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+zbus.workspace = true

@@ -1,0 +1,52 @@
+.lockscreen-entry {
+  all: unset;
+  box-shadow: none;
+  color: var(--on-surface);
+  background-color: transparent;
+  font-size: 20px;
+  caret-color: transparent;
+  placeholder {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--on-surface);
+  }
+
+  image {
+    color: var(--on-surface);
+  }
+}
+
+.lockscreen-entry-wrapper {
+  padding: 4px;
+  background-color: var(--surface);
+  border: var(--border-width) solid var(--outline);
+  border-radius: var(--radius-round);
+}
+
+.lockscreen-label {
+  text-shadow: 2px 2px 4px var(--surface);
+}
+
+.lockscreen-content {
+  opacity: 0;
+  background-color: var(--surface);
+  transition: opacity 300ms ease;
+}
+
+.lockscreen-content.revealed {
+  opacity: 1;
+}
+
+.lockscreen-fingerprint-icon {
+  -gtk-icon-size: 72px;
+  color: var(--on-surface);
+  transition: color 150ms ease;
+}
+
+.lockscreen-fingerprint-icon.fail {
+  color: var(--error)
+}
+
+.lockscreen-spinner {
+  color: var(--primary);
+}

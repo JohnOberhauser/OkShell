@@ -1,0 +1,87 @@
+@use "../03-primitives/buttons";
+
+.monitor-chip {
+  padding-left: 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--primary);
+}
+
+.monitor-chip-empty {
+  margin-top: 4px;
+  margin-left: 3px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  background-color: var(--primary);
+}
+
+.settings-bar-widget-section {
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--outline);
+}
+
+.settings-bar-widget-section-list {
+  all: unset;
+
+  row {
+    background: transparent;
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+.settings-menu-widget-section {
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--outline);
+}
+
+.settings-menu-widget-section-list {
+  all: unset;
+
+  row {
+    background: transparent;
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+.settings-sidebar {
+  background-color: var(--surface);
+  border-right: solid var(--border-width) var(--outline);
+  padding: 10px;
+
+  list {
+    background-color: var(--surface);
+    color: var(--on-surface);
+
+    row {
+      @include buttons.button-base('--surface', '--on-surface');
+      @include buttons.state-layers('--surface', '--on-surface');
+      &:selected {
+        @include buttons.button-base('--primary', '--on-primary');
+        @include buttons.state-layers('--primary', '--on-primary');
+
+        margin-bottom: 4px;
+      }
+
+      margin-bottom: 4px;
+
+      label {
+        font-size: 14px;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.settings-stack {
+  background-color: var(--surface);
+}
+
+.settings-page {
+  padding: 20px;
+  background-color: var(--surface);
+}

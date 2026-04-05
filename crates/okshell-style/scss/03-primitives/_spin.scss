@@ -1,0 +1,23 @@
+@use "buttons";
+
+spinbutton {
+  background: var(--surface);
+  border: var(--border-width) solid var(--outline);
+  border-radius: var(--radius-md);
+
+  &:focus-within {
+    outline-color: transparent;
+  }
+}
+
+spinbutton text {
+  background: transparent;
+  color: var(--on-surface);
+  min-height: 0;
+  min-width: 40px;
+}
+
+spinbutton button {
+  @include buttons.button-base('--surface', '--on-surface');
+  @include buttons.state-layers('--surface', '--on-surface');
+}

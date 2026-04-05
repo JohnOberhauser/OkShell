@@ -1,0 +1,21 @@
+[package]
+name = "okshell-common"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell common components."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+gtk4-layer-shell.workspace = true
+gtk4-session-lock.workspace = true
+futures.workspace = true
+okshell-config.workspace = true
+reactive_graph.workspace = true
+relm4.workspace = true
+time.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+wayle-notification.workspace = true

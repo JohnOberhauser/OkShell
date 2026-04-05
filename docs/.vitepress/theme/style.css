@@ -1,0 +1,167 @@
+/**
+ * Everforest theme for VitePress
+ * Dark Hard: bg #1E2326, Light Hard: bg #FFFBEF
+ */
+
+:root {
+  --vp-c-default-1: var(--vp-c-gray-1);
+  --vp-c-default-2: var(--vp-c-gray-2);
+  --vp-c-default-3: var(--vp-c-gray-3);
+  --vp-c-default-soft: var(--vp-c-gray-soft);
+
+  /* Brand = Everforest green (primary) */
+  --vp-c-brand-1: #8DA101;
+  --vp-c-brand-2: #a7b832;
+  --vp-c-brand-3: #8DA101;
+  --vp-c-brand-soft: rgba(141, 161, 1, 0.14);
+
+  --vp-c-tip-1: var(--vp-c-brand-1);
+  --vp-c-tip-2: var(--vp-c-brand-2);
+  --vp-c-tip-3: var(--vp-c-brand-3);
+  --vp-c-tip-soft: var(--vp-c-brand-soft);
+
+  /* Warning = Everforest yellow */
+  --vp-c-warning-1: #DFA000;
+  --vp-c-warning-2: #e6b020;
+  --vp-c-warning-3: #DFA000;
+  --vp-c-warning-soft: rgba(223, 160, 0, 0.14);
+
+  /* Danger = Everforest red */
+  --vp-c-danger-1: #F85552;
+  --vp-c-danger-2: #f97775;
+  --vp-c-danger-3: #F85552;
+  --vp-c-danger-soft: rgba(248, 85, 82, 0.14);
+}
+
+/**
+ * Component: Button
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-button-brand-border: transparent;
+  --vp-button-brand-text: #FFFBEF;
+  --vp-button-brand-bg: #8DA101;
+  --vp-button-brand-hover-border: transparent;
+  --vp-button-brand-hover-text: #FFFBEF;
+  --vp-button-brand-hover-bg: #a7b832;
+  --vp-button-brand-active-border: transparent;
+  --vp-button-brand-active-text: #FFFBEF;
+  --vp-button-brand-active-bg: #7a8c01;
+}
+
+/**
+ * Component: Home — Light mode hero
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+          120deg,
+          #8DA101 30%,
+          #35A77C
+  );
+
+  --vp-home-hero-image-background-image: linear-gradient(
+          -45deg,
+          #8DA101 50%,
+          #3A94C5 50%
+  );
+  --vp-home-hero-image-filter: blur(44px);
+}
+
+@media (min-width: 640px) {
+  :root {
+    --vp-home-hero-image-filter: blur(56px);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --vp-home-hero-image-filter: blur(68px);
+  }
+}
+
+/**
+ * Component: Custom Block
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-custom-block-tip-border: transparent;
+  --vp-custom-block-tip-text: var(--vp-c-text-1);
+  --vp-custom-block-tip-bg: var(--vp-c-brand-soft);
+  --vp-custom-block-tip-code-bg: var(--vp-c-brand-soft);
+}
+
+/**
+ * Override VitePress theme tokens — Light mode (Everforest Light Hard)
+ * -------------------------------------------------------------------------- */
+
+:root {
+  --vp-c-bg: #FFFBEF;
+  --vp-c-bg-alt: #F8F5E4;
+  --vp-c-bg-elv: #F2EFDF;
+  --vp-c-bg-soft: #F2EFDF;
+
+  --vp-c-text-1: #5C6A72;
+  --vp-c-text-2: #829181;
+  --vp-c-text-3: #A6B0A0;
+
+  --vp-c-divider: #EDEADA;
+  --vp-c-gutter: #F2EFDF;
+
+  --vp-c-neutral: #5C6A72;
+  --vp-c-neutral-inverse: #FFFBEF;
+}
+
+/**
+ * Override VitePress theme tokens — Dark mode (Everforest Dark Hard)
+ * -------------------------------------------------------------------------- */
+
+.dark {
+  --vp-c-bg: #1E2326;
+  --vp-c-bg-alt: #272E33;
+  --vp-c-bg-elv: #2E383C;
+  --vp-c-bg-soft: #2E383C;
+
+  --vp-c-text-1: #D3C6AA;
+  --vp-c-text-2: #9DA9A0;
+  --vp-c-text-3: #7A8478;
+
+  --vp-c-divider: #374145;
+  --vp-c-gutter: #272E33;
+
+  --vp-c-neutral: #D3C6AA;
+  --vp-c-neutral-inverse: #1E2326;
+
+  /* Brand stays green but lighter for dark bg contrast */
+  --vp-c-brand-1: #A7C080;
+  --vp-c-brand-2: #b8cc97;
+  --vp-c-brand-3: #A7C080;
+  --vp-c-brand-soft: rgba(167, 192, 128, 0.16);
+
+  --vp-button-brand-text: #1E2326;
+  --vp-button-brand-bg: #A7C080;
+  --vp-button-brand-hover-bg: #b8cc97;
+  --vp-button-brand-active-bg: #8da86a;
+
+  --vp-home-hero-name-background: -webkit-linear-gradient(
+          120deg,
+          #A7C080 30%,
+          #7FBBB3
+  );
+  --vp-home-hero-image-background-image: linear-gradient(
+          -45deg,
+          #A7C080 50%,
+          #83C092 50%
+  );
+
+  --vp-c-warning-1: #DBBC7F;
+  --vp-c-warning-2: #e5cc99;
+  --vp-c-warning-3: #DBBC7F;
+  --vp-c-warning-soft: rgba(219, 188, 127, 0.16);
+
+  --vp-c-danger-1: #E67E80;
+  --vp-c-danger-2: #eb9799;
+  --vp-c-danger-3: #E67E80;
+  --vp-c-danger-soft: rgba(230, 126, 128, 0.16);
+}

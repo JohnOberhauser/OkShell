@@ -1,0 +1,40 @@
+@use "../03-primitives/buttons";
+
+popover > contents {
+  background-color: var(--surface);
+  border-radius: var(--radius-md);
+  border: var(--border-width) solid var(--outline);
+  padding: 6px;
+}
+
+popover modelbutton {
+  @include buttons.button-base('--surface', '--on-surface');
+  @include buttons.state-layers('--surface', '--on-surface');
+
+  padding-left: 0;
+  min-width: 0;
+  
+  box {
+    padding-left: 0;
+    margin-left: 0;
+  }
+}
+
+popover arrow {
+  margin: 0 8px 0 0;
+}
+
+popover label.title {
+  all: unset;
+  margin: 4px;
+  color: var(--primary);
+  font-size: 20px;
+  opacity: 1;
+}
+
+popover > arrow {
+  background-color: var(--surface);
+  border-color: var(--outline);
+  border-width: var(--border-width);
+  border-style: solid;
+}

@@ -1,0 +1,10 @@
+[Icon Theme]
+Name=OkPhosphor
+Inherits=hicolor
+Directories=symbolic
+
+[symbolic]
+Size=16
+MinSize=8
+MaxSize=512
+Type=Scalable

@@ -1,0 +1,37 @@
+.ok-entry {
+  all: unset;
+  padding: 4px 8px;
+  box-shadow: none;
+  background-color: transparent;
+  color: var(--on-surface);
+  caret-color: var(--on-surface);
+
+  placeholder {
+    color: var(--on-surface-variant)
+  }
+
+  image {
+    color: var(--on-surface);
+  }
+}
+
+.ok-entry-with-border {
+  all: unset;
+  padding: 4px 8px;
+  box-shadow: none;
+  background-color: transparent;
+  border-style: solid;
+  border-width: var(--border-width);
+  border-radius: var(--radius-md);
+  border-color: var(--outline);
+  color: var(--on-surface);
+  caret-color: var(--on-surface);
+
+  placeholder {
+    color: var(--on-surface-variant)
+  }
+
+  image {
+    color: var(--on-surface);
+  }
+}

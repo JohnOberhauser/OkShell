@@ -1,0 +1,20 @@
+[package]
+name = "okshellshare"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell hyprland screensharing utility."
+repository.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "okshellshare"
+path = "src/main.rs"
+
+[dependencies]
+anyhow.workspace = true
+clap.workspace = true
+okshell-cli-style.workspace = true
+serde.workspace = true
+tokio.workspace = true
+zbus.workspace = true

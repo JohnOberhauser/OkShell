@@ -1,0 +1,28 @@
+[package]
+name = "okshell-utils"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell utils."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+futures.workspace = true
+gtk4-layer-shell.workspace = true
+okshell-common.workspace = true
+okshell-services.workspace = true
+notify-rust.workspace = true
+relm4.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tracing.workspace = true
+wayle-audio.workspace = true
+wayle-bluetooth.workspace = true
+wayle-hyprland.workspace = true
+wayle-media.workspace = true
+wayle-network.workspace = true
+wayle-notification.workspace = true
+wayle-power-profiles.workspace = true
+wayle-weather.workspace = true

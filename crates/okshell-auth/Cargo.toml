@@ -1,0 +1,14 @@
+[package]
+name = "okshell-auth"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell auth utils."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+futures.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+zbus.workspace = true

@@ -1,0 +1,20 @@
+[package]
+name = "okshell-config"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell config."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+arc-swap.workspace = true
+dirs.workspace = true
+figment.workspace = true
+notify.workspace = true
+reactive_graph.workspace = true
+reactive_stores.workspace = true
+serde.workspace = true
+serde_yaml.workspace = true
+tracing.workspace = true
+wayle-weather.workspace = true

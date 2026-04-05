@@ -1,0 +1,22 @@
+[package]
+name = "okshell-notification-popups"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell notification popups"
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+gtk4.workspace = true
+gtk4-layer-shell.workspace = true
+okshell-cache.workspace = true
+okshell-common.workspace = true
+okshell-config.workspace = true
+okshell-services.workspace = true
+okshell-style.workspace = true
+okshell-utils.workspace = true
+reactive_graph.workspace = true
+relm4.workspace = true
+tracing.workspace = true
+wayle-notification.workspace = true

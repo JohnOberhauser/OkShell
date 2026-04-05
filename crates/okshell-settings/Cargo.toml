@@ -1,0 +1,17 @@
+[package]
+name = "okshell-settings"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell settings window."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+dirs.workspace = true
+okshell-common.workspace = true
+okshell-config.workspace = true
+okshell-style.workspace = true
+reactive_graph.workspace = true
+relm4.workspace = true
+tracing.workspace = true

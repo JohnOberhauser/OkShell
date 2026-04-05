@@ -1,0 +1,110 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/okshell-auth",
+    "crates/okshell-cache",
+    "crates/okshell-cli-style",
+    "crates/okshell-clipboard",
+    "crates/okshell-common",
+    "crates/okshell-config",
+    "crates/okshell-core",
+    "crates/okshell-frame",
+    "crates/okshell-gamma",
+    "crates/okshell-lockscreen",
+    "crates/okshell-logging",
+    "crates/okshell-notification-popups",
+    "crates/okshell-osd",
+    "crates/okshell-polkit",
+    "crates/okshell-screenshot",
+    "crates/okshell-services",
+    "crates/okshell-session",
+    "crates/okshell-settings",
+    "crates/okshell-sounds",
+    "crates/okshell-style",
+    "crates/okshell-utils",
+    "crates/okshell-wallpaper",
+    "okshell",
+    "okshellctl",
+    "okshellshare",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92.0"
+repository = "https://github.com/JohnOberhauser/OkShell"
+license = "GPL-3"
+
+[workspace.dependencies]
+anyhow = "1.0.101"
+any_spawner = { version = "0.3.0", features = ["glib", "async-executor"] }
+arc-swap = "1.8.1"
+cairo-rs = "0.22.0-alpha.3"
+clap = { version = "4.5.57", features = ["color", "derive"] }
+dirs = "6.0.0"
+figment = { version = "0.10.19", features = ["yaml"] }
+futures = "0.3.32"
+grass = "0.13.4"
+gtk4 = { version = "0.10.3", features = ["v4_20"] }
+gtk4-layer-shell = "0.7.1"
+gtk4-session-lock = { version = "0.3.0", features = ["v1_2"] }
+image = { version = "0.25.9", features = ["png", "jpeg", "bmp"] }
+libc = "1.0.0-alpha.3"
+memmap2 = "0.9.10"
+nix = {  version = "0.31.2", features = ["signal", "user"] }
+notify = "9.0.0-rc.1"
+notify-rust = "4.12.0"
+okshell-auth = { path = "crates/okshell-auth" }
+okshell-cache = { path = "crates/okshell-cache" }
+okshell-cli-style = { path = "crates/okshell-cli-style" }
+okshell-clipboard = { path = "crates/okshell-clipboard" }
+okshell-common = { path = "crates/okshell-common" }
+okshell-config = { path = "crates/okshell-config" }
+okshell-core = { path = "crates/okshell-core" }
+okshell-frame = { path = "crates/okshell-frame" }
+okshell-gamma = { path = "crates/okshell-gamma" }
+okshell-lockscreen = { path = "crates/okshell-lockscreen" }
+okshell-logging = { path = "crates/okshell-logging" }
+okshell-notification-popups = { path = "crates/okshell-notification-popups" }
+okshell-osd = { path = "crates/okshell-osd" }
+okshell-polkit = { path = "crates/okshell-polkit" }
+okshell-screenshot = { path = "crates/okshell-screenshot" }
+okshell-services = { path = "crates/okshell-services" }
+okshell-session = { path = "crates/okshell-session" }
+okshell-settings = { path = "crates/okshell-settings" }
+okshell-sounds = { path = "crates/okshell-sounds" }
+okshell-style = { path = "crates/okshell-style" }
+okshell-utils = { path = "crates/okshell-utils" }
+okshell-wallpaper = { path = "crates/okshell-wallpaper" }
+pam = "0.8.0"
+reactive_graph = { version = "0.2.12", features = ["effects"] }
+reactive_stores = "0.4.2"
+relm4 = { version = "0.10.1" }
+rodio = { version = "0.22.1", default-features = false, features = ["vorbis", "playback"] }
+rustix = { version = "1.1.4", features = ["shm", "fs"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+serde_yaml = "0.9.33"
+thiserror = "2.0.18"
+time = {  version = "0.3.47", features = ["local-offset", "formatting"] }
+tokio = { version = "1.49.0", features = ["full"] }
+tokio-util = "0.7.18"
+tracing = "0.1.44"
+tracing-appender = "0.2.4"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+wayland-client = "0.31.12"
+wayland-protocols = { version = "0.32.10", features = ["staging", "client"] }
+wayland-protocols-wlr = { version = "0.3.10", features = ["client"] }
+wayle-audio = "0.1.2"
+wayle-battery = "0.1.2"
+wayle-bluetooth = "0.1.2"
+wayle-brightness = "0.1.2"
+wayle-hyprland = "0.1.2"
+wayle-media = "0.1.2"
+wayle-network = "0.1.2"
+wayle-notification = "0.1.2"
+wayle-power-profiles = "0.1.2"
+wayle-sysinfo = "0.1.2"
+wayle-systray = { version = "0.1.2", features = ["adapter-gtk"] }
+wayle-weather = "0.1.2"
+zbus = "5.14.0"

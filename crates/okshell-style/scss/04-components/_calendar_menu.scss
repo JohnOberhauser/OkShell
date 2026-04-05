@@ -1,0 +1,34 @@
+.ok-calendar{
+  border-color: transparent;
+  border-radius: 16px;
+}
+
+// The gtk calendar itself
+calendar {
+  background-color: var(--surface);
+  border: 2px solid var(--on-surface);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+}
+
+calendar header {
+  background-color: var(--surface);
+  color: var(--on-surface);
+  padding: 5px;
+}
+
+calendar button {
+  background-color: var(--surface);
+  color: var(--on-surface);
+}
+
+calendar grid label {
+  background-color: var(--surface);
+  color: var(--on-surface);
+}
+
+calendar grid label.today {
+  border-radius: var(--radius-sm);
+  background-color: var(--primary);
+  color: var(--on-primary);
+}

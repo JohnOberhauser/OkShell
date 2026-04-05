@@ -1,0 +1,11 @@
+[package]
+name = "okshell-logging"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell logging."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+tracing-subscriber.workspace = true

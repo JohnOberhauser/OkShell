@@ -1,0 +1,19 @@
+scrolledwindow {
+  .frame {
+    border-style: none;
+  }
+  .trough {
+    border-style: none;
+  }
+}
+
+scrolledwindow trough slider {
+  all: unset;
+}
+
+scrolledwindow overshoot.top,
+scrolledwindow overshoot.bottom,
+scrolledwindow overshoot.left,
+scrolledwindow overshoot.right {
+  background: none;
+}

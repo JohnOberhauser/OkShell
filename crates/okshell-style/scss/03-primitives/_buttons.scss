@@ -1,0 +1,99 @@
+@mixin button-base($bg, $fg, $fg-content: $fg) {
+  all: unset;
+  background-color: var(#{$bg});
+  color: var(#{$fg});
+  border-radius: var(--radius-md);
+  image, label {
+    color: var(#{$fg-content});
+    -gtk-icon-size: var(--icon-sm);
+  }
+  > * {
+    padding: var(--padding-md);
+  }
+}
+
+@mixin state-layers($base, $on) {
+  &:hover {
+    background-color: unquote("color-mix(in srgb, var(#{$on}) 8%, var(#{$base}))");
+  }
+  &:disabled {
+    background-color: unquote("color-mix(in srgb, var(--on-surface) 12%, transparent)");
+    color: unquote("color-mix(in srgb, var(--on-surface) 38%, transparent)");
+    > * {
+      color: unquote("color-mix(in srgb, var(--on-surface) 38%, transparent)");
+      opacity: 1;
+      -gtk-icon-filter: none;
+    }
+  }
+}
+
+.ok-button-surface {
+  @include button-base('--surface', '--on-surface');
+}
+button.ok-button-surface {
+  @include state-layers('--surface', '--on-surface');
+  &:disabled {
+    background-color: var(--surface);
+  }
+}
+.ok-button-surface.selected {
+  color: var(--on-primary);
+  background-color: var(--primary);
+  image, label {
+    color: var(--on-primary);
+  }
+}
+button.ok-button-surface.selected {
+  @include state-layers('--primary', '--on-primary');
+}
+button.ok-button-surface.ok-button-no-disabled {
+  &:disabled {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    > * {
+      color: var(--on-surface);
+    }
+  }
+}
+
+.ok-button-primary {
+  @include button-base('--primary', '--on-primary');
+}
+button.ok-button-primary {
+  @include state-layers('--primary', '--on-primary');
+}
+
+.ok-button-error {
+  @include button-base('--surface', '--on-surface', '--error');
+}
+button.ok-button-error {
+  @include state-layers('--surface', '--on-surface');
+}
+
+.ok-button-medium {
+  min-width: 48px;
+  min-height: 48px;
+
+  image {
+    -gtk-icon-size: var(--icon-md);
+  }
+}
+
+.ok-button-medium-thin {
+  min-width: 36px;
+  min-height: 48px;
+
+  image {
+    -gtk-icon-size: var(--icon-md);
+  }
+}
+
+.ok-button-large {
+  padding: 4px 8px 4px 8px;
+  min-height: 72px;
+  min-width: 116px;
+
+  image {
+    -gtk-icon-size: var(--icon-lg);
+  }
+}

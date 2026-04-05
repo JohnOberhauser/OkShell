@@ -1,0 +1,11 @@
+[package]
+name = "okshell-sounds"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell sound assets and playing functions."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+rodio.workspace = true

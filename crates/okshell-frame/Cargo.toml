@@ -1,0 +1,41 @@
+[package]
+name = "okshell-frame"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell frame."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+cairo-rs.workspace = true
+futures.workspace = true
+gtk4-layer-shell.workspace = true
+notify-rust.workspace = true
+okshell-cache.workspace = true
+okshell-clipboard.workspace = true
+okshell-common.workspace = true
+okshell-config.workspace = true
+okshell-gamma.workspace = true
+okshell-screenshot.workspace = true
+okshell-services.workspace = true
+okshell-session.workspace = true
+okshell-settings.workspace = true
+okshell-sounds.workspace = true
+okshell-utils.workspace = true
+reactive_graph.workspace = true
+reactive_stores.workspace = true
+relm4.workspace = true
+time.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+wayle-audio.workspace = true
+wayle-battery.workspace = true
+wayle-bluetooth.workspace = true
+wayle-hyprland.workspace = true
+wayle-media.workspace = true
+wayle-network.workspace = true
+wayle-notification.workspace = true
+wayle-power-profiles.workspace = true
+wayle-systray.workspace = true
+wayle-weather.workspace = true

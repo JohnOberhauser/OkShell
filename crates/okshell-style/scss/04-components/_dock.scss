@@ -1,0 +1,53 @@
+@use '../03-primitives/buttons';
+
+.dock-item-selected {
+  background-color: var(--primary);
+
+  @include buttons.state-layers('--primary', '--on-primary');
+}
+
+.hyprland-dock-bar-widget {
+  image {
+    -gtk-icon-size: var(--icon-md);
+  }
+}
+
+.bar-dock-indicator {
+  border-radius: 90px;
+  background-color: var(--on-surface);
+  min-width: 4px;
+  min-height: 4px;
+  margin: 1px;
+}
+
+.bar-dock-indicator.selected {
+  background-color: var(--on-primary);
+}
+
+.bar-dock-indicator-line-horizontal {
+  border-radius: 90px;
+  background-color: var(--on-surface);
+  min-width: 16px;
+  min-height: 4px;
+  margin: 1px;
+}
+
+.bar-dock-indicator-line-vertical {
+  border-radius: 90px;
+  background-color: var(--on-surface);
+  min-width: 4px;
+  min-height: 16px;
+  margin: 1px;
+}
+
+.bar-dock-indicator-line-horizontal.selected {
+  background-color: var(--on-primary);
+}
+
+.bar-dock-indicator-line-vertical.selected {
+  background-color: var(--on-primary);
+}
+
+.bar-dock-indicator-container {
+  margin: 4px;
+}

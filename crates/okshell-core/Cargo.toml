@@ -1,0 +1,37 @@
+[package]
+name = "okshell-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell core entry point."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+any_spawner.workspace = true
+dirs.workspace = true
+gtk4-layer-shell.workspace = true
+okshell-cache.workspace = true
+okshell-common.workspace = true
+okshell-config.workspace = true
+okshell-frame.workspace = true
+okshell-lockscreen.workspace = true
+okshell-notification-popups.workspace = true
+okshell-osd.workspace = true
+okshell-polkit.workspace = true
+okshell-services.workspace = true
+okshell-session.workspace = true
+okshell-settings.workspace = true
+okshell-sounds.workspace = true
+okshell-style.workspace = true
+okshell-utils.workspace = true
+okshell-wallpaper.workspace = true
+reactive_graph.workspace = true
+relm4.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+wayle-audio.workspace = true
+wayle-brightness.workspace = true
+wayle-weather.workspace = true
+zbus.workspace = true

@@ -1,0 +1,26 @@
+[package]
+name = "okshell-style"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell theming."
+repository.workspace = true
+license.workspace = true
+build = "build.rs"
+
+[build-dependencies]
+grass.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+arc-swap.workspace = true
+gtk4.workspace = true
+okshell-cache.workspace = true
+okshell-config.workspace = true
+notify.workspace = true
+reactive_graph.workspace = true
+reactive_stores.workspace = true
+relm4.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true

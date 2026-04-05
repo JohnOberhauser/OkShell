@@ -1,0 +1,20 @@
+.revealer-row-action-button-inner {
+  transition: transform 200ms ease;
+}
+
+.revealer-row-action-button-inner.revealed {
+  transform: rotate(90deg);
+}
+
+.revealer-row-content {
+  background-color: transparent;
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.revealer-row-content.revealed {
+  opacity: 1;
+}

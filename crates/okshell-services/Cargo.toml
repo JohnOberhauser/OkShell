@@ -1,0 +1,25 @@
+[package]
+name = "okshell-services"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell service singletons."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+tracing.workspace = true
+wayle-audio.workspace = true
+wayle-battery.workspace = true
+wayle-bluetooth.workspace = true
+wayle-brightness.workspace = true
+wayle-hyprland.workspace = true
+wayle-media.workspace = true
+wayle-network.workspace = true
+wayle-notification.workspace = true
+wayle-power-profiles.workspace = true
+wayle-sysinfo.workspace = true
+wayle-systray.workspace = true
+wayle-weather.workspace = true
+zbus.workspace = true

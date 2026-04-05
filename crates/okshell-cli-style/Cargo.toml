@@ -1,0 +1,11 @@
+[package]
+name = "okshell-cli-style"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell CLI style"
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+clap.workspace = true

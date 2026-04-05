@@ -1,0 +1,15 @@
+.screen-recording-menu-indicator-box {
+  background-color: transparent;
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.screen-recording-menu-indicator-image {
+  color: var(--error);
+  -gtk-icon-size: 16px;
+}
+
+.screen-recording-bar-widget-image {
+  color: var(--error);
+}

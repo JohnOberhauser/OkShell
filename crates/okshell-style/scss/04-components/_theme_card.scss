@@ -1,0 +1,8 @@
+.theme-card {
+  border-radius: var(--radius-md);
+  border: 2px solid var(--outline);
+
+  &:hover {
+    border: 2px solid var(--on-surface);
+  }
+}

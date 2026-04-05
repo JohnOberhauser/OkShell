@@ -1,0 +1,18 @@
+[package]
+name = "okshell"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell GUI desktop shell."
+repository.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "okshell"
+path = "src/main.rs"
+
+[dependencies]
+clap.workspace = true
+okshell-cli-style.workspace = true
+okshell-core.workspace = true
+okshell-logging.workspace = true

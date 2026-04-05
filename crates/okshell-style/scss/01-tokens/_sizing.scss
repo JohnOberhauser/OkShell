@@ -1,0 +1,25 @@
+:root {
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-round: 90px;
+
+  --border-width: 2px;
+
+  --padding-sm: 4px;
+  --padding-md: 8px;
+  --padding-lg: 16px;
+
+  --icon-sm: 16px;
+  --icon-md: 24px;
+  --icon-lg: 32px;
+
+  --font-sm: 14px;
+  --font-md: 16px;
+  --font-lg: 18px;
+  --font-xl: 26px;
+  --font-xxl: 32px;
+  --font-xxxl: 48px;
+
+  --frame-border-width: var(--border-width);
+  --frame-border-radius: var(--radius-md);
+}

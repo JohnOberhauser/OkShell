@@ -1,0 +1,23 @@
+switch {
+  all: unset;
+  padding: 4px;
+  background-color: var(--surface);
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-md);
+
+  &:checked {
+    background-color: var(--primary);
+    border: 1px solid var(--outline);
+  }
+
+  slider {
+    all: unset;
+    border-radius: var(--radius-md);
+    background-color: var(--outline);
+  }
+  &:checked {
+    slider {
+      background-color: var(--on-primary);
+    }
+  }
+}

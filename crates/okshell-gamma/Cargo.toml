@@ -1,0 +1,15 @@
+[package]
+name = "okshell-gamma"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell night light controls."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+libc.workspace = true
+tokio.workspace = true
+wayland-client.workspace = true
+wayland-protocols-wlr.workspace = true

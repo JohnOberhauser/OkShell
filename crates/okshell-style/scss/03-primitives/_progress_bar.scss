@@ -1,0 +1,20 @@
+.ok-progress-bar {
+  all: unset;
+}
+
+.ok-progress-bar trough {
+  all: unset;
+  background: var(--primary-container);
+  min-height: 8px;
+  border-radius: var(--radius-md);
+}
+.ok-progress-bar trough slider {
+  all: unset;
+}
+
+.ok-progress-bar trough highlight {
+  all: unset;
+  min-width: 8px;
+  border-radius: var(--radius-md);
+  background: var(--on-primary-container);
+}

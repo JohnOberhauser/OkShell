@@ -1,0 +1,17 @@
+[package]
+name = "okshell-clipboard"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell clipboard manager."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+image.workspace = true
+libc.workspace = true
+time.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+wayland-client.workspace = true
+wayland-protocols.workspace = true

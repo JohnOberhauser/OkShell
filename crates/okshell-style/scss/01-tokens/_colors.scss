@@ -1,0 +1,40 @@
+:root {
+  --surface: #1E2326;
+  --on-surface: #D3C6AA;
+  --surface-variant: #2E383C;
+  --on-surface-variant: #9DA9A0;
+  --surface-container-highest: #414B50;
+  --surface-container-high: #374145;
+  --surface-container: #2E383C;
+  --surface-container-low: #272E33;
+  --surface-container-lowest: #1E2326;
+  --inverse-surface: #D3C6AA;
+  --inverse-on-surface: #1E2326;
+  --surface-tint: #7FBBB3;
+  --surface-tint-color: #7FBBB3;
+  --primary: #A7C080;
+  --on-primary: #1E2326;
+  --primary-container: #3C4841;
+  --on-primary-container: #A7C080;
+  --secondary: #7FBBB3;
+  --on-secondary: #1E2326;
+  --secondary-container: #384B55;
+  --on-secondary-container: #7FBBB3;
+  --tertiary: #83C092;
+  --on-tertiary: #1E2326;
+  --tertiary-container: #3C4841;
+  --on-tertiary-container: #83C092;
+  --error: #E67E80;
+  --on-error: #1E2326;
+  --error-container: #493B40;
+  --on-error-container: #E67E80;
+  --outline: #7A8478;
+  --outline-variant: #374145;
+
+  -gtk-icon-palette: warning var(--error), error var(--error), success var(--primary);
+
+  --frame-bg: var(--surface);
+  --frame-border: var(--outline);
+
+  --window-opacity: 1;
+}

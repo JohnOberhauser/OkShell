@@ -1,0 +1,29 @@
+@use "../03-primitives/buttons";
+
+.app-launcher-search-icon {
+  color: var(--on-surface);
+  -gtk-icon-size: var(--icon-md);
+  padding: 4px 4px 4px 2px;
+}
+
+.app-launcher-check checkmark {
+  color: var(--on-surface);
+  -gtk-icon-size: var(--icon-sm);
+}
+
+.app-launcher-check check {
+  min-width: 14px;
+  min-height: 14px;
+}
+
+.app-launcher-item {
+  transition: padding-left 200ms ease-in-out;
+
+  &.selected {
+    padding-left: 30px;
+  }
+
+  image {
+    -gtk-icon-size: var(--icon-md);
+  }
+}

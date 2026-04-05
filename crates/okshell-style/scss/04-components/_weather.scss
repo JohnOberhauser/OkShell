@@ -1,0 +1,20 @@
+.current-weather-icon {
+  color: var(--on-surface);
+  -gtk-icon-size: 48px;
+}
+
+.current-weather-detail-icon {
+  color: var(--on-surface);
+  -gtk-icon-size: 20px;
+}
+
+.hourly-weather-icon {
+  color: var(--on-surface);
+  -gtk-icon-size: 20px;
+}
+
+.weather-container {
+  border: solid var(--border-width) var(--outline);
+  border-radius: var(--radius-md);
+  padding: 8px;
+}
