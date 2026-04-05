@@ -443,7 +443,7 @@ impl Component for ThemeSettingsModel {
 
                 gtk::Label {
                     add_css_class: "label-large-bold",
-                    set_label: "Color scheme",
+                    set_label: "Color Scheme",
                     set_halign: gtk::Align::Start,
                 },
 
