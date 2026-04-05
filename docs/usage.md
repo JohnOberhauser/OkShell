@@ -8,8 +8,10 @@ okshell
 
 ### Interacting with the shell
 
-```
-okshellctl
-```
+Use `okshellctl` to interact with the shell from the command line.
 
-This will print out the subcommands you can use.
+To see a list of subcommands:
+
+```
+okshellctl -h
+```

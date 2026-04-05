@@ -18,13 +18,14 @@ export default defineConfig({
         items: [
           { text: 'Installation', link: '/installation' },
           { text: 'Usage', link: '/usage' },
-          { text: 'Features', link: '/features' }
+          { text: 'Features', link: '/features' },
+          { text: 'Hyprland screen share', link: '/screensharing' }
         ]
       },
       {
         text: 'Configuration',
         items: [
-          { text: 'Settings UI', link: '/settings' },
+          { text: 'Settings', link: '/settings' },
           { text: 'Schema', link: '/schema' }
         ]
       },

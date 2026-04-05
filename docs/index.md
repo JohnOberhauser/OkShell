@@ -16,11 +16,11 @@ hero:
       link: https://github.com/JohnOberhauser/OkShell
 
 features:
-  - title: Built-in Matugen support
-    details: Dynamic and static themes change your configured themes with Matugen
-  - title: Customize bars and menus
-    details: Place your bar(s) on any edge of the screen and customize the layout of your menus
   - title: Everything you need
     details: Widgets, notifications, lock screen, polkit agent, wallpaper management, screenshot tool, and more included!
+  - title: Customize bars and menus
+    details: Place your bar(s) on any edge of the screen and customize the layout of your menus
+  - title: Built-in Matugen support
+    details: Have your theme change dynamically to match your wallpaper, or choose a built-in static theme
 ---
 
