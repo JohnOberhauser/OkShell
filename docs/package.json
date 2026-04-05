@@ -3,8 +3,8 @@
     "vitepress": "^2.0.0-alpha.17"
   },
   "scripts": {
-    "docs:dev": "cargo run --manifest-path ../Cargo.toml --bin generate_schema > public/config-schema.md && vitepress dev",
-    "docs:build": "cargo run --manifest-path ../Cargo.toml --bin generate_schema > public/config-schema.md && vitepress build",
+    "docs:dev": "cargo run --manifest-path ../Cargo.toml --package okshell-config --bin generate_schema > public/config-schema.md && vitepress dev",
+    "docs:build": "cargo run --manifest-path ../Cargo.toml --package okshell-config --bin generate_schema > public/config-schema.md && vitepress build",
     "docs:preview": "vitepress preview"
   }
 }
