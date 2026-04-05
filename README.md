@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://johnoberhauser.github.io/OkShell/">
-    <img src="docs/public/assets/logo.svg" alt="logo" width="200">
+    <img src="docs/public/assets/logo.svg" alt="logo" width="300">
   </a>
 </p>
 
