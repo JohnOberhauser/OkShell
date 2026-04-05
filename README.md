@@ -19,16 +19,3 @@ OkShell is a customizable desktop shell for Hyprland.  It is built in Rust using
 - Built-in settings UI
 
 And many more!
-
-### Dependencies
-
-bluez  
-gtk4  
-hyprpicker  
-libnotify  
-matugen  
-network-manager  
-pipewire-pulse  
-power-profiles-daemon  
-upower  
-wf-recorder  
