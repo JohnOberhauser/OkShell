@@ -163,7 +163,6 @@ impl Component for AppLauncherItemModel {
 
                 let popover = gtk::PopoverMenu::from_model(Some(&menu));
                 popover.set_has_arrow(false);
-                popover.add_css_class("ok-popover");
                 popover.insert_action_group("main", Some(&action_group));
                 popover.set_parent(&widgets.button);
 

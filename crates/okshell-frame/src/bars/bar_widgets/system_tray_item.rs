@@ -92,7 +92,6 @@ impl Component for SystemTrayItemModel {
                     gtk::PopoverMenuFlags::NESTED,
                 );
 
-                popover.add_css_class("ok-popover");
                 popover.insert_action_group("app", Some(&model.actions));
                 popover.set_parent(&widgets.button);
                 popover.popup();

@@ -93,6 +93,7 @@ impl Component for HyprlandDockItemModel {
 
     view! {
         #[root]
+        #[name = "root"]
         gtk::Box {
             gtk::Overlay {
                 add_overlay = &gtk::Box {
@@ -418,9 +419,8 @@ impl Component for HyprlandDockItemModel {
 
                 let popover = gtk::PopoverMenu::from_model(Some(&menu));
                 popover.set_has_arrow(false);
-                popover.add_css_class("ok-popover");
                 popover.insert_action_group("main", Some(&action_group));
-                popover.set_parent(&widgets.button);
+                popover.set_parent(&widgets.root);
 
                 popover.popup();
 
