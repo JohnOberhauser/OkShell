@@ -26,7 +26,7 @@ features:
 
 <div style="width: 100%; margin-top: 2rem;">
   <video 
-    src="https://github.com/JohnOberhauser/OkShell/releases/download/v0.1.1/okshell-demo.mp4" 
+    src="https://github.com/JohnOberhauser/OkShell/releases/download/v0.1.2/demo.mp4" 
     controls 
     style="width: 100%; border-radius: 8px;"
   ></video>
