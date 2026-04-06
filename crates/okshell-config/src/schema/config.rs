@@ -162,7 +162,13 @@ impl Default for Menus {
         Self {
             clock_menu: Menu {
                 position: Position::Left,
-                widgets: vec![MenuWidget::Calendar, MenuWidget::Weather],
+                widgets: vec![
+                    MenuWidget::Calendar,
+                    MenuWidget::Spacer(SpacerConfig {
+                        size: 20,
+                    }),
+                    MenuWidget::Weather,
+                ],
                 minimum_width: 410,
             },
             clipboard_menu: Menu {

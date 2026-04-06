@@ -11,6 +11,7 @@ pub fn launch_detached(app: &gio::DesktopAppInfo) {
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .process_group(0)
-            .spawn();
+            .spawn()
+            .map(|mut child| child.wait());
     }
 }

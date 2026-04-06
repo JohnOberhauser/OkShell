@@ -1,13 +1,7 @@
-.ok-calendar{
-  border-color: transparent;
-  border-radius: 16px;
-}
-
-// The gtk calendar itself
 calendar {
   background-color: var(--surface);
-  border: 2px solid var(--on-surface);
-  border-radius: var(--radius-sm);
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-md);
   padding: 10px;
 }
 
@@ -15,6 +9,7 @@ calendar header {
   background-color: var(--surface);
   color: var(--on-surface);
   padding: 5px;
+  border: none;
 }
 
 calendar button {

@@ -50,6 +50,7 @@ impl SimpleComponent for CalendarModel {
             add_css_class: "calendar-menu-widget",
             set_hexpand: false,
             set_orientation: gtk::Orientation::Vertical,
+            set_spacing: 10,
 
             gtk::Label {
                 add_css_class: "label-xl",
@@ -61,7 +62,6 @@ impl SimpleComponent for CalendarModel {
             },
 
             gtk::Calendar {
-                add_css_class: "ok-calendar",
                 set_can_focus: false,
                 set_focus_on_click: false,
             },
