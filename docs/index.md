@@ -24,3 +24,10 @@ features:
     details: Have your theme change dynamically to match your wallpaper, or choose a built-in static theme
 ---
 
+<div style="width: 100%; margin-top: 2rem;">
+  <video 
+    src="https://github.com/JohnOberhauser/OkShell/releases/download/v0.1.1/okshell-demo.mp4" 
+    controls 
+    style="width: 100%; border-radius: 8px;"
+  ></video>
+</div>

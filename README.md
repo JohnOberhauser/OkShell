@@ -21,6 +21,8 @@
 
 OkShell is a customizable desktop shell for Hyprland.  It is built in Rust using [Relm4](https://relm4.org/) and [Wayle-services](https://github.com/wayle-rs/wayle-services).
 
+<video src="https://github.com/JohnOberhauser/OkShell/releases/download/v0.1.1/okshell-demo.mp4" controls width="100%"></video>
+
 ### Features
 
 - Customizable bars and menus
