@@ -7,7 +7,6 @@ mod general_settings;
 pub mod settings;
 mod wallpaper_settings;
 mod theme_settings;
-mod theme_card;
 mod bar_settings;
 mod menu_settings;
 mod notification_settings;

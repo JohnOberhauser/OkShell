@@ -4,7 +4,7 @@ use crate::bar_settings::bar_settings::{BarSettingsInit, BarSettingsModel};
 use crate::general_settings::{GeneralSettingsInit, GeneralSettingsModel};
 use crate::menu_settings::menu_settings::{MenuSettingsInit, MenuSettingsModel};
 use crate::notification_settings::{NotificationSettingsInit, NotificationSettingsModel};
-use crate::theme_settings::{ThemeSettingsInit, ThemeSettingsModel};
+use crate::theme_settings::theme_settings::{ThemeSettingsInit, ThemeSettingsModel};
 use crate::wallpaper_settings::{WallpaperSettingsInit, WallpaperSettingsModel};
 
 pub(crate) struct SettingsWindowModel {

@@ -8,7 +8,7 @@ use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, MatugenStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
 use okshell_style::user_css::style_utils::list_available_styles;
-use crate::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
+use crate::theme_settings::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
 
 #[derive(Debug)]
 pub(crate) struct ThemeSettingsModel {
