@@ -53,10 +53,10 @@ pub(crate) fn start_recording(
             WfRecorderArgs::All => {}
         }
         cmd.arg("-f").arg(&path);
-        cmd.args(["-c", "libx265"]);
-        cmd.args(["-p", "crf=18"]);
+        cmd.args(["-c", "libx264"]);
+        cmd.args(["-p", "crf=23"]);
         cmd.args(["-p", "preset=fast"]);
-        cmd.args(["-x", "yuv444p"]);
+        cmd.args(["-x", "yuv420p"]);
         if let Some(audio) = audio {
             cmd.arg(format!("--audio={}", audio));
         }
