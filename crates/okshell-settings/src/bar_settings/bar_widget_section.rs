@@ -75,7 +75,6 @@ impl Component for WidgetSectionModel {
 
             #[name = "add_widget_button"]
             gtk::MenuButton {
-                add_css_class: "ok-button-primary",
                 set_label: "Add widget",
                 set_halign: gtk::Align::Start,
                 set_always_show_arrow: false,

@@ -55,7 +55,6 @@ impl Component for MenuWidgetListModel {
 
             #[name = "add_button"]
             gtk::MenuButton {
-                add_css_class: "ok-button-primary",
                 set_label: "Add widget",
                 set_halign: gtk::Align::Start,
                 set_always_show_arrow: false,

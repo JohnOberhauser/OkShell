@@ -150,7 +150,7 @@ impl Component for BarSettingsModel {
                             set_visible: model.selected_monitors.is_empty(),
                             set_label: "All monitors",
                             set_halign: gtk::Align::Start,
-                            set_css_classes: &["monitor-chip-empty", "label-small"],
+                            set_css_classes: &["monitor-chip-empty", "label-small-primary"],
                         },
 
                         // Chips
@@ -165,11 +165,9 @@ impl Component for BarSettingsModel {
                         },
                     },
 
-                    // Add button
                     #[name = "add_monitor_button"]
                     gtk::MenuButton {
                         set_label: "Add monitor",
-                        add_css_class: "ok-button-primary",
                         set_vexpand: false,
                         set_hexpand: false,
                         set_halign: gtk::Align::Start,

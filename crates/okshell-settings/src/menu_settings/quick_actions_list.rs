@@ -42,7 +42,6 @@ impl Component for QuickActionListModel {
 
             #[name = "add_action_button"]
             gtk::MenuButton {
-                add_css_class: "ok-button-primary",
                 set_label: "Add action",
                 set_halign: gtk::Align::Start,
                 set_always_show_arrow: false,
