@@ -296,7 +296,7 @@ impl Component for WallpaperMenuWidgetModel {
                         monitor.connect_changed(move |_, file, _, event| {
                             let path = file.path().unwrap();
                             match event {
-                                gio::FileMonitorEvent::Created => {
+                                gio::FileMonitorEvent::ChangesDoneHint => {
                                     sender.input(WallpaperMenuWidgetInput::FileAdded(path));
                                 }
                                 gio::FileMonitorEvent::Deleted => {
@@ -316,14 +316,35 @@ impl Component for WallpaperMenuWidgetModel {
 
             WallpaperMenuWidgetInput::FileAdded(path) => {
                 if is_image_file(&path) && !self.files.contains(&path) {
-                    self.files.push(path);
-                    sender.input(WallpaperMenuWidgetInput::FilesUpdated);
+                    self.files.push(path.clone());
+                    let path_str = path.to_string_lossy().to_string();
+                    let mut insert_pos = self.list_store.n_items();
+                    for i in 0..self.list_store.n_items() {
+                        if let Some(item) = self.list_store.item(i) {
+                            let existing = item.downcast_ref::<gtk::StringObject>().unwrap();
+                            if path_str.as_str() < existing.string().as_str() {
+                                insert_pos = i;
+                                break;
+                            }
+                        }
+                    }
+                    let string_obj = gtk::StringObject::new(&path_str);
+                    self.list_store.insert(insert_pos, &string_obj);
                 }
             }
 
             WallpaperMenuWidgetInput::FileRemoved(path) => {
                 self.files.retain(|p| p != &path);
-                sender.input(WallpaperMenuWidgetInput::FilesUpdated);
+                let path_str = path.to_string_lossy().to_string();
+                for i in 0..self.list_store.n_items() {
+                    if let Some(item) = self.list_store.item(i) {
+                        let existing = item.downcast_ref::<gtk::StringObject>().unwrap();
+                        if existing.string().as_str() == path_str {
+                            self.list_store.remove(i);
+                            break;
+                        }
+                    }
+                }
             }
 
             WallpaperMenuWidgetInput::FilesUpdated => {
