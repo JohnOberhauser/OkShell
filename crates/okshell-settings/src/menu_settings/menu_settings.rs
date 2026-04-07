@@ -3,10 +3,9 @@ use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender
 use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{BarsStoreFields, ConfigStoreFields, MenuStoreFields, MenusStoreFields, ScreenshareMenuStoreFields, VerticalBarStoreFields, VerticalMenuExpansion};
+use okshell_config::schema::config::{ConfigStoreFields, MenuStoreFields, MenusStoreFields, ScreenshareMenuStoreFields, VerticalMenuExpansion};
 use okshell_config::schema::menu_widgets::MenuWidget;
 use okshell_config::schema::position::Position;
-use crate::bar_settings::bar_settings::BarSettingsInput;
 use crate::menu_settings::menu_widget_list::{MenuWidgetListInit, MenuWidgetListInput, MenuWidgetListModel, MenuWidgetListOutput};
 
 #[derive(Debug)]

@@ -1,6 +1,7 @@
-use reactive_graph::prelude::GetUntracked;
+use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, NotificationsStoreFields};
 use okshell_config::schema::position::{NotificationPosition};
@@ -8,11 +9,13 @@ use okshell_config::schema::position::{NotificationPosition};
 #[derive(Debug, Clone)]
 pub(crate) struct NotificationSettingsModel {
     position: NotificationPosition,
+    _effects: EffectScope,
 }
 
 #[derive(Debug)]
 pub(crate) enum NotificationSettingsInput {
     PositionChanged(NotificationPosition),
+    PositionEffect(NotificationPosition),
 }
 
 #[derive(Debug)]
@@ -82,12 +85,13 @@ impl Component for NotificationSettingsModel {
                         set_valign: gtk::Align::Center,
                         set_model: Some(&gtk::StringList::new(&NotificationPosition::display_names())),
                         #[watch]
+                        #[block_signal(handler)]
                         set_selected: model.position.to_index(),
                         connect_selected_notify[sender] => move |dd| {
                             sender.input(NotificationSettingsInput::PositionChanged(
                                 NotificationPosition::from_index(dd.selected())
                             ));
-                        },
+                        } @handler,
                     },
                 },
             },
@@ -100,8 +104,18 @@ impl Component for NotificationSettingsModel {
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
 
+        let mut effects = EffectScope::new();
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.notifications().notification_position().get();
+            sender_clone.input(NotificationSettingsInput::PositionEffect(value));
+        });
+
         let model = NotificationSettingsModel {
             position: config_manager().config().notifications().notification_position().get_untracked(),
+            _effects: effects,
         };
 
         let widgets = view_output!();
@@ -122,6 +136,9 @@ impl Component for NotificationSettingsModel {
                 config_manager().update_config(|config| {
                     config.notifications.notification_position = position;
                 });
+            }
+            NotificationSettingsInput::PositionEffect(position) => {
+                self.position = position;
             }
         }
 

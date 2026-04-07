@@ -447,6 +447,13 @@ impl Component for BarSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
+            let value = config.bars().left_bar().minimum_width().get();
+            sender_clone.input(BarSettingsInput::LeftMinWidthEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
             let value = config.bars().left_bar().top_widgets().get();
             sender_clone.input(BarSettingsInput::LeftStartEffect(value));
         });

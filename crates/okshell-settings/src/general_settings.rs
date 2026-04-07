@@ -3,7 +3,7 @@ use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller};
 use relm4::gtk::{
     glib,
 };
-use relm4::gtk::prelude::{BoxExt, ButtonExt, CastNone, ListModelExt, ObjectExt, OrientableExt, WidgetExt};
+use relm4::gtk::prelude::{BoxExt, ButtonExt, CastNone, ListModelExt, OrientableExt, WidgetExt};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_common::text_entry_dialog::{TextEntryDialogInit, TextEntryDialogModel, TextEntryDialogOutput};
 use okshell_config::config_manager::config_manager;
