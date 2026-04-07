@@ -22,6 +22,7 @@ pub enum MenuWidgetListInput {
     MoveUp(DynamicIndex),
     MoveDown(DynamicIndex),
     WidgetChanged(DynamicIndex, MenuWidget),
+    SetWidgetsEffect(Vec<MenuWidget>),
 }
 
 #[derive(Debug)]
@@ -131,6 +132,13 @@ impl Component for MenuWidgetListModel {
                     row.widget = widget;
                 }
                 self.emit_changed(&sender);
+            }
+            MenuWidgetListInput::SetWidgetsEffect(new_widgets) => {
+                let mut guard = self.widgets.guard();
+                guard.clear();
+                for widget in new_widgets {
+                    guard.push_back(widget);
+                }
             }
         }
 
