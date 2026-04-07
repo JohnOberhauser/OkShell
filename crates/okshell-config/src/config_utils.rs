@@ -64,7 +64,6 @@ pub fn list_available_profiles() -> Vec<String> {
     out
 }
 
-/// defaults < active_profile
 pub(crate) fn load_effective_config(active_profile: Option<&str>) -> Result<Config, figment::Error> {
     let mut figment = Figment::from(Serialized::defaults(Config::default()));
 

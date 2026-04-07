@@ -28,7 +28,7 @@ pub fn config_manager() -> &'static ConfigManager {
 }
 
 impl ConfigManager {
-    /// Creates the manager and computes an initial last-good effective config.
+
     fn new() -> Self {
         info!("Creating new ConfigManager");
         let active_profile = read_active_profile_from_cache();
@@ -62,19 +62,15 @@ impl ConfigManager {
         self.available_profiles.clone()
     }
 
-    /// Sets active profile name (without ".yaml"), persists it, reloads immediately,
-    /// stores into SharedConfig, and emits ConfigEvent::ConfigChanged if it actually changed.
+    /// Sets active profile name (without ".yaml"), persists it, reloads immediately
     pub fn set_active_profile(
         &self,
         name: Option<String>,
     ) {
-        // store Option<Arc<String>> atomically
         self.active_profile.patch(name.clone());
 
-        // persist the plain string (no allocation surprises)
         write_active_profile_to_cache(name.as_deref());
 
-        // reload immediately and notify if changed
         self.reload_config();
     }
 
@@ -147,21 +143,16 @@ impl ConfigManager {
         }
     }
 
-    /// Manually force a reload (useful for “apply” button).
     pub fn reload_config(&self) {
-        // active_profile is stored as Option<Arc<String>>
         let active = self.active_profile.read_untracked();
-
-        // Convert to Option<&str> for the loader
         let active = active.as_deref();
 
         match load_effective_config(active) {
             Ok(new_cfg) => {
                 self.config.patch(new_cfg);
-                info!("New config loaded");
+                info!("Config reloaded");
             }
             Err(e) => {
-                // keep last-good
                 eprintln!("config: reload failed (keeping last-good): {e}");
             }
         }
@@ -178,7 +169,6 @@ impl ConfigManager {
                 RecommendedWatcher::new(tx, NotifyConfig::default())
                     .expect("config: failed to create watcher");
 
-            // Watch directories (best for atomic saves: temp + rename)
             let prof_dir = profiles_dir();
 
             if let Err(e) = fs::create_dir_all(&prof_dir) {

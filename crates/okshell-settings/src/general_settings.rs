@@ -45,6 +45,7 @@ pub(crate) enum GeneralSettingsInput {
     LatLonChosen(String, String),
     CityChosen(String, String),
     WeatherUnitTypeSelected(TemperatureUnitConfig),
+    WeatherUnitTypeChanged(TemperatureUnitConfig),
 }
 
 #[derive(Debug)]
@@ -194,6 +195,8 @@ impl Component for GeneralSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.location_query_types),
+                        #[watch]
+                        #[block_signal(lqt_handler)]
                         set_selected: LocationQueryType::all()
                             .iter()
                             .position(|k| k == &model.active_location_query_type)
@@ -203,7 +206,7 @@ impl Component for GeneralSettingsModel {
                             if let Some(kind) = LocationQueryType::all().get(idx) {
                                 sender.input(GeneralSettingsInput::LocationQueryTypeSelected(*kind));
                             }
-                        },
+                        } @lqt_handler,
                     },
                 },
 
@@ -315,6 +318,8 @@ impl Component for GeneralSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.weather_unit_types),
+                        #[watch]
+                        #[block_signal(unit_handler)]
                         set_selected: TemperatureUnitConfig::all()
                             .iter()
                             .position(|k| k == &model.active_weather_unit_type)
@@ -324,7 +329,7 @@ impl Component for GeneralSettingsModel {
                             if let Some(kind) = TemperatureUnitConfig::all().get(idx) {
                                 sender.input(GeneralSettingsInput::WeatherUnitTypeSelected(*kind));
                             }
-                        },
+                        } @unit_handler,
                     },
                 },
             }
@@ -363,6 +368,13 @@ impl Component for GeneralSettingsModel {
             let config = config_manager().config();
             let location_query = config.general().weather_location_query().get();
             sender_clone.input(GeneralSettingsInput::LocationQueryChanged(location_query));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.general().temperature_unit().get();
+            sender_clone.input(GeneralSettingsInput::WeatherUnitTypeChanged(value));
         });
 
         let location_query_types = gtk::StringList::new(
@@ -575,6 +587,9 @@ impl Component for GeneralSettingsModel {
                 config_manager().update_config(|config| {
                     config.general.temperature_unit = unit;
                 })
+            }
+            GeneralSettingsInput::WeatherUnitTypeChanged(unit) => {
+                self.active_weather_unit_type = unit;
             }
         }
 

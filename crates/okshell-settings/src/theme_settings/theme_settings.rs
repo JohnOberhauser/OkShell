@@ -1,13 +1,15 @@
 use std::path::PathBuf;
-use reactive_graph::prelude::{GetUntracked};
+use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::{glib};
 use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, RangeExt, WidgetExt};
 use relm4::prelude::FactoryVecDeque;
+use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, MatugenStoreFields, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields, MatugenStoreFields, Theme, ThemeStoreFields};
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
 use okshell_style::user_css::style_utils::list_available_styles;
+use crate::general_settings::GeneralSettingsInput;
 use crate::theme_settings::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
 
 #[derive(Debug)]
@@ -29,19 +31,30 @@ pub(crate) struct ThemeSettingsModel {
     window_opacity: f64,
     window_opacity_debounce: Option<glib::JoinHandle<()>>,
     theme_cards: Option<FactoryVecDeque<ThemeCardModel>>,
+    _effects: EffectScope,
 }
 
 #[derive(Debug)]
 pub(crate) enum ThemeSettingsInput {
     ShellIconThemeSelected(Option<String>),
     AppIconThemeSelected(Option<String>),
-    MatugenPreferencesSelected(MatugenPreference),
+    MatugenPreferenceSelected(MatugenPreference),
     MatugenTypeSelected(MatugenType),
     MatugenModeSelected(MatugenMode),
-    MatugenContrastChanged(f64),
-    WindowOpacityChanged(f64),
+    MatugenContrastSelected(f64),
+    WindowOpacitySelected(f64),
     ThemeSelected(Themes),
     CssFileSelected(Option<String>),
+
+    ShellIconChanged(String),
+    AppIconChanged(String),
+    CssFileChanged(String),
+    WindowOpacityChanged(f64),
+    MatugenTypeChanged(MatugenType),
+    MatugenPreferenceChanged(MatugenPreference),
+    MatugenModeChanged(MatugenMode),
+    MatugenContrastChanged(f64),
+    ThemeChanged(Themes),
 }
 
 #[derive(Debug)]
@@ -111,6 +124,8 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.available_shell_icon_themes),
+                        #[watch]
+                        #[block_signal(shell_handler)]
                         set_selected: (0..model.available_shell_icon_themes.n_items())
                             .find(|&i| model.available_shell_icon_themes.string(i).as_deref() == Some(model.active_shell_theme.as_str()))
                             .unwrap_or(0),
@@ -119,7 +134,7 @@ impl Component for ThemeSettingsModel {
                                 .and_downcast::<gtk::StringObject>()
                                 .map(|s| s.string().to_string());
                             sender.input(ThemeSettingsInput::ShellIconThemeSelected(selected));
-                        },
+                        } @shell_handler,
                     },
                 },
 
@@ -153,6 +168,8 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.available_app_icon_themes),
+                        #[watch]
+                        #[block_signal(app_handler)]
                         set_selected: (0..model.available_app_icon_themes.n_items())
                             .find(|&i| model.available_app_icon_themes.string(i).as_deref() == Some(model.active_apps_theme.as_str()))
                             .unwrap_or(0),
@@ -161,7 +178,7 @@ impl Component for ThemeSettingsModel {
                                 .and_downcast::<gtk::StringObject>()
                                 .map(|s| s.string().to_string());
                             sender.input(ThemeSettingsInput::AppIconThemeSelected(selected));
-                        },
+                        } @app_handler,
                     },
                 },
 
@@ -202,6 +219,8 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.available_css),
+                        #[watch]
+                        #[block_signal(css_handler)]
                         set_selected: (0..model.available_css.n_items())
                             .find(|&i| model.available_css.string(i).as_deref() == Some(model.active_css.as_str()))
                             .unwrap_or(0),
@@ -210,7 +229,7 @@ impl Component for ThemeSettingsModel {
                                 .and_downcast::<gtk::StringObject>()
                                 .map(|s| s.string().to_string());
                             sender.input(ThemeSettingsInput::CssFileSelected(selected));
-                        },
+                        } @css_handler,
                     },
                 },
 
@@ -255,10 +274,12 @@ impl Component for ThemeSettingsModel {
                         set_focus_on_click: false,
                         set_range: (0.5, 1.0),
                         set_increments: (0.1, 0.1),
+                        #[watch]
+                        #[block_signal(opacity_handler)]
                         set_value: model.window_opacity,
                         connect_value_changed[sender] => move |scale| {
-                            sender.input(ThemeSettingsInput::WindowOpacityChanged(scale.value()));
-                        },
+                            sender.input(ThemeSettingsInput::WindowOpacitySelected(scale.value()));
+                        } @opacity_handler,
                     },
                 },
 
@@ -300,6 +321,8 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.matugen_types),
+                        #[watch]
+                        #[block_signal(type_handler)]
                         set_selected: MatugenType::all()
                             .iter()
                             .position(|k| k == &model.active_matugen_type)
@@ -309,7 +332,7 @@ impl Component for ThemeSettingsModel {
                             if let Some(kind) = MatugenType::all().get(idx) {
                                 sender.input(ThemeSettingsInput::MatugenTypeSelected(*kind));
                             }
-                        },
+                        } @type_handler,
                     },
                 },
 
@@ -343,6 +366,8 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.matugen_preferences),
+                        #[watch]
+                        #[block_signal(preference_handler)]
                         set_selected: MatugenPreference::all()
                             .iter()
                             .position(|k| k == &model.active_matugen_preference)
@@ -350,9 +375,9 @@ impl Component for ThemeSettingsModel {
                         connect_selected_notify[sender] => move |dd| {
                             let idx = dd.selected() as usize;
                             if let Some(kind) = MatugenPreference::all().get(idx) {
-                                sender.input(ThemeSettingsInput::MatugenPreferencesSelected(*kind));
+                                sender.input(ThemeSettingsInput::MatugenPreferenceSelected(*kind));
                             }
-                        },
+                        } @preference_handler,
                     },
                 },
 
@@ -386,6 +411,8 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.matugen_modes),
+                        #[watch]
+                        #[block_signal(mode_handler)]
                         set_selected: MatugenMode::all()
                             .iter()
                             .position(|k| k == &model.active_matugen_mode)
@@ -395,7 +422,7 @@ impl Component for ThemeSettingsModel {
                             if let Some(kind) = MatugenMode::all().get(idx) {
                                 sender.input(ThemeSettingsInput::MatugenModeSelected(*kind));
                             }
-                        },
+                        } @mode_handler,
                     },
                 },
 
@@ -432,10 +459,12 @@ impl Component for ThemeSettingsModel {
                         set_focus_on_click: false,
                         set_range: (-1.0, 1.0),
                         set_increments: (0.1, 0.1),
+                        #[watch]
+                        #[block_signal(contrast_handler)]
                         set_value: model.matugen_contrast,
                         connect_value_changed[sender] => move |scale| {
-                            sender.input(ThemeSettingsInput::MatugenContrastChanged(scale.value()));
-                        },
+                            sender.input(ThemeSettingsInput::MatugenContrastSelected(scale.value()));
+                        } @contrast_handler,
                     },
                 },
 
@@ -497,6 +526,71 @@ impl Component for ThemeSettingsModel {
                 .collect::<Vec<_>>()
         );
 
+        let mut effects = EffectScope::new();
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let theme = config.theme().shell_icon_theme().get();
+            sender_clone.input(ThemeSettingsInput::ShellIconChanged(theme));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let theme = config.theme().app_icon_theme().get();
+            sender_clone.input(ThemeSettingsInput::AppIconChanged(theme));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().css_file().get();
+            sender_clone.input(ThemeSettingsInput::CssFileChanged(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().window_opacity().get();
+            sender_clone.input(ThemeSettingsInput::WindowOpacityChanged(value.get()));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().matugen().scheme_type().get();
+            sender_clone.input(ThemeSettingsInput::MatugenTypeChanged(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().matugen().preference().get();
+            sender_clone.input(ThemeSettingsInput::MatugenPreferenceChanged(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().matugen().mode().get();
+            sender_clone.input(ThemeSettingsInput::MatugenModeChanged(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().matugen().contrast().get();
+            sender_clone.input(ThemeSettingsInput::MatugenContrastChanged(value.get()));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().theme().get();
+            sender_clone.input(ThemeSettingsInput::ThemeChanged(value));
+        });
+
         let mut model = ThemeSettingsModel {
             available_shell_icon_themes,
             active_shell_theme: config_manager().config().theme().shell_icon_theme().get_untracked(),
@@ -518,6 +612,7 @@ impl Component for ThemeSettingsModel {
             window_opacity: config_manager().config().theme().window_opacity().get_untracked().get(),
             window_opacity_debounce: None,
             theme_cards: None,
+            _effects: effects,
         };
 
         let widgets = view_output!();
@@ -562,7 +657,7 @@ impl Component for ThemeSettingsModel {
                     });
                 }
             }
-            ThemeSettingsInput::MatugenPreferencesSelected(preference) => {
+            ThemeSettingsInput::MatugenPreferenceSelected(preference) => {
                 config_manager().update_config(|config| {
                     config.theme.matugen.preference = preference;
                 });
@@ -577,7 +672,7 @@ impl Component for ThemeSettingsModel {
                     config.theme.matugen.mode = mode;
                 });
             }
-            ThemeSettingsInput::MatugenContrastChanged(contrast) => {
+            ThemeSettingsInput::MatugenContrastSelected(contrast) => {
                 if let Some(handle) = self.matugen_contrast_debounce.take() {
                     handle.abort();
                 }
@@ -588,7 +683,7 @@ impl Component for ThemeSettingsModel {
                     });
                 }));
             }
-            ThemeSettingsInput::WindowOpacityChanged(opacity) => {
+            ThemeSettingsInput::WindowOpacitySelected(opacity) => {
                 if let Some(handle) = self.window_opacity_debounce.take() {
                     handle.abort();
                 }
@@ -618,6 +713,39 @@ impl Component for ThemeSettingsModel {
                         Some(file) => config.theme.css_file = file.to_string(),
                     }
                 });
+            }
+
+            ThemeSettingsInput::ShellIconChanged(theme) => {
+                self.active_shell_theme = theme;
+            }
+            ThemeSettingsInput::AppIconChanged(theme) => {
+                self.active_apps_theme = theme;
+            }
+            ThemeSettingsInput::CssFileChanged(file) => {
+                self.active_css = file;
+            }
+            ThemeSettingsInput::WindowOpacityChanged(opacity) => {
+                self.window_opacity = opacity;
+            }
+            ThemeSettingsInput::MatugenTypeChanged(matugen_type) => {
+                self.active_matugen_type = matugen_type;
+            }
+            ThemeSettingsInput::MatugenPreferenceChanged(preference) => {
+                self.active_matugen_preference = preference;
+            }
+            ThemeSettingsInput::MatugenModeChanged(matugen_mode) => {
+                self.active_matugen_mode = matugen_mode;
+            }
+            ThemeSettingsInput::MatugenContrastChanged(matugen_contrast) => {
+                self.matugen_contrast = matugen_contrast;
+            }
+            ThemeSettingsInput::ThemeChanged(theme) => {
+                if let Some(theme_cards) = &mut self.theme_cards {
+                    let guard = theme_cards.guard();
+                    for i in 0..guard.len() {
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                    }
+                }
             }
         }
 
