@@ -46,15 +46,15 @@ pub(crate) enum ThemeSettingsInput {
     ThemeSelected(Themes),
     CssFileSelected(Option<String>),
 
-    ShellIconChanged(String),
-    AppIconChanged(String),
-    CssFileChanged(String),
-    WindowOpacityChanged(f64),
-    MatugenTypeChanged(MatugenType),
-    MatugenPreferenceChanged(MatugenPreference),
-    MatugenModeChanged(MatugenMode),
-    MatugenContrastChanged(f64),
-    ThemeChanged(Themes),
+    ShellIconEffect(String),
+    AppIconEffect(String),
+    CssFileEffect(String),
+    WindowOpacityEffect(f64),
+    MatugenTypeEffect(MatugenType),
+    MatugenPreferenceEffect(MatugenPreference),
+    MatugenModeEffect(MatugenMode),
+    MatugenContrastEffect(f64),
+    ThemeEffect(Themes),
 }
 
 #[derive(Debug)]
@@ -532,63 +532,63 @@ impl Component for ThemeSettingsModel {
         effects.push(move |_| {
             let config = config_manager().config();
             let theme = config.theme().shell_icon_theme().get();
-            sender_clone.input(ThemeSettingsInput::ShellIconChanged(theme));
+            sender_clone.input(ThemeSettingsInput::ShellIconEffect(theme));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let theme = config.theme().app_icon_theme().get();
-            sender_clone.input(ThemeSettingsInput::AppIconChanged(theme));
+            sender_clone.input(ThemeSettingsInput::AppIconEffect(theme));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let value = config.theme().css_file().get();
-            sender_clone.input(ThemeSettingsInput::CssFileChanged(value));
+            sender_clone.input(ThemeSettingsInput::CssFileEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let value = config.theme().window_opacity().get();
-            sender_clone.input(ThemeSettingsInput::WindowOpacityChanged(value.get()));
+            sender_clone.input(ThemeSettingsInput::WindowOpacityEffect(value.get()));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let value = config.theme().matugen().scheme_type().get();
-            sender_clone.input(ThemeSettingsInput::MatugenTypeChanged(value));
+            sender_clone.input(ThemeSettingsInput::MatugenTypeEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let value = config.theme().matugen().preference().get();
-            sender_clone.input(ThemeSettingsInput::MatugenPreferenceChanged(value));
+            sender_clone.input(ThemeSettingsInput::MatugenPreferenceEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let value = config.theme().matugen().mode().get();
-            sender_clone.input(ThemeSettingsInput::MatugenModeChanged(value));
+            sender_clone.input(ThemeSettingsInput::MatugenModeEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let value = config.theme().matugen().contrast().get();
-            sender_clone.input(ThemeSettingsInput::MatugenContrastChanged(value.get()));
+            sender_clone.input(ThemeSettingsInput::MatugenContrastEffect(value.get()));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let value = config.theme().theme().get();
-            sender_clone.input(ThemeSettingsInput::ThemeChanged(value));
+            sender_clone.input(ThemeSettingsInput::ThemeEffect(value));
         });
 
         let mut model = ThemeSettingsModel {
@@ -715,31 +715,31 @@ impl Component for ThemeSettingsModel {
                 });
             }
 
-            ThemeSettingsInput::ShellIconChanged(theme) => {
+            ThemeSettingsInput::ShellIconEffect(theme) => {
                 self.active_shell_theme = theme;
             }
-            ThemeSettingsInput::AppIconChanged(theme) => {
+            ThemeSettingsInput::AppIconEffect(theme) => {
                 self.active_apps_theme = theme;
             }
-            ThemeSettingsInput::CssFileChanged(file) => {
+            ThemeSettingsInput::CssFileEffect(file) => {
                 self.active_css = file;
             }
-            ThemeSettingsInput::WindowOpacityChanged(opacity) => {
+            ThemeSettingsInput::WindowOpacityEffect(opacity) => {
                 self.window_opacity = opacity;
             }
-            ThemeSettingsInput::MatugenTypeChanged(matugen_type) => {
+            ThemeSettingsInput::MatugenTypeEffect(matugen_type) => {
                 self.active_matugen_type = matugen_type;
             }
-            ThemeSettingsInput::MatugenPreferenceChanged(preference) => {
+            ThemeSettingsInput::MatugenPreferenceEffect(preference) => {
                 self.active_matugen_preference = preference;
             }
-            ThemeSettingsInput::MatugenModeChanged(matugen_mode) => {
+            ThemeSettingsInput::MatugenModeEffect(matugen_mode) => {
                 self.active_matugen_mode = matugen_mode;
             }
-            ThemeSettingsInput::MatugenContrastChanged(matugen_contrast) => {
+            ThemeSettingsInput::MatugenContrastEffect(matugen_contrast) => {
                 self.matugen_contrast = matugen_contrast;
             }
-            ThemeSettingsInput::ThemeChanged(theme) => {
+            ThemeSettingsInput::ThemeEffect(theme) => {
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {

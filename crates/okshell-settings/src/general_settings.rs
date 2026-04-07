@@ -30,22 +30,22 @@ pub(crate) struct GeneralSettingsModel {
 #[derive(Debug)]
 pub(crate) enum GeneralSettingsInput {
     TimeFormat24HToggled(bool),
-    TimeFormat24HChanged(bool),
-    ActiveProfileChanged(Option<String>),
-    AvailableProfilesChanged(Vec<String>),
+    TimeFormat24HEffect(bool),
+    ActiveProfileEffect(Option<String>),
+    AvailableProfilesEffect(Vec<String>),
     NewProfileClicked,
     ActiveProfileSelected(Option<String>),
     NewProfileNameChosen(String),
     DialogCanceled,
     DeleteProfileClicked,
     LocationQueryTypeSelected(LocationQueryType),
-    LocationQueryChanged(LocationQueryConfig),
+    LocationQueryEffect(LocationQueryConfig),
     ChangeCoordinatesClicked,
     ChangeCityClicked,
     LatLonChosen(String, String),
     CityChosen(String, String),
     WeatherUnitTypeSelected(TemperatureUnitConfig),
-    WeatherUnitTypeChanged(TemperatureUnitConfig),
+    WeatherUnitTypeEffect(TemperatureUnitConfig),
 }
 
 #[derive(Debug)]
@@ -347,34 +347,34 @@ impl Component for GeneralSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let active_profile = config_manager().active_profile().get();
-            sender_clone.input(GeneralSettingsInput::ActiveProfileChanged(active_profile));
+            sender_clone.input(GeneralSettingsInput::ActiveProfileEffect(active_profile));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let available_profiles = config_manager().available_profiles().get();
-            sender_clone.input(GeneralSettingsInput::AvailableProfilesChanged(available_profiles));
+            sender_clone.input(GeneralSettingsInput::AvailableProfilesEffect(available_profiles));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let format = config.general().clock_format_24_h().get();
-            sender_clone.input(GeneralSettingsInput::TimeFormat24HChanged(format));
+            sender_clone.input(GeneralSettingsInput::TimeFormat24HEffect(format));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let location_query = config.general().weather_location_query().get();
-            sender_clone.input(GeneralSettingsInput::LocationQueryChanged(location_query));
+            sender_clone.input(GeneralSettingsInput::LocationQueryEffect(location_query));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let value = config.general().temperature_unit().get();
-            sender_clone.input(GeneralSettingsInput::WeatherUnitTypeChanged(value));
+            sender_clone.input(GeneralSettingsInput::WeatherUnitTypeEffect(value));
         });
 
         let location_query_types = gtk::StringList::new(
@@ -423,7 +423,7 @@ impl Component for GeneralSettingsModel {
             GeneralSettingsInput::ActiveProfileSelected(selected_profile) => {
                 config_manager().set_active_profile(selected_profile);
             }
-            GeneralSettingsInput::ActiveProfileChanged(profile) => {
+            GeneralSettingsInput::ActiveProfileEffect(profile) => {
                 self.active_profile = profile;
                 let idx = (0..self.available_profiles.n_items())
                     .find(|&i| {
@@ -432,7 +432,7 @@ impl Component for GeneralSettingsModel {
                     .unwrap_or(0);
                 widgets.profile_dropdown.set_selected(idx);
             }
-            GeneralSettingsInput::AvailableProfilesChanged(profiles) => {
+            GeneralSettingsInput::AvailableProfilesEffect(profiles) => {
                 // Rebuild the list in-place
                 while self.available_profiles.n_items() > 0 {
                     self.available_profiles.remove(0);
@@ -488,7 +488,7 @@ impl Component for GeneralSettingsModel {
                     config.general.clock_format_24_h = format;
                 });
             }
-            GeneralSettingsInput::TimeFormat24HChanged(format) => {
+            GeneralSettingsInput::TimeFormat24HEffect(format) => {
                 self.time_format_24_h = format;
             }
             GeneralSettingsInput::LocationQueryTypeSelected(query_type) => {
@@ -507,7 +507,7 @@ impl Component for GeneralSettingsModel {
                     };
                 });
             }
-            GeneralSettingsInput::LocationQueryChanged(query) => {
+            GeneralSettingsInput::LocationQueryEffect(query) => {
                 match query {
                     LocationQueryConfig::Coordinates { lat, lon } => {
                         self.location_lat_lon = format!("{}, {}", lat.0, lon.0);
@@ -588,7 +588,7 @@ impl Component for GeneralSettingsModel {
                     config.general.temperature_unit = unit;
                 })
             }
-            GeneralSettingsInput::WeatherUnitTypeChanged(unit) => {
+            GeneralSettingsInput::WeatherUnitTypeEffect(unit) => {
                 self.active_weather_unit_type = unit;
             }
         }

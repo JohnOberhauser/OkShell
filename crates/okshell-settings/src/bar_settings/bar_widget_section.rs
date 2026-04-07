@@ -34,6 +34,7 @@ pub enum WidgetSectionInput {
     RemoveWidget(DynamicIndex),
     MoveUp(DynamicIndex),
     MoveDown(DynamicIndex),
+    SetWidgetsEffect(Vec<BarWidget>),
 }
 
 #[derive(Debug)]
@@ -143,6 +144,13 @@ impl Component for WidgetSectionModel {
                 if idx + 1 < len {
                     self.widgets.guard().move_to(idx, idx + 1);
                     self.emit_changed(&sender);
+                }
+            }
+            WidgetSectionInput::SetWidgetsEffect(new_widgets) => {
+                let mut guard = self.widgets.guard();
+                guard.clear();
+                for widget in new_widgets {
+                    guard.push_back(widget);
                 }
             }
         }

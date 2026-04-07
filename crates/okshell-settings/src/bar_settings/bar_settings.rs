@@ -7,7 +7,7 @@ use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::bar_widgets::BarWidget;
 use okshell_config::schema::config::{BarsStoreFields, ConfigStoreFields, FrameStoreFields, HorizontalBarStoreFields, VerticalBarStoreFields};
-use crate::bar_settings::bar_widget_section::{BarSection, WidgetSectionInit, WidgetSectionModel, WidgetSectionOutput};
+use crate::bar_settings::bar_widget_section::{BarSection, WidgetSectionInit, WidgetSectionInput, WidgetSectionModel, WidgetSectionOutput};
 use crate::bar_settings::monitor_chip::{MonitorChipModel, MonitorChipOutput};
 
 #[derive(Debug)]
@@ -59,6 +59,23 @@ pub(crate) enum BarSettingsInput {
     BottomMinHeightChanged(i32),
     RightMinWidthChanged(i32),
     LeftMinWidthChanged(i32),
+
+    TopStartEffect(Vec<BarWidget>),
+    TopCenterEffect(Vec<BarWidget>),
+    TopEndEffect(Vec<BarWidget>),
+    BottomStartEffect(Vec<BarWidget>),
+    BottomCenterEffect(Vec<BarWidget>),
+    BottomEndEffect(Vec<BarWidget>),
+    LeftStartEffect(Vec<BarWidget>),
+    LeftCenterEffect(Vec<BarWidget>),
+    LeftEndEffect(Vec<BarWidget>),
+    RightStartEffect(Vec<BarWidget>),
+    RightCenterEffect(Vec<BarWidget>),
+    RightEndEffect(Vec<BarWidget>),
+    TopMinHeightEffect(i32),
+    BottomMinHeightEffect(i32),
+    RightMinWidthEffect(i32),
+    LeftMinWidthEffect(i32),
 }
 
 #[derive(Debug)]
@@ -200,10 +217,11 @@ impl Component for BarSettingsModel {
                         set_range: (0.0, 500.0),
                         set_increments: (1.0, 10.0),
                         #[watch]
+                        #[block_signal(top_min_handler)]
                         set_value: model.top_min_height as f64,
                         connect_value_changed[sender] => move |s| {
                             sender.input(BarSettingsInput::TopMinHeightChanged(s.value() as i32));
-                        },
+                        } @top_min_handler,
                     },
                 },
 
@@ -234,10 +252,11 @@ impl Component for BarSettingsModel {
                         set_range: (0.0, 500.0),
                         set_increments: (1.0, 10.0),
                         #[watch]
+                        #[block_signal(left_min_handler)]
                         set_value: model.left_min_width as f64,
                         connect_value_changed[sender] => move |s| {
                             sender.input(BarSettingsInput::LeftMinWidthChanged(s.value() as i32));
-                        },
+                        } @left_min_handler,
                     },
                 },
 
@@ -268,10 +287,11 @@ impl Component for BarSettingsModel {
                         set_range: (0.0, 500.0),
                         set_increments: (1.0, 10.0),
                         #[watch]
+                        #[block_signal(right_min_handler)]
                         set_value: model.right_min_width as f64,
                         connect_value_changed[sender] => move |s| {
                             sender.input(BarSettingsInput::RightMinWidthChanged(s.value() as i32));
-                        },
+                        } @right_min_handler,
                     },
                 },
 
@@ -302,10 +322,11 @@ impl Component for BarSettingsModel {
                         set_range: (0.0, 500.0),
                         set_increments: (1.0, 10.0),
                         #[watch]
+                        #[block_signal(bottom_min_handler)]
                         set_value: model.bottom_min_height as f64,
                         connect_value_changed[sender] => move |s| {
                             sender.input(BarSettingsInput::BottomMinHeightChanged(s.value() as i32));
-                        },
+                        } @bottom_min_handler,
                     },
                 },
 
@@ -366,6 +387,111 @@ impl Component for BarSettingsModel {
                 sender_clone2.input(BarSettingsInput::AvailableMonitorsChanged(names));
             });
         }
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().top_bar().minimum_height().get();
+            sender_clone.input(BarSettingsInput::TopMinHeightEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().top_bar().left_widgets().get();
+            sender_clone.input(BarSettingsInput::TopStartEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().top_bar().center_widgets().get();
+            sender_clone.input(BarSettingsInput::TopCenterEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().top_bar().right_widgets().get();
+            sender_clone.input(BarSettingsInput::TopEndEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().bottom_bar().minimum_height().get();
+            sender_clone.input(BarSettingsInput::BottomMinHeightEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().bottom_bar().left_widgets().get();
+            sender_clone.input(BarSettingsInput::BottomStartEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().bottom_bar().center_widgets().get();
+            sender_clone.input(BarSettingsInput::BottomCenterEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().bottom_bar().right_widgets().get();
+            sender_clone.input(BarSettingsInput::BottomEndEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().left_bar().top_widgets().get();
+            sender_clone.input(BarSettingsInput::LeftStartEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().left_bar().center_widgets().get();
+            sender_clone.input(BarSettingsInput::LeftCenterEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().left_bar().bottom_widgets().get();
+            sender_clone.input(BarSettingsInput::LeftEndEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().right_bar().minimum_width().get();
+            sender_clone.input(BarSettingsInput::RightMinWidthEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().right_bar().top_widgets().get();
+            sender_clone.input(BarSettingsInput::RightStartEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().right_bar().center_widgets().get();
+            sender_clone.input(BarSettingsInput::RightCenterEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().right_bar().bottom_widgets().get();
+            sender_clone.input(BarSettingsInput::RightEndEffect(value));
+        });
 
         let top_bar_start_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
@@ -681,6 +807,54 @@ impl Component for BarSettingsModel {
                 config_manager.update_config(|config| {
                     config.bars.right_bar.minimum_width = min;
                 });
+            }
+            BarSettingsInput::TopStartEffect(widgets) => {
+                self.top_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::TopCenterEffect(widgets) => {
+                self.top_bar_center_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::TopEndEffect(widgets) => {
+                self.top_bar_end_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::BottomStartEffect(widgets) => {
+                self.bottom_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::BottomCenterEffect(widgets) => {
+                self.bottom_bar_center_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::BottomEndEffect(widgets) => {
+                self.bottom_bar_end_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::LeftStartEffect(widgets) => {
+                self.left_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::LeftCenterEffect(widgets) => {
+                self.left_bar_center_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::LeftEndEffect(widgets) => {
+                self.left_bar_end_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::RightStartEffect(widgets) => {
+                self.right_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::RightCenterEffect(widgets) => {
+                self.right_bar_center_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::RightEndEffect(widgets) => {
+                self.right_bar_end_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+            }
+            BarSettingsInput::TopMinHeightEffect(height) => {
+                self.top_min_height = height;
+            }
+            BarSettingsInput::BottomMinHeightEffect(height) => {
+                self.bottom_min_height = height;
+            }
+            BarSettingsInput::RightMinWidthEffect(width) => {
+                self.right_min_width = width;
+            }
+            BarSettingsInput::LeftMinWidthEffect(width) => {
+                self.left_min_width = width;
             }
         }
 
