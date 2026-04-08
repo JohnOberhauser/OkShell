@@ -529,6 +529,7 @@ impl Component for Frame {
                 wallpaper_menu_position,
                 screenshare_menu_position,
             ) => {
+                sender.input(FrameInput::CloseMenus);
                 self.apply_left_and_right_side_children(
                     &widgets,
                     clock_menu_position,
