@@ -444,6 +444,7 @@ impl Component for HyprlandDockItemModel {
             }
             HyprlandDockItemInput::Unselected => {
                 self.is_selected = false;
+                self.last_selected_address = None;
             }
             HyprlandDockItemInput::PinnedChanged(pinned) => {
                 self.pinned = pinned;
