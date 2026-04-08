@@ -36,7 +36,9 @@ pub enum NotificationInput {
 }
 
 #[derive(Debug)]
-pub enum NotificationOutput {}
+pub enum NotificationOutput {
+    ActionActivated,
+}
 
 pub struct NotificationInit {
     pub notification: Arc<Notification>,
@@ -172,11 +174,14 @@ impl Component for NotificationModel {
 
                 let notification = model.notification.clone();
                 let key = action.id.clone();
+                let sender_clone = sender.clone();
                 btn.connect_clicked(move |_| {
                     let notification = notification.clone();
                     let key = key.clone();
+                    let sender_clone = sender_clone.clone();
                     tokio::spawn(async move {
                         let _ = notification.invoke(&key).await;
+                        let _ = sender_clone.output(NotificationOutput::ActionActivated);
                     });
                 });
 

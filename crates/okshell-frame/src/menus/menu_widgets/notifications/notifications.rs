@@ -6,7 +6,7 @@ use wayle_notification::core::notification::Notification;
 use okshell_services::notification_service;
 use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
-use okshell_common::notification::{NotificationInit, NotificationModel};
+use okshell_common::notification::{NotificationInit, NotificationModel, NotificationOutput};
 use okshell_utils::notifications::{spawn_dnd_watcher, spawn_notifications_watcher};
 
 pub(crate) struct NotificationsModel {
@@ -128,6 +128,7 @@ impl Component for NotificationsModel {
             ||NotificationsCommandOutput::DndChanged,
         );
 
+        let sender_clone = sender.clone();
         let notifications_dynamic_box_factory = DynamicBoxFactory::<Arc<Notification>, u32> {
             id: Box::new(|item| item.id),
             create: Box::new(move |item| {
@@ -136,7 +137,13 @@ impl Component for NotificationsModel {
                     .launch(NotificationInit {
                         notification,
                     })
-                    .detach();
+                    .forward(sender_clone.output_sender(), |msg| {
+                        match msg { 
+                            NotificationOutput::ActionActivated => {
+                                NotificationsOutput::CloseMenu
+                            } 
+                        }
+                    });
 
                 Box::new(notifications_controller) as Box<dyn GenericWidgetController>
             }),
