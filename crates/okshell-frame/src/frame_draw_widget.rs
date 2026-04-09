@@ -25,14 +25,18 @@ pub struct FrameStyle {
     pub right_thickness: f64,
     pub top_thickness: f64,
     pub bottom_thickness: f64,
-    pub top_left_expander_height: f64,
-    pub top_right_expander_height: f64,
-    pub bottom_right_expander_height: f64,
-    pub bottom_left_expander_height: f64,
+    pub left_top_expander_height: f64,
+    pub right_top_expander_height: f64,
+    pub right_bottom_expander_height: f64,
+    pub left_bottom_expander_height: f64,
     pub left_expander_width: f64,
     pub right_expander_width: f64,
     pub top_revealer_size: (f64, f64),
     pub bottom_revealer_size: (f64, f64),
+    pub top_left_revealer_size: (f64, f64),
+    pub top_right_revealer_size: (f64, f64),
+    pub bottom_left_revealer_size: (f64, f64),
+    pub bottom_right_revealer_size: (f64, f64),
 }
 
 impl Default for FrameStyle {
@@ -47,14 +51,18 @@ impl Default for FrameStyle {
             right_thickness: 50.0,
             top_thickness: 50.0,
             bottom_thickness: 50.0,
-            top_left_expander_height: 0.0,
-            top_right_expander_height: 0.0,
-            bottom_left_expander_height: 0.0,
-            bottom_right_expander_height: 0.0,
+            left_top_expander_height: 0.0,
+            right_top_expander_height: 0.0,
+            left_bottom_expander_height: 0.0,
+            right_bottom_expander_height: 0.0,
             left_expander_width: 0.0,
             right_expander_width: 0.0,
             top_revealer_size: (0.0, 0.0),
             bottom_revealer_size: (0.0, 0.0),
+            top_left_revealer_size: (0.0, 0.0),
+            top_right_revealer_size: (0.0, 0.0),
+            bottom_left_revealer_size: (0.0, 0.0),
+            bottom_right_revealer_size: (0.0, 0.0),
         }
     }
 }
@@ -291,10 +299,10 @@ mod imp {
 
             let lw = style.left_expander_width;
             let rw = style.right_expander_width;
-            let tl_h = style.top_left_expander_height;
-            let bl_h = style.bottom_left_expander_height;
-            let tr_h = style.top_right_expander_height;
-            let br_h = style.bottom_right_expander_height;
+            let tl_h = style.left_top_expander_height;
+            let bl_h = style.left_bottom_expander_height;
+            let tr_h = style.right_top_expander_height;
+            let br_h = style.right_bottom_expander_height;
 
             let (top_rev_w, top_rev_h) = style.top_revealer_size;
             let (bot_rev_w, bot_rev_h) = style.bottom_revealer_size;

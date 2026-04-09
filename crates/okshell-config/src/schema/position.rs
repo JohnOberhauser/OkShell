@@ -7,7 +7,11 @@ pub enum Position {
     Left,
     Right,
     Top,
+    TopLeft,
+    TopRight,
     Bottom,
+    BottomLeft,
+    BottomRight,
 }
 
 impl PatchField for Position {
@@ -31,7 +35,11 @@ impl Position {
             Position::Left => 0,
             Position::Right => 1,
             Position::Top => 2,
-            Position::Bottom => 3,
+            Position::TopLeft => 3,
+            Position::TopRight => 4,
+            Position::Bottom => 5,
+            Position::BottomLeft => 6,
+            Position::BottomRight => 7,
         }
     }
 
@@ -40,7 +48,11 @@ impl Position {
             0 => Position::Left,
             1 => Position::Right,
             2 => Position::Top,
-            _ => Position::Bottom,
+            3 => Position::TopLeft,
+            4 => Position::TopRight,
+            5 => Position::Bottom,
+            6 => Position::BottomLeft,
+            _ => Position::BottomRight,
         }
     }
 
@@ -49,7 +61,11 @@ impl Position {
             Position::Left => "Left",
             Position::Right => "Right",
             Position::Top => "Top",
+            Position::TopLeft => "Top Left",
+            Position::TopRight => "Top Right",
             Position::Bottom => "Bottom",
+            Position::BottomLeft => "Bottom Left",
+            Position::BottomRight => "Bottom Right",
         }
     }
 
@@ -62,7 +78,11 @@ impl Position {
             Position::Left,
             Position::Right,
             Position::Top,
+            Position::TopLeft,
+            Position::TopRight,
             Position::Bottom,
+            Position::BottomLeft,
+            Position::BottomRight,
         ]
     }
 }

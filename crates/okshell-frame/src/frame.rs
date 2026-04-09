@@ -1,12 +1,6 @@
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use relm4::prelude::*;
-use relm4::gtk::{
-    self,
-    gdk,
-    prelude::*,
-    glib,
-    Widget,
-};
+use relm4::gtk::{self, gdk, prelude::*, glib, Widget, Stack};
 use reactive_graph::traits::*;
 use relm4::RelmRemoveAllExt;
 use tracing::info;
@@ -42,7 +36,11 @@ pub struct Frame {
     left_revealed: bool,
     right_revealed: bool,
     top_revealed: bool,
+    top_left_revealed: bool,
+    top_right_revealed: bool,
     bottom_revealed: bool,
+    bottom_left_revealed: bool,
+    bottom_right_revealed: bool,
     top_spacer: Controller<FrameSpacerModel>,
     bottom_spacer: Controller<FrameSpacerModel>,
     left_spacer: Controller<FrameSpacerModel>,
@@ -180,6 +178,80 @@ impl Component for Frame {
                             set_hexpand: true,
 
                             gtk::Box {
+                                set_orientation: gtk::Orientation::Vertical,
+                                set_hexpand: false,
+
+                                // This box is required to prevent the top and bottom menus
+                                // from matching each other's width if one is larger than the other
+                                gtk::Box {
+
+                                    gtk::Box {
+                                        set_hexpand: true,
+                                    },
+
+                                    #[name = "top_left_revealer_container"]
+                                    BoxWithResize::new() -> BoxWithResize {
+
+                                        #[name = "top_left_revealer"]
+                                        append = &gtk::Revealer {
+                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                            #[watch]
+                                            set_reveal_child: model.top_left_revealed,
+
+                                            #[name = "top_left_stack"]
+                                            gtk::Stack {
+                                                set_transition_type: gtk::StackTransitionType::Crossfade,
+                                                set_transition_duration: 200,
+                                                set_vhomogeneous: false,
+                                                set_hhomogeneous: false,
+                                            },
+                                        },
+                                    },
+
+                                    gtk::Box {
+                                        set_hexpand: true,
+                                    },
+                                },
+
+                                gtk::Box {
+                                    set_height_request: 200,
+                                    set_vexpand: true,
+                                },
+
+                                // This box is required to prevent the top and bottom menus
+                                // from matching each other's width if one is larger than the other
+                                gtk::Box {
+
+                                    gtk::Box {
+                                        set_hexpand: true,
+                                    },
+
+                                    #[name = "bottom_left_revealer_container"]
+                                    BoxWithResize::new() -> BoxWithResize {
+
+                                        #[name = "bottom_left_revealer"]
+                                        append = &gtk::Revealer {
+                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                            #[watch]
+                                            set_reveal_child: model.bottom_left_revealed,
+
+                                            #[name = "bottom_left_stack"]
+                                            gtk::Stack {
+                                                set_transition_type: gtk::StackTransitionType::Crossfade,
+                                                set_transition_duration: 200,
+                                                set_vhomogeneous: false,
+                                                set_hhomogeneous: false,
+                                            },
+                                        },
+                                    },
+
+                                    gtk::Box {
+                                        set_hexpand: true,
+                                    },
+                                },
+                            },
+
+                            gtk::Box {
                                 set_hexpand: true,
                             },
 
@@ -259,6 +331,80 @@ impl Component for Frame {
 
                             gtk::Box {
                                 set_hexpand: true,
+                            },
+
+                            gtk::Box {
+                                set_orientation: gtk::Orientation::Vertical,
+                                set_hexpand: false,
+
+                                // This box is required to prevent the top and bottom menus
+                                // from matching each other's width if one is larger than the other
+                                gtk::Box {
+
+                                    gtk::Box {
+                                        set_hexpand: true,
+                                    },
+
+                                    #[name = "top_right_revealer_container"]
+                                    BoxWithResize::new() -> BoxWithResize {
+
+                                        #[name = "top_right_revealer"]
+                                        append = &gtk::Revealer {
+                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                            #[watch]
+                                            set_reveal_child: model.top_right_revealed,
+
+                                            #[name = "top_right_stack"]
+                                            gtk::Stack {
+                                                set_transition_type: gtk::StackTransitionType::Crossfade,
+                                                set_transition_duration: 200,
+                                                set_vhomogeneous: false,
+                                                set_hhomogeneous: false,
+                                            },
+                                        },
+                                    },
+
+                                    gtk::Box {
+                                        set_hexpand: true,
+                                    },
+                                },
+
+                                gtk::Box {
+                                    set_height_request: 200,
+                                    set_vexpand: true,
+                                },
+
+                                // This box is required to prevent the top and bottom menus
+                                // from matching each other's width if one is larger than the other
+                                gtk::Box {
+
+                                    gtk::Box {
+                                        set_hexpand: true,
+                                    },
+
+                                    #[name = "bottom_right_revealer_container"]
+                                    BoxWithResize::new() -> BoxWithResize {
+
+                                        #[name = "bottom_right_revealer"]
+                                        append = &gtk::Revealer {
+                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                            #[watch]
+                                            set_reveal_child: model.bottom_right_revealed,
+
+                                            #[name = "bottom_right_stack"]
+                                            gtk::Stack {
+                                                set_transition_type: gtk::StackTransitionType::Crossfade,
+                                                set_transition_duration: 200,
+                                                set_vhomogeneous: false,
+                                                set_hhomogeneous: false,
+                                            },
+                                        },
+                                    },
+
+                                    gtk::Box {
+                                        set_hexpand: true,
+                                    },
+                                },
                             },
                         },
 
@@ -476,7 +622,11 @@ impl Component for Frame {
             left_revealed: false,
             right_revealed: false,
             top_revealed: false,
+            top_left_revealed: false,
+            top_right_revealed: false,
             bottom_revealed: false,
+            bottom_left_revealed: false,
+            bottom_right_revealed: false,
             top_spacer,
             bottom_spacer,
             left_spacer,
@@ -595,7 +745,11 @@ impl Component for Frame {
                 self.right_revealed = false;
                 self.left_revealed = false;
                 self.top_revealed = false;
+                self.top_left_revealed = false;
+                self.top_right_revealed = false;
                 self.bottom_revealed = false;
+                self.bottom_left_revealed = false;
+                self.bottom_right_revealed = false;
 
                 self.clock_menu
                     .sender()
@@ -652,83 +806,109 @@ impl Frame {
         let in_left = widgets.left_stack.child_by_name(name).is_some();
         let in_right = widgets.right_stack.child_by_name(name).is_some();
         let in_top = widgets.top_stack.child_by_name(name).is_some();
+        let in_top_left = widgets.top_left_stack.child_by_name(name).is_some();
+        let in_top_right = widgets.top_right_stack.child_by_name(name).is_some();
         let in_bottom = widgets.bottom_stack.child_by_name(name).is_some();
+        let in_bottom_left = widgets.bottom_left_stack.child_by_name(name).is_some();
+        let in_bottom_right = widgets.bottom_right_stack.child_by_name(name).is_some();
+
+        let left_revealed = self.left_revealed;
+        let right_revealed = self.right_revealed;
+        let top_revealed = self.top_revealed;
+        let top_left_revealed = self.top_left_revealed;
+        let top_right_revealed = self.top_right_revealed;
+        let bottom_revealed = self.bottom_revealed;
+        let bottom_left_revealed = self.bottom_left_revealed;
+        let bottom_right_revealed = self.bottom_right_revealed;
+
+        self.left_revealed = false;
+        self.right_revealed = false;
+        self.top_revealed = false;
+        self.top_left_revealed = false;
+        self.top_right_revealed = false;
+        self.bottom_revealed = false;
+        self.bottom_left_revealed = false;
+        self.bottom_right_revealed = false;
 
         if in_left {
             if let Some(visible) = widgets.left_stack.visible_child_name() {
                 if visible.as_str() == name {
-                    self.left_revealed = !self.left_revealed;
+                    self.left_revealed = !left_revealed;
                     now_visible = self.left_revealed;
                 } else {
                     widgets.left_stack.set_visible_child_name(name);
                     self.left_revealed = true;
                 }
             }
-            if self.right_revealed {
-                self.right_revealed = false;
-            }
-            if self.top_revealed {
-                self.top_revealed = false;
-            }
-            if self.bottom_revealed {
-                self.bottom_revealed = false;
-            }
         } else if in_right {
             if let Some(visible) = widgets.right_stack.visible_child_name() {
                 if visible.as_str() == name {
-                    self.right_revealed = !self.right_revealed;
+                    self.right_revealed = !right_revealed;
                     now_visible = self.right_revealed;
                 } else {
                     widgets.right_stack.set_visible_child_name(name);
                     self.right_revealed = true;
                 }
             }
-            if self.left_revealed {
-                self.left_revealed = false;
-            }
-            if self.top_revealed {
-                self.top_revealed = false;
-            }
-            if self.bottom_revealed {
-                self.bottom_revealed = false;
-            }
         } else if in_top {
             if let Some(visible) = widgets.top_stack.visible_child_name() {
                 if visible.as_str() == name {
-                    self.top_revealed = !self.top_revealed;
+                    self.top_revealed = !top_revealed;
                     now_visible = self.top_revealed;
                 } else {
                     widgets.top_stack.set_visible_child_name(name);
                     self.top_revealed = true;
                 }
             }
-            if self.left_revealed {
-                self.left_revealed = false;
+        } else if in_top_left {
+            if let Some(visible) = widgets.top_left_stack.visible_child_name() {
+                if visible.as_str() == name {
+                    self.top_left_revealed = !top_left_revealed;
+                    now_visible = self.top_left_revealed;
+                } else {
+                    widgets.top_left_stack.set_visible_child_name(name);
+                    self.top_left_revealed = true;
+                }
             }
-            if self.right_revealed {
-                self.right_revealed = false;
-            }
-            if self.bottom_revealed {
-                self.bottom_revealed = false;
+        } else if in_top_right {
+            if let Some(visible) = widgets.top_right_stack.visible_child_name() {
+                if visible.as_str() == name {
+                    self.top_right_revealed = !top_right_revealed;
+                    now_visible = self.top_right_revealed;
+                } else {
+                    widgets.top_right_stack.set_visible_child_name(name);
+                    self.top_right_revealed = true;
+                }
             }
         } else if in_bottom {
             if let Some(visible) = widgets.bottom_stack.visible_child_name() {
                 if visible.as_str() == name {
-                    self.bottom_revealed = !self.bottom_revealed;
+                    self.bottom_revealed = !bottom_revealed;
                     now_visible = self.bottom_revealed;
                 } else {
                     widgets.bottom_stack.set_visible_child_name(name);
                     self.bottom_revealed = true;
                 }
             }
-            if self.left_revealed {
-                self.left_revealed = false;
+        } else if in_bottom_left {
+            if let Some(visible) = widgets.bottom_left_stack.visible_child_name() {
+                if visible.as_str() == name {
+                    self.bottom_left_revealed = !bottom_left_revealed;
+                    now_visible = self.bottom_left_revealed;
+                } else {
+                    widgets.bottom_left_stack.set_visible_child_name(name);
+                    self.bottom_left_revealed = true;
+                }
             }
-            if self.right_revealed {
-                self.right_revealed = false;
-            }
-            if self.top_revealed {
-                self.top_revealed = false;
+        } else if in_bottom_right {
+            if let Some(visible) = widgets.bottom_right_stack.visible_child_name() {
+                if visible.as_str() == name {
+                    self.bottom_right_revealed = !bottom_right_revealed;
+                    now_visible = self.bottom_right_revealed;
+                } else {
+                    widgets.bottom_right_stack.set_visible_child_name(name);
+                    self.bottom_right_revealed = true;
+                }
             }
         }
 
@@ -875,7 +1055,7 @@ impl Frame {
             false,
             move |values: &[glib::Value]| {
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.top_left_expander_height = height as f64);
+                frame_widget.update_style(|s| s.left_top_expander_height = height as f64);
                 None
             },
         );
@@ -885,7 +1065,7 @@ impl Frame {
             false,
             move |values: &[glib::Value]| {
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.top_right_expander_height = height as f64);
+                frame_widget.update_style(|s| s.right_top_expander_height = height as f64);
                 None
             },
         );
@@ -895,7 +1075,7 @@ impl Frame {
             false,
             move |values: &[glib::Value]| {
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.bottom_left_expander_height = height as f64);
+                frame_widget.update_style(|s| s.left_bottom_expander_height = height as f64);
                 None
             },
         );
@@ -905,7 +1085,7 @@ impl Frame {
             false,
             move |values: &[glib::Value]| {
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.bottom_right_expander_height = height as f64);
+                frame_widget.update_style(|s| s.right_bottom_expander_height = height as f64);
                 None
             },
         );
@@ -943,6 +1123,30 @@ impl Frame {
         );
 
         let frame_widget = widgets.frame_draw_widget.clone();
+        widgets.top_left_revealer_container.connect_local(
+            "resized",
+            false,
+            move |values: &[glib::Value]| {
+                let width = values[1].get::<i32>().expect("width i32");
+                let height = values[2].get::<i32>().expect("height i32");
+                frame_widget.update_style(|s| s.top_left_revealer_size = (width as f64, height as f64));
+                None
+            },
+        );
+
+        let frame_widget = widgets.frame_draw_widget.clone();
+        widgets.top_right_revealer_container.connect_local(
+            "resized",
+            false,
+            move |values: &[glib::Value]| {
+                let width = values[1].get::<i32>().expect("width i32");
+                let height = values[2].get::<i32>().expect("height i32");
+                frame_widget.update_style(|s| s.top_right_revealer_size = (width as f64, height as f64));
+                None
+            },
+        );
+
+        let frame_widget = widgets.frame_draw_widget.clone();
         widgets.bottom_revealer_container.connect_local(
             "resized",
             false,
@@ -950,6 +1154,30 @@ impl Frame {
                 let width = values[1].get::<i32>().expect("width i32");
                 let height = values[2].get::<i32>().expect("height i32");
                 frame_widget.update_style(|s| s.bottom_revealer_size = (width as f64, height as f64));
+                None
+            },
+        );
+
+        let frame_widget = widgets.frame_draw_widget.clone();
+        widgets.bottom_left_revealer_container.connect_local(
+            "resized",
+            false,
+            move |values: &[glib::Value]| {
+                let width = values[1].get::<i32>().expect("width i32");
+                let height = values[2].get::<i32>().expect("height i32");
+                frame_widget.update_style(|s| s.bottom_left_revealer_size = (width as f64, height as f64));
+                None
+            },
+        );
+
+        let frame_widget = widgets.frame_draw_widget.clone();
+        widgets.bottom_right_revealer_container.connect_local(
+            "resized",
+            false,
+            move |values: &[glib::Value]| {
+                let width = values[1].get::<i32>().expect("width i32");
+                let height = values[2].get::<i32>().expect("height i32");
+                frame_widget.update_style(|s| s.bottom_right_revealer_size = (width as f64, height as f64));
                 None
             },
         );
@@ -979,125 +1207,52 @@ impl Frame {
         widgets.left_stack.remove_all();
         widgets.right_stack.remove_all();
         widgets.top_stack.remove_all();
+        widgets.top_left_stack.remove_all();
+        widgets.top_right_stack.remove_all();
         widgets.bottom_stack.remove_all();
+        widgets.bottom_left_stack.remove_all();
+        widgets.bottom_right_stack.remove_all();
 
-        match clock_menu_position {
+        Self::add_to_stack(widgets, &clock_widget, CLOCK_MENU, &clock_menu_position);
+        Self::add_to_stack(widgets, &clipboard_widget, CLIPBOARD_MENU, &clipboard_menu_position);
+        Self::add_to_stack(widgets, &quick_settings_widget, QUICK_SETTINGS_MENU, &quick_settings_position);
+        Self::add_to_stack(widgets, &notification_menu_widget, NOTIFICATION_MENU, &notification_menu_position);
+        Self::add_to_stack(widgets, &screenshot_menu_widget, SCREENSHOT_MENU, &screenshot_menu_position);
+        Self::add_to_stack(widgets, &app_launcher_menu_widget, APP_LAUNCHER_MENU, &app_launcher_menu_position);
+        Self::add_to_stack(widgets, &wallpaper_menu_widget, WALLPAPER_MENU, &wallpaper_menu_position);
+        Self::add_to_stack(widgets, &screenshare_menu_widget, SCREENSHARE_MENU, &screenshare_menu_position);
+    }
+
+    fn add_to_stack(
+        widgets: &FrameWidgets,
+        widget: &Widget,
+        name: &str,
+        position: &Position,
+    ) {
+        match position {
             Position::Top => {
-                widgets.top_stack.add_named(&clock_widget, Some(CLOCK_MENU));
+                widgets.top_stack.add_named(widget, Some(name));
             }
             Position::Bottom => {
-                widgets.bottom_stack.add_named(&clock_widget, Some(CLOCK_MENU));
+                widgets.bottom_stack.add_named(widget, Some(name));
             }
             Position::Left => {
-                widgets.left_stack.add_named(&clock_widget, Some(CLOCK_MENU));
+                widgets.left_stack.add_named(widget, Some(name));
             }
             Position::Right => {
-                widgets.right_stack.add_named(&clock_widget, Some(CLOCK_MENU));
+                widgets.right_stack.add_named(widget, Some(name));
             }
-        }
-
-        match clipboard_menu_position {
-            Position::Top => {
-                widgets.top_stack.add_named(&clipboard_widget, Some(CLIPBOARD_MENU));
+            Position::TopLeft => {
+                widgets.top_left_stack.add_named(widget, Some(name));
             }
-            Position::Bottom => {
-                widgets.bottom_stack.add_named(&clipboard_widget, Some(CLIPBOARD_MENU));
+            Position::TopRight => {
+                widgets.top_right_stack.add_named(widget, Some(name));
             }
-            Position::Left => {
-                widgets.left_stack.add_named(&clipboard_widget, Some(CLIPBOARD_MENU));
+            Position::BottomLeft => {
+                widgets.bottom_left_stack.add_named(widget, Some(name));
             }
-            Position::Right => {
-                widgets.right_stack.add_named(&clipboard_widget, Some(CLIPBOARD_MENU));
-            }
-        }
-
-        match quick_settings_position {
-            Position::Top => {
-                widgets.top_stack.add_named(&quick_settings_widget, Some(QUICK_SETTINGS_MENU));
-            }
-            Position::Bottom => {
-                widgets.bottom_stack.add_named(&quick_settings_widget, Some(QUICK_SETTINGS_MENU));
-            }
-            Position::Left => {
-                widgets.left_stack.add_named(&quick_settings_widget, Some(QUICK_SETTINGS_MENU));
-            }
-            Position::Right => {
-                widgets.right_stack.add_named(&quick_settings_widget, Some(QUICK_SETTINGS_MENU));
-            }
-        }
-
-        match notification_menu_position {
-            Position::Top => {
-                widgets.top_stack.add_named(&notification_menu_widget, Some(NOTIFICATION_MENU));
-            }
-            Position::Bottom => {
-                widgets.bottom_stack.add_named(&notification_menu_widget, Some(NOTIFICATION_MENU));
-            }
-            Position::Left => {
-                widgets.left_stack.add_named(&notification_menu_widget, Some(NOTIFICATION_MENU));
-            }
-            Position::Right => {
-                widgets.right_stack.add_named(&notification_menu_widget, Some(NOTIFICATION_MENU));
-            }
-        }
-
-        match screenshot_menu_position {
-            Position::Top => {
-                widgets.top_stack.add_named(&screenshot_menu_widget, Some(SCREENSHOT_MENU));
-            }
-            Position::Bottom => {
-                widgets.bottom_stack.add_named(&screenshot_menu_widget, Some(SCREENSHOT_MENU));
-            }
-            Position::Left => {
-                widgets.left_stack.add_named(&screenshot_menu_widget, Some(SCREENSHOT_MENU));
-            }
-            Position::Right => {
-                widgets.right_stack.add_named(&screenshot_menu_widget, Some(SCREENSHOT_MENU));
-            }
-        }
-
-        match app_launcher_menu_position {
-            Position::Top => {
-                widgets.top_stack.add_named(&app_launcher_menu_widget, Some(APP_LAUNCHER_MENU));
-            }
-            Position::Bottom => {
-                widgets.bottom_stack.add_named(&app_launcher_menu_widget, Some(APP_LAUNCHER_MENU));
-            }
-            Position::Left => {
-                widgets.left_stack.add_named(&app_launcher_menu_widget, Some(APP_LAUNCHER_MENU));
-            }
-            Position::Right => {
-                widgets.right_stack.add_named(&app_launcher_menu_widget, Some(APP_LAUNCHER_MENU));
-            }
-        }
-
-        match wallpaper_menu_position {
-            Position::Top => {
-                widgets.top_stack.add_named(&wallpaper_menu_widget, Some(WALLPAPER_MENU));
-            }
-            Position::Bottom => {
-                widgets.bottom_stack.add_named(&wallpaper_menu_widget, Some(WALLPAPER_MENU));
-            }
-            Position::Left => {
-                widgets.left_stack.add_named(&wallpaper_menu_widget, Some(WALLPAPER_MENU));
-            }
-            Position::Right => {
-                widgets.right_stack.add_named(&wallpaper_menu_widget, Some(WALLPAPER_MENU));
-            }
-        }
-
-        match screenshare_menu_position {
-            Position::Top => {
-                widgets.top_stack.add_named(&screenshare_menu_widget, Some(SCREENSHARE_MENU));
-            }
-            Position::Bottom => {
-                widgets.bottom_stack.add_named(&screenshare_menu_widget, Some(SCREENSHARE_MENU));
-            }
-            Position::Left => {
-                widgets.left_stack.add_named(&screenshare_menu_widget, Some(SCREENSHARE_MENU));
-            }
-            Position::Right => {
-                widgets.right_stack.add_named(&screenshare_menu_widget, Some(SCREENSHARE_MENU));
+            Position::BottomRight => {
+                widgets.bottom_right_stack.add_named(widget, Some(name));
             }
         }
     }
