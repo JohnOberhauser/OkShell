@@ -175,8 +175,6 @@ fn parse_number(s: &str) -> Option<f64> {
     s.trim().trim_end_matches("px").parse().ok()
 }
 
-/// Resolve frame-specific CSS custom properties from a full vars map
-/// and apply them on top of a base FrameStyle.
 fn apply_css_vars(style: &mut FrameStyle, vars: &HashMap<String, String>) {
     if let Some(raw) = vars.get("--frame-bg") {
         let resolved = resolve_var(raw, vars);
@@ -213,6 +211,500 @@ fn hash_str(s: &str) -> u64 {
     hasher.finish()
 }
 
+// ---------------------------------------------------------------------------
+// Polygon-based hole path algorithm
+// ---------------------------------------------------------------------------
+//
+// The hole is described as a polygon of (x, y) vertices in clockwise order.
+// `build_hole_vertices` collects all the vertices based on which features
+// are active.  `trace_rounded_polygon` then traces the path with rounded
+// corners, automatically determining convex vs concave at each vertex.
+//
+// Understanding the layout:
+//
+//   left_thickness includes the left bar + left revealer (menu) width.
+//   right_thickness includes the right bar + right revealer width.
+//   top_thickness / bottom_thickness include the top/bottom bar heights.
+//
+//   The inner hole rectangle is:
+//     hole_x = left_thickness,  hole_y = top_thickness
+//     hole_width  = total_w - left_thickness - right_thickness
+//     hole_height = total_h - top_thickness - bottom_thickness
+//
+//   left_expander_width / right_expander_width: the width of the side
+//   menus (revealers).  These are already accounted for in left/right
+//   thickness.  The expander HEIGHTS represent empty space (no menu
+//   content) above/below the menu within that revealer area.  These
+//   empty regions are "negative space" — the hole extends leftward
+//   into them.
+//
+//   So the left side has two notches extending LEFT from the hole edge:
+//     Top-left notch:  from hole_y to hole_y + left_top_expander_height,
+//                      width = left_expander_width, going left from hole_x
+//     Bottom-left notch: from hole_y + hole_height - left_bottom_expander_height
+//                         to hole_y + hole_height,
+//                         width = left_expander_width, going left from hole_x
+//
+//   Same pattern mirrored for the right side (extending right from hole_x + hole_width).
+//
+//   Revealers (top, bottom, top_left, top_right, bottom_left, bottom_right)
+//   create inward notches that poke INTO the hole from the top/bottom edges.
+//   The frame is painted over these areas.  Corner revealers are anchored
+//   flush with the hole's left/right edge.
+
+/// Build the hole polygon vertices in clockwise order.
+#[allow(clippy::too_many_arguments)]
+fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width: f64, hole_height: f64) -> Vec<(f64, f64)> {
+    let mut vertices: Vec<(f64, f64)> = Vec::with_capacity(64);
+
+    let left_expander_width = style.left_expander_width;
+    let right_expander_width = style.right_expander_width;
+    let left_top_expander_height = style.left_top_expander_height;
+    let left_bottom_expander_height = style.left_bottom_expander_height;
+    let right_top_expander_height = style.right_top_expander_height;
+    let right_bottom_expander_height = style.right_bottom_expander_height;
+
+    let (top_revealer_width, top_revealer_height) = style.top_revealer_size;
+    let (bottom_revealer_width, bottom_revealer_height) = style.bottom_revealer_size;
+    let (top_left_revealer_width, top_left_revealer_height) = style.top_left_revealer_size;
+    let (top_right_revealer_width, top_right_revealer_height) = style.top_right_revealer_size;
+    let (bottom_left_revealer_width, bottom_left_revealer_height) = style.bottom_left_revealer_size;
+    let (bottom_right_revealer_width, bottom_right_revealer_height) = style.bottom_right_revealer_size;
+
+    let has_left_top_expander = left_top_expander_height > 0.0 && left_expander_width > 0.0;
+    let has_right_top_expander = right_top_expander_height > 0.0 && right_expander_width > 0.0;
+    let has_left_bottom_expander = left_bottom_expander_height > 0.0 && left_expander_width > 0.0;
+    let has_right_bottom_expander = right_bottom_expander_height > 0.0 && right_expander_width > 0.0;
+
+    let has_top_left_revealer = top_left_revealer_width > 0.0 && top_left_revealer_height > 0.0;
+    let has_top_right_revealer = top_right_revealer_width > 0.0 && top_right_revealer_height > 0.0;
+    let has_bottom_left_revealer = bottom_left_revealer_width > 0.0 && bottom_left_revealer_height > 0.0;
+    let has_bottom_right_revealer = bottom_right_revealer_width > 0.0 && bottom_right_revealer_height > 0.0;
+    let has_top_revealer = top_revealer_width > 0.0 && top_revealer_height > 0.0;
+    let has_bottom_revealer = bottom_revealer_width > 0.0 && bottom_revealer_height > 0.0;
+
+    let hole_right = hole_x + hole_width;
+    let hole_bottom = hole_y + hole_height;
+
+    // =====================================================================
+    // Walk clockwise starting from the top-left corner (hole_x, hole_y).
+    //
+    // The path traces the outline of everything that should be "hole"
+    // (transparent / cleared).  Expander notches are detours that
+    // extend LEFT/RIGHT from the main hole edge and return.  Revealer
+    // notches are detours that extend DOWN/UP into the hole from the
+    // top/bottom edges.
+    //
+    // The walk always starts and ends on the main hole edge so that
+    // close_path connects cleanly.
+    // =====================================================================
+
+    // Track whether corner revealers have already consumed the expander
+    // space, so the expander detours on the left/right edges can be skipped.
+    let mut left_top_expander_consumed = false;
+    let mut left_bottom_expander_consumed = false;
+    let mut right_top_expander_consumed = false;
+    let mut right_bottom_expander_consumed = false;
+
+    // === TOP-LEFT CORNER (hole_x, hole_y) ===
+
+    // Top-left revealer: inward notch going down from the top edge.
+    //
+    // The revealer notch always extends downward from hole_y by
+    // top_left_revealer_height.  The question is what happens on its
+    // left side, which depends on whether the left menu is revealed
+    // (left_expander_width > 0) and whether there is empty space above
+    // the left menu content (left_top_expander_height > 0).
+    //
+    // Cases:
+    //   A. left_expander_width == 0: No left menu panel.  Revealer is
+    //      flush against the left frame band.  Merges with corner.
+    //
+    //   B. left_expander_width > 0 and left_top_expander_height == 0:
+    //      Left menu is fully expanded (no empty space above it).
+    //      There is no gap to the left of the revealer — the menu
+    //      content fills that area.  Revealer is a standalone notch
+    //      that does NOT extend leftward.
+    //
+    //   C. left_expander_width > 0 and left_top_expander_height > 0
+    //      and revealer height >= expander height:
+    //      Joined L-shape.  The hole extends left for the expander's
+    //      height, then steps right to hole_x, then continues down
+    //      to the revealer's height.  The expander detour is consumed.
+    //
+    //   D. left_expander_width > 0 and left_top_expander_height > 0
+    //      and revealer height < expander height:
+    //      The hole extends left for the revealer's height.  The
+    //      expander detour on the left edge handles the remaining
+    //      gap below.
+    if has_top_left_revealer {
+        if left_expander_width > 0.0 && left_top_expander_height > 0.0 {
+            if top_left_revealer_height >= left_top_expander_height {
+                // Case C: joined L-shape — expander consumed
+                left_top_expander_consumed = true;
+                vertices.push((hole_x - left_expander_width, hole_y));
+                vertices.push((hole_x - left_expander_width, hole_y + left_top_expander_height));
+                vertices.push((hole_x, hole_y + left_top_expander_height));
+                vertices.push((hole_x, hole_y + top_left_revealer_height));
+                vertices.push((hole_x + top_left_revealer_width, hole_y + top_left_revealer_height));
+                vertices.push((hole_x + top_left_revealer_width, hole_y));
+            } else {
+                // Case D: revealer shorter than expander
+                vertices.push((hole_x - left_expander_width, hole_y));
+                vertices.push((hole_x, hole_y));
+                vertices.push((hole_x, hole_y + top_left_revealer_height));
+                vertices.push((hole_x + top_left_revealer_width, hole_y + top_left_revealer_height));
+                vertices.push((hole_x + top_left_revealer_width, hole_y));
+            }
+        } else if left_expander_width > 0.0 {
+            // Case B: left menu visible but fully expanded, no gap
+            vertices.push((hole_x, hole_y));
+            vertices.push((hole_x, hole_y + top_left_revealer_height));
+            vertices.push((hole_x + top_left_revealer_width, hole_y + top_left_revealer_height));
+            vertices.push((hole_x + top_left_revealer_width, hole_y));
+        } else {
+            // Case A: no left menu, merged with left edge
+            vertices.push((hole_x, hole_y));
+            vertices.push((hole_x, hole_y + top_left_revealer_height));
+            vertices.push((hole_x + top_left_revealer_width, hole_y + top_left_revealer_height));
+            vertices.push((hole_x + top_left_revealer_width, hole_y));
+        }
+    } else {
+        vertices.push((hole_x, hole_y));
+    }
+
+    // === TOP EDGE (left → right) ===
+
+    // Center top revealer: inward notch centered on the top edge.
+    // Its position must account for the corner revealer widths — it is
+    // centered in the remaining span between them.
+    if has_top_revealer {
+        let edge_start = hole_x + top_left_revealer_width;
+        let edge_end = hole_right - top_right_revealer_width;
+        let edge_center = (edge_start + edge_end) / 2.0;
+        let notch_left = edge_center - top_revealer_width / 2.0;
+        let notch_right = edge_center + top_revealer_width / 2.0;
+        vertices.push((notch_left, hole_y));
+        vertices.push((notch_left, hole_y + top_revealer_height));
+        vertices.push((notch_right, hole_y + top_revealer_height));
+        vertices.push((notch_right, hole_y));
+    }
+
+    // Top-right revealer: same four cases, mirrored for the right side.
+    if has_top_right_revealer {
+        if right_expander_width > 0.0 && right_top_expander_height > 0.0 {
+            if top_right_revealer_height >= right_top_expander_height {
+                // Case C: joined L-shape — expander consumed
+                right_top_expander_consumed = true;
+                vertices.push((hole_right - top_right_revealer_width, hole_y));
+                vertices.push((hole_right - top_right_revealer_width, hole_y + top_right_revealer_height));
+                vertices.push((hole_right, hole_y + top_right_revealer_height));
+                vertices.push((hole_right, hole_y + right_top_expander_height));
+                vertices.push((hole_right + right_expander_width, hole_y + right_top_expander_height));
+                vertices.push((hole_right + right_expander_width, hole_y));
+            } else {
+                // Case D: revealer shorter than expander
+                vertices.push((hole_right - top_right_revealer_width, hole_y));
+                vertices.push((hole_right - top_right_revealer_width, hole_y + top_right_revealer_height));
+                vertices.push((hole_right, hole_y + top_right_revealer_height));
+                vertices.push((hole_right, hole_y));
+                vertices.push((hole_right + right_expander_width, hole_y));
+            }
+        } else if right_expander_width > 0.0 {
+            // Case B: right menu visible but fully expanded, no gap
+            vertices.push((hole_right - top_right_revealer_width, hole_y));
+            vertices.push((hole_right - top_right_revealer_width, hole_y + top_right_revealer_height));
+            vertices.push((hole_right, hole_y + top_right_revealer_height));
+            vertices.push((hole_right, hole_y));
+        } else {
+            // Case A: no right menu, merged with right edge
+            vertices.push((hole_right - top_right_revealer_width, hole_y));
+            vertices.push((hole_right - top_right_revealer_width, hole_y + top_right_revealer_height));
+            vertices.push((hole_right, hole_y + top_right_revealer_height));
+            vertices.push((hole_right, hole_y));
+        }
+    }
+
+    // === TOP-RIGHT CORNER (hole_right, hole_y) ===
+
+    // Right top expander: detour rightward into the frame band, then return.
+    // Skipped if the top-right revealer already consumed this space.
+    if has_right_top_expander && !right_top_expander_consumed {
+        if !has_top_right_revealer {
+            vertices.push((hole_right, hole_y));
+        }
+        vertices.push((hole_right + right_expander_width, hole_y));
+        vertices.push((hole_right + right_expander_width, hole_y + right_top_expander_height));
+        vertices.push((hole_right, hole_y + right_top_expander_height));
+    } else if !has_top_right_revealer && !right_top_expander_consumed {
+        vertices.push((hole_right, hole_y));
+    }
+
+    // === RIGHT EDGE (top → bottom) ===
+
+    // Right bottom expander: detour rightward, then return.
+    // Skipped if the bottom-right revealer already consumed this space.
+    if has_right_bottom_expander && !right_bottom_expander_consumed {
+        vertices.push((hole_right, hole_bottom - right_bottom_expander_height));
+        vertices.push((hole_right + right_expander_width, hole_bottom - right_bottom_expander_height));
+        vertices.push((hole_right + right_expander_width, hole_bottom));
+        vertices.push((hole_right, hole_bottom));
+    } else {
+        vertices.push((hole_right, hole_bottom));
+    }
+
+    // === BOTTOM-RIGHT CORNER (hole_right, hole_bottom) ===
+
+    // Bottom-right revealer: same four cases, mirrored for bottom-right.
+    if has_bottom_right_revealer {
+        if right_expander_width > 0.0 && right_bottom_expander_height > 0.0 {
+            if bottom_right_revealer_height >= right_bottom_expander_height {
+                // Case C: joined L-shape — expander consumed
+                right_bottom_expander_consumed = true;
+                vertices.push((hole_right + right_expander_width, hole_bottom));
+                vertices.push((hole_right + right_expander_width, hole_bottom - right_bottom_expander_height));
+                vertices.push((hole_right, hole_bottom - right_bottom_expander_height));
+                vertices.push((hole_right, hole_bottom - bottom_right_revealer_height));
+                vertices.push((hole_right - bottom_right_revealer_width, hole_bottom - bottom_right_revealer_height));
+                vertices.push((hole_right - bottom_right_revealer_width, hole_bottom));
+            } else {
+                // Case D: revealer shorter than expander
+                vertices.push((hole_right + right_expander_width, hole_bottom));
+                vertices.push((hole_right, hole_bottom));
+                vertices.push((hole_right, hole_bottom - bottom_right_revealer_height));
+                vertices.push((hole_right - bottom_right_revealer_width, hole_bottom - bottom_right_revealer_height));
+                vertices.push((hole_right - bottom_right_revealer_width, hole_bottom));
+            }
+        } else if right_expander_width > 0.0 {
+            // Case B: right menu visible but fully expanded, no gap
+            vertices.push((hole_right, hole_bottom - bottom_right_revealer_height));
+            vertices.push((hole_right - bottom_right_revealer_width, hole_bottom - bottom_right_revealer_height));
+            vertices.push((hole_right - bottom_right_revealer_width, hole_bottom));
+        } else {
+            // Case A: no right menu, merged with right edge
+            vertices.push((hole_right, hole_bottom - bottom_right_revealer_height));
+            vertices.push((hole_right - bottom_right_revealer_width, hole_bottom - bottom_right_revealer_height));
+            vertices.push((hole_right - bottom_right_revealer_width, hole_bottom));
+        }
+    }
+
+    // === BOTTOM EDGE (right → left) ===
+
+    // Center bottom revealer: same offset logic as center top.
+    if has_bottom_revealer {
+        let edge_start = hole_x + bottom_left_revealer_width;
+        let edge_end = hole_right - bottom_right_revealer_width;
+        let edge_center = (edge_start + edge_end) / 2.0;
+        let notch_left = edge_center - bottom_revealer_width / 2.0;
+        let notch_right = edge_center + bottom_revealer_width / 2.0;
+        vertices.push((notch_right, hole_bottom));
+        vertices.push((notch_right, hole_bottom - bottom_revealer_height));
+        vertices.push((notch_left, hole_bottom - bottom_revealer_height));
+        vertices.push((notch_left, hole_bottom));
+    }
+
+    // Bottom-left revealer: same four cases, mirrored for bottom-left.
+    if has_bottom_left_revealer {
+        if left_expander_width > 0.0 && left_bottom_expander_height > 0.0 {
+            if bottom_left_revealer_height >= left_bottom_expander_height {
+                // Case C: joined L-shape — expander consumed
+                left_bottom_expander_consumed = true;
+                vertices.push((hole_x + bottom_left_revealer_width, hole_bottom));
+                vertices.push((hole_x + bottom_left_revealer_width, hole_bottom - bottom_left_revealer_height));
+                vertices.push((hole_x, hole_bottom - bottom_left_revealer_height));
+                vertices.push((hole_x, hole_bottom - left_bottom_expander_height));
+                vertices.push((hole_x - left_expander_width, hole_bottom - left_bottom_expander_height));
+                vertices.push((hole_x - left_expander_width, hole_bottom));
+            } else {
+                // Case D: revealer shorter than expander
+                vertices.push((hole_x + bottom_left_revealer_width, hole_bottom));
+                vertices.push((hole_x + bottom_left_revealer_width, hole_bottom - bottom_left_revealer_height));
+                vertices.push((hole_x, hole_bottom - bottom_left_revealer_height));
+                vertices.push((hole_x, hole_bottom));
+                vertices.push((hole_x - left_expander_width, hole_bottom));
+            }
+        } else if left_expander_width > 0.0 {
+            // Case B: left menu visible but fully expanded, no gap
+            vertices.push((hole_x + bottom_left_revealer_width, hole_bottom));
+            vertices.push((hole_x + bottom_left_revealer_width, hole_bottom - bottom_left_revealer_height));
+            vertices.push((hole_x, hole_bottom - bottom_left_revealer_height));
+            vertices.push((hole_x, hole_bottom));
+        } else {
+            // Case A: no left menu, merged with left edge
+            vertices.push((hole_x + bottom_left_revealer_width, hole_bottom));
+            vertices.push((hole_x + bottom_left_revealer_width, hole_bottom - bottom_left_revealer_height));
+            vertices.push((hole_x, hole_bottom - bottom_left_revealer_height));
+            vertices.push((hole_x, hole_bottom));
+        }
+    }
+
+    // === BOTTOM-LEFT CORNER (hole_x, hole_bottom) ===
+
+    // Left bottom expander: detour leftward into the frame band, then return.
+    // Skipped if the bottom-left revealer already consumed this space.
+    if has_left_bottom_expander && !left_bottom_expander_consumed {
+        if !has_bottom_left_revealer {
+            vertices.push((hole_x, hole_bottom));
+        }
+        vertices.push((hole_x - left_expander_width, hole_bottom));
+        vertices.push((hole_x - left_expander_width, hole_bottom - left_bottom_expander_height));
+        vertices.push((hole_x, hole_bottom - left_bottom_expander_height));
+    } else if !has_bottom_left_revealer && !left_bottom_expander_consumed {
+        vertices.push((hole_x, hole_bottom));
+    }
+
+    // === LEFT EDGE (bottom → top) ===
+
+    // Left top expander: detour leftward into the frame band, then return.
+    // Skipped if the top-left revealer already consumed this space.
+    if has_left_top_expander && !left_top_expander_consumed {
+        vertices.push((hole_x, hole_y + left_top_expander_height));
+        vertices.push((hole_x - left_expander_width, hole_y + left_top_expander_height));
+        vertices.push((hole_x - left_expander_width, hole_y));
+        vertices.push((hole_x, hole_y));
+    }
+
+    // Path closes back to the first vertex at (hole_x, hole_y).
+
+    vertices
+}
+
+/// Determine the cross product z-component at vertex `current`.
+/// Positive = left turn (convex in CW winding).
+/// Negative = right turn (concave in CW winding).
+fn cross_z(previous: (f64, f64), current: (f64, f64), next: (f64, f64)) -> f64 {
+    let incoming = (current.0 - previous.0, current.1 - previous.1);
+    let outgoing = (next.0 - current.0, next.1 - current.1);
+    incoming.0 * outgoing.1 - incoming.1 * outgoing.0
+}
+
+/// Trace the polygon with rounded corners.
+///
+/// At each vertex the turn direction is computed via cross product:
+///   - CW convex (cross > 0): standard `arc`
+///   - CW concave (cross < 0): `arc_negative`
+///   - Collinear: skip
+///
+/// Radii are clamped so adjacent corners don't overlap on shared edges.
+fn trace_rounded_polygon(cr: &Context, vertices: &[(f64, f64)], max_radius: f64) {
+    let vertex_count = vertices.len();
+    if vertex_count < 3 {
+        return;
+    }
+
+    // Remove collinear points (where the path continues in the same direction)
+    let mut cleaned: Vec<(f64, f64)> = Vec::with_capacity(vertex_count);
+    for i in 0..vertex_count {
+        let previous = vertices[(i + vertex_count - 1) % vertex_count];
+        let current = vertices[i];
+        let next = vertices[(i + 1) % vertex_count];
+        if cross_z(previous, current, next).abs() > 1e-6 {
+            cleaned.push(current);
+        }
+    }
+
+    let vertex_count = cleaned.len();
+    if vertex_count < 3 {
+        return;
+    }
+
+    // Compute radius for each corner, clamped by adjacent edge lengths
+    let mut radii: Vec<f64> = Vec::with_capacity(vertex_count);
+    for i in 0..vertex_count {
+        let previous = cleaned[(i + vertex_count - 1) % vertex_count];
+        let current = cleaned[i];
+        let next = cleaned[(i + 1) % vertex_count];
+
+        let incoming_length = ((current.0 - previous.0).powi(2) + (current.1 - previous.1).powi(2)).sqrt();
+        let outgoing_length = ((next.0 - current.0).powi(2) + (next.1 - current.1).powi(2)).sqrt();
+
+        radii.push(max_radius.min(incoming_length / 2.0).min(outgoing_length / 2.0));
+    }
+
+    // Ensure adjacent corners don't overlap on shared edges
+    for i in 0..vertex_count {
+        let next_index = (i + 1) % vertex_count;
+        let edge_length = {
+            let (x0, y0) = cleaned[i];
+            let (x1, y1) = cleaned[next_index];
+            ((x1 - x0).powi(2) + (y1 - y0).powi(2)).sqrt()
+        };
+        let combined_radii = radii[i] + radii[next_index];
+        if combined_radii > edge_length && combined_radii > 1e-6 {
+            let scale = edge_length / combined_radii;
+            radii[i] *= scale;
+            radii[next_index] *= scale;
+        }
+    }
+
+    cr.new_path();
+
+    for i in 0..vertex_count {
+        let previous = cleaned[(i + vertex_count - 1) % vertex_count];
+        let current = cleaned[i];
+        let next = cleaned[(i + 1) % vertex_count];
+        let radius = radii[i];
+
+        if radius < 1e-6 {
+            if i == 0 {
+                cr.move_to(current.0, current.1);
+            } else {
+                cr.line_to(current.0, current.1);
+            }
+            continue;
+        }
+
+        let incoming_length = ((current.0 - previous.0).powi(2) + (current.1 - previous.1).powi(2)).sqrt();
+        let outgoing_length = ((next.0 - current.0).powi(2) + (next.1 - current.1).powi(2)).sqrt();
+
+        if incoming_length < 1e-9 || outgoing_length < 1e-9 {
+            if i == 0 {
+                cr.move_to(current.0, current.1);
+            } else {
+                cr.line_to(current.0, current.1);
+            }
+            continue;
+        }
+
+        let incoming_dir_x = (current.0 - previous.0) / incoming_length;
+        let incoming_dir_y = (current.1 - previous.1) / incoming_length;
+        let outgoing_dir_x = (next.0 - current.0) / outgoing_length;
+        let outgoing_dir_y = (next.1 - current.1) / outgoing_length;
+
+        // Tangent points where arc meets edges
+        let tangent_incoming = (current.0 - incoming_dir_x * radius, current.1 - incoming_dir_y * radius);
+        let tangent_outgoing = (current.0 + outgoing_dir_x * radius, current.1 + outgoing_dir_y * radius);
+
+        let cross = incoming_dir_x * outgoing_dir_y - incoming_dir_y * outgoing_dir_x;
+
+        // Normal pointing toward arc center
+        let (normal_x, normal_y) = if cross > 0.0 {
+            (-incoming_dir_y, incoming_dir_x)
+        } else {
+            (incoming_dir_y, -incoming_dir_x)
+        };
+
+        let arc_center = (tangent_incoming.0 + normal_x * radius, tangent_incoming.1 + normal_y * radius);
+
+        let angle_start = (tangent_incoming.1 - arc_center.1).atan2(tangent_incoming.0 - arc_center.0);
+        let angle_end = (tangent_outgoing.1 - arc_center.1).atan2(tangent_outgoing.0 - arc_center.0);
+
+        if i == 0 {
+            cr.move_to(tangent_incoming.0, tangent_incoming.1);
+        } else {
+            cr.line_to(tangent_incoming.0, tangent_incoming.1);
+        }
+
+        if cross > 0.0 {
+            cr.arc(arc_center.0, arc_center.1, radius, angle_start, angle_end);
+        } else {
+            cr.arc_negative(arc_center.0, arc_center.1, radius, angle_start, angle_end);
+        }
+    }
+
+    cr.close_path();
+}
+
 // --- Subclass internals ---
 
 mod imp {
@@ -221,9 +713,7 @@ mod imp {
     #[derive(Debug, Default)]
     pub struct FrameDrawWidget {
         pub(super) style: RefCell<FrameStyle>,
-        /// Cached style with CSS overrides applied.
         pub(super) resolved_style: RefCell<Option<FrameStyle>>,
-        /// Hash of the last CSS dump — used to detect changes.
         pub(super) css_hash: Cell<u64>,
     }
 
@@ -248,13 +738,11 @@ mod imp {
             widget.set_can_target(false);
             widget.set_sensitive(false);
 
-            // Invalidate cache + redraw when CSS classes change
             widget.connect_notify(Some("css-classes"), |w, _| {
                 w.imp().invalidate_css_cache();
                 w.queue_draw();
             });
 
-            // Redraw on theme changes (dark/light switch, theme name change)
             if let Some(settings) = gtk::Settings::default() {
                 let w = widget.downgrade();
                 settings.connect_notify_local(Some("gtk-theme-name"), move |_, _| {
@@ -278,71 +766,46 @@ mod imp {
     impl WidgetImpl for FrameDrawWidget {
         fn snapshot(&self, snapshot: &gtk::Snapshot) {
             let widget = self.obj();
-            let w = widget.width() as f64;
-            let h = widget.height() as f64;
+            let total_width = widget.width() as f64;
+            let total_height = widget.height() as f64;
 
-            if w <= 0.0 || h <= 0.0 {
+            if total_width <= 0.0 || total_height <= 0.0 {
                 return;
             }
 
             let style = self.get_resolved_style();
 
-            let left = style.left_thickness;
-            let right = style.right_thickness;
-            let top = style.top_thickness;
-            let bottom = style.bottom_thickness;
-            let x = left;
-            let y = top;
-            let iw = (w - left - right).max(0.0);
-            let ih = (h - top - bottom).max(0.0);
-            let r = style.border_radius.clamp(0.0, iw.min(ih) / 2.0);
+            let hole_x = style.left_thickness;
+            let hole_y = style.top_thickness;
+            let hole_width = (total_width - style.left_thickness - style.right_thickness).max(0.0);
+            let hole_height = (total_height - style.top_thickness - style.bottom_thickness).max(0.0);
+            let border_radius = style.border_radius.clamp(0.0, hole_width.min(hole_height) / 2.0);
 
-            let lw = style.left_expander_width;
-            let rw = style.right_expander_width;
-            let tl_h = style.left_top_expander_height;
-            let bl_h = style.left_bottom_expander_height;
-            let tr_h = style.right_top_expander_height;
-            let br_h = style.right_bottom_expander_height;
+            let vertices = build_hole_vertices(&style, hole_x, hole_y, hole_width, hole_height);
 
-            let (top_rev_w, top_rev_h) = style.top_revealer_size;
-            let (bot_rev_w, bot_rev_h) = style.bottom_revealer_size;
-
-            if style.draw_frame {
-                let bounds = gtk::graphene::Rect::new(0.0, 0.0, w as f32, h as f32);
+            if style.draw_frame && !vertices.is_empty() {
+                let bounds = gtk::graphene::Rect::new(0.0, 0.0, total_width as f32, total_height as f32);
                 let cr = snapshot.append_cairo(&bounds);
 
                 // 1) Paint full background
                 cr.set_operator(Operator::Over);
-                let (fr, fg, fb, fa) = style.background_rgba;
-                cr.set_source_rgba(fr, fg, fb, fa);
-                cr.rectangle(0.0, 0.0, w, h);
+                let (bg_r, bg_g, bg_b, bg_a) = style.background_rgba;
+                cr.set_source_rgba(bg_r, bg_g, bg_b, bg_a);
+                cr.rectangle(0.0, 0.0, total_width, total_height);
                 let _ = cr.fill();
 
-                // 2) Clear the combined hole.  The hole path routes around the
-                //    top/bottom inward notches so they stay painted as frame.
+                // 2) Clear the hole
                 cr.set_operator(Operator::Clear);
-                combined_hole_path(
-                    &cr, x, y, iw, ih, r,
-                    lw, rw, tl_h, tr_h, br_h, bl_h,
-                    top_rev_w, top_rev_h, bot_rev_w, bot_rev_h,
-                );
+                trace_rounded_polygon(&cr, &vertices, border_radius);
                 let _ = cr.fill();
 
-                // 3) Border follows the combined shape
+                // 3) Border
                 let (border_r, border_g, border_b, border_a) = style.border_rgba;
                 if style.border_width > 0.0 && border_a > 0.0 {
                     cr.set_operator(Operator::Over);
-                    combined_hole_path(
-                        &cr, x, y, iw, ih, r,
-                        lw, rw, tl_h, tr_h, br_h, bl_h,
-                        top_rev_w, top_rev_h, bot_rev_w, bot_rev_h,
-                    );
+                    trace_rounded_polygon(&cr, &vertices, border_radius);
                     cr.clip();
-                    combined_hole_path(
-                        &cr, x, y, iw, ih, r,
-                        lw, rw, tl_h, tr_h, br_h, bl_h,
-                        top_rev_w, top_rev_h, bot_rev_w, bot_rev_h,
-                    );
+                    trace_rounded_polygon(&cr, &vertices, border_radius);
                     cr.set_source_rgba(border_r, border_g, border_b, border_a);
                     cr.set_line_width(style.border_width * 2.0);
                     cr.set_line_join(LineJoin::Round);
@@ -352,17 +815,11 @@ mod imp {
                 }
             }
 
-            self.update_input_region(
-                w as i32, h as i32,
-                x, y, iw, ih,
-                lw, rw, tl_h, tr_h, br_h, bl_h,
-                top_rev_w, top_rev_h, bot_rev_w, bot_rev_h,
-            );
+            self.update_input_region(&style, total_width as i32, total_height as i32, hole_x, hole_y, hole_width, hole_height);
         }
     }
 
     impl FrameDrawWidget {
-        /// Get the resolved style, re-parsing CSS only if it has changed.
         fn get_resolved_style(&self) -> FrameStyle {
             let widget = self.obj();
 
@@ -384,7 +841,6 @@ mod imp {
             self.resolved_style.borrow().clone().unwrap()
         }
 
-        /// Invalidate the cached CSS so the next snapshot re-parses.
         pub(super) fn invalidate_css_cache(&self) {
             self.css_hash.set(0);
             *self.resolved_style.borrow_mut() = None;
@@ -392,332 +848,98 @@ mod imp {
 
         fn update_input_region(
             &self,
-            win_w: i32, win_h: i32,
-            x: f64, y: f64, iw: f64, ih: f64,
-            lw: f64, rw: f64,
-            tl_h: f64, tr_h: f64, br_h: f64, bl_h: f64,
-            top_rev_w: f64, top_rev_h: f64,
-            bot_rev_w: f64, bot_rev_h: f64,
+            style: &FrameStyle,
+            window_width: i32, window_height: i32,
+            hole_x: f64, hole_y: f64, hole_width: f64, hole_height: f64,
         ) {
             let widget = self.obj();
 
             let Some(native) = widget.native() else { return };
             let Some(surface) = native.surface() else { return };
 
-            let hole_l = x.floor().max(0.0) as i32;
-            let hole_t = y.floor().max(0.0) as i32;
-            let hole_r = (x + iw).ceil().min(win_w as f64) as i32;
-            let hole_b = (y + ih).ceil().min(win_h as f64) as i32;
+            let hole_left = hole_x.floor().max(0.0) as i32;
+            let hole_top = hole_y.floor().max(0.0) as i32;
+            let hole_right = (hole_x + hole_width).ceil().min(window_width as f64) as i32;
+            let hole_bottom = (hole_y + hole_height).ceil().min(window_height as f64) as i32;
 
-            // Start with the full window as clickable
             let region = Region::create();
             region
-                .union_rectangle(&RectangleInt::new(0, 0, win_w, win_h))
+                .union_rectangle(&RectangleInt::new(0, 0, window_width, window_height))
                 .expect("region union");
 
             // Subtract main hole
             region
                 .subtract_rectangle(&RectangleInt::new(
-                    hole_l,
-                    hole_t,
-                    (hole_r - hole_l).max(0),
-                    (hole_b - hole_t).max(0),
+                    hole_left, hole_top,
+                    (hole_right - hole_left).max(0),
+                    (hole_bottom - hole_top).max(0),
                 ))
                 .expect("region subtract hole");
 
-            // Subtract side corner expander areas (extend outward into frame bands)
-            let lw_i = lw.ceil() as i32;
-            let rw_i = rw.ceil() as i32;
+            let left_expander_width = style.left_expander_width.ceil() as i32;
+            let right_expander_width = style.right_expander_width.ceil() as i32;
 
-            subtract_rect(&region, hole_l - lw_i, hole_t,
-                          lw_i, tl_h.ceil() as i32);
-            subtract_rect(&region, hole_l - lw_i, hole_b - bl_h.ceil() as i32,
-                          lw_i, bl_h.ceil() as i32);
-            subtract_rect(&region, hole_r, hole_t,
-                          rw_i, tr_h.ceil() as i32);
-            subtract_rect(&region, hole_r, hole_b - br_h.ceil() as i32,
-                          rw_i, br_h.ceil() as i32);
+            // Subtract side expander negative-space areas
+            // These extend the hole leftward/rightward into the frame band
+            subtract_rect(&region,
+                          hole_left - left_expander_width, hole_top,
+                          left_expander_width, style.left_top_expander_height.ceil() as i32);
+            subtract_rect(&region,
+                          hole_left - left_expander_width, hole_bottom - style.left_bottom_expander_height.ceil() as i32,
+                          left_expander_width, style.left_bottom_expander_height.ceil() as i32);
+            subtract_rect(&region,
+                          hole_right, hole_top,
+                          right_expander_width, style.right_top_expander_height.ceil() as i32);
+            subtract_rect(&region,
+                          hole_right, hole_bottom - style.right_bottom_expander_height.ceil() as i32,
+                          right_expander_width, style.right_bottom_expander_height.ceil() as i32);
 
-            // Top/bottom inward notches live inside the main hole (already
-            // subtracted).  Union them back so the frame captures input there.
-            if top_rev_w > 0.0 && top_rev_h > 0.0 {
-                let notch_cx = x + iw / 2.0;
-                let notch_l = (notch_cx - top_rev_w / 2.0).floor() as i32;
-                let notch_w = top_rev_w.ceil() as i32;
-                let notch_h = top_rev_h.ceil() as i32;
-                let _ = region.union_rectangle(&RectangleInt::new(
-                    notch_l, hole_t, notch_w, notch_h,
-                ));
-            }
+            // Union back inward revealer notches so frame captures input there
+            let (top_revealer_width, top_revealer_height) = style.top_revealer_size;
+            let (bottom_revealer_width, bottom_revealer_height) = style.bottom_revealer_size;
+            let (top_left_revealer_width, top_left_revealer_height) = style.top_left_revealer_size;
+            let (top_right_revealer_width, top_right_revealer_height) = style.top_right_revealer_size;
+            let (bottom_left_revealer_width, bottom_left_revealer_height) = style.bottom_left_revealer_size;
+            let (bottom_right_revealer_width, bottom_right_revealer_height) = style.bottom_right_revealer_size;
 
-            if bot_rev_w > 0.0 && bot_rev_h > 0.0 {
-                let notch_cx = x + iw / 2.0;
-                let notch_l = (notch_cx - bot_rev_w / 2.0).floor() as i32;
-                let notch_w = bot_rev_w.ceil() as i32;
-                let notch_h = bot_rev_h.ceil() as i32;
-                let _ = region.union_rectangle(&RectangleInt::new(
-                    notch_l, hole_b - notch_h, notch_w, notch_h,
-                ));
-            }
+            // Center top/bottom revealers
+            union_inward_notch(&region,
+                               hole_x + hole_width / 2.0 - top_revealer_width / 2.0, hole_y,
+                               top_revealer_width, top_revealer_height);
+            union_inward_notch(&region,
+                               hole_x + hole_width / 2.0 - bottom_revealer_width / 2.0,
+                               hole_y + hole_height - bottom_revealer_height,
+                               bottom_revealer_width, bottom_revealer_height);
+
+            // Corner revealers
+            union_inward_notch(&region, hole_x, hole_y,
+                               top_left_revealer_width, top_left_revealer_height);
+            union_inward_notch(&region, hole_x + hole_width - top_right_revealer_width, hole_y,
+                               top_right_revealer_width, top_right_revealer_height);
+            union_inward_notch(&region, hole_x, hole_y + hole_height - bottom_left_revealer_height,
+                               bottom_left_revealer_width, bottom_left_revealer_height);
+            union_inward_notch(&region,
+                               hole_x + hole_width - bottom_right_revealer_width,
+                               hole_y + hole_height - bottom_right_revealer_height,
+                               bottom_right_revealer_width, bottom_right_revealer_height);
 
             surface.set_input_region(&region);
         }
     }
 
-    fn subtract_rect(region: &Region, x: i32, y: i32, w: i32, h: i32) {
-        if w > 0 && h > 0 {
-            let _ = region.subtract_rectangle(&RectangleInt::new(x, y, w, h));
+    fn subtract_rect(region: &Region, x: i32, y: i32, width: i32, height: i32) {
+        if width > 0 && height > 0 {
+            let _ = region.subtract_rectangle(&RectangleInt::new(x, y, width, height));
         }
     }
 
-    /// Trace the perimeter of the combined hole: the main rounded rectangle
-    /// plus rectangular notches extending outward into the left/right frame
-    /// bands at each corner where an expander is active, and with inward
-    /// indentations at the center top/bottom edges where the revealer menus
-    /// occupy space (those regions stay as painted frame).
-    ///
-    /// Side notches expand the hole outward into the frame bands.
-    /// Top/bottom center notches shrink the hole inward — the path detours
-    /// around them so the frame background covers those areas.
-    ///
-    /// All corners are rounded:
-    /// - Convex corners use `arc`.
-    /// - Concave corners (where a notch meets the main hole edge) use
-    ///   `arc_negative`.
-    ///
-    /// The path is traced clockwise (screen coords, y-down) starting from
-    /// the top-left region.
-    fn combined_hole_path(
-        cr: &Context,
-        x: f64, y: f64, iw: f64, ih: f64, r: f64,
-        lw: f64, rw: f64,
-        tl_h: f64, tr_h: f64, br_h: f64, bl_h: f64,
-        top_rev_w: f64, top_rev_h: f64,
-        bot_rev_w: f64, bot_rev_h: f64,
-    ) {
-        let r = r.clamp(0.0, iw.min(ih) / 2.0);
-        let pi = std::f64::consts::PI;
-        let pi2 = std::f64::consts::FRAC_PI_2;
-
-        let has_tl = tl_h > 0.0 && lw > 0.0;
-        let has_tr = tr_h > 0.0 && rw > 0.0;
-        let has_br = br_h > 0.0 && rw > 0.0;
-        let has_bl = bl_h > 0.0 && lw > 0.0;
-        let has_top = top_rev_w > 0.0 && top_rev_h > 0.0;
-        let has_bot = bot_rev_w > 0.0 && bot_rev_h > 0.0;
-
-        // Side notch outer corner radii
-        let tr_r = if has_tr { r.min(rw / 2.0).min(tr_h / 2.0) } else { 0.0 };
-        let br_r = if has_br { r.min(rw / 2.0).min(br_h / 2.0) } else { 0.0 };
-        let tl_r = if has_tl { r.min(lw / 2.0).min(tl_h / 2.0) } else { 0.0 };
-        let bl_r = if has_bl { r.min(lw / 2.0).min(bl_h / 2.0) } else { 0.0 };
-
-        // Side notch inner (concave) corner radii
-        let right_avail = (ih - tr_h - br_h).max(0.0);
-        let left_avail  = (ih - tl_h - bl_h).max(0.0);
-
-        let tr_ir = if has_tr { r.min(rw / 2.0).min(tr_h / 2.0).min(right_avail / 2.0) } else { 0.0 };
-        let br_ir = if has_br { r.min(rw / 2.0).min(br_h / 2.0).min(right_avail / 2.0) } else { 0.0 };
-        let tl_ir = if has_tl { r.min(lw / 2.0).min(tl_h / 2.0).min(left_avail / 2.0) } else { 0.0 };
-        let bl_ir = if has_bl { r.min(lw / 2.0).min(bl_h / 2.0).min(left_avail / 2.0) } else { 0.0 };
-
-        // Top/bottom center inward notch geometry
-        let top_cx = x + iw / 2.0;
-        let top_nl = top_cx - top_rev_w / 2.0;
-        let top_nr = top_cx + top_rev_w / 2.0;
-
-        let bot_cx = x + iw / 2.0;
-        let bot_nl = bot_cx - bot_rev_w / 2.0;
-        let bot_nr = bot_cx + bot_rev_w / 2.0;
-
-        // Convex corner radius for inward notches (the corners at the
-        // deepest point of the indentation)
-        let top_nr_r = if has_top { r.min(top_rev_w / 2.0).min(top_rev_h / 2.0) } else { 0.0 };
-        let bot_nr_r = if has_bot { r.min(bot_rev_w / 2.0).min(bot_rev_h / 2.0) } else { 0.0 };
-
-        // Concave corner radius where inward notch meets the main top/bottom edge
-        let top_left_avail = (top_nl - x - if has_tl { 0.0 } else { r }).max(0.0);
-        let top_right_avail = (x + iw - top_nr - if has_tr { 0.0 } else { r }).max(0.0);
-        let top_ir = if has_top {
-            r.min(top_rev_w / 2.0).min(top_rev_h / 2.0)
-                .min(top_left_avail / 2.0)
-                .min(top_right_avail / 2.0)
-        } else { 0.0 };
-
-        let bot_left_avail = (bot_nl - x - if has_bl { 0.0 } else { r }).max(0.0);
-        let bot_right_avail = (x + iw - bot_nr - if has_br { 0.0 } else { r }).max(0.0);
-        let bot_ir = if has_bot {
-            r.min(bot_rev_w / 2.0).min(bot_rev_h / 2.0)
-                .min(bot_left_avail / 2.0)
-                .min(bot_right_avail / 2.0)
-        } else { 0.0 };
-
-        cr.new_path();
-
-        // =================================================================
-        // Move to start of top edge
-        // =================================================================
-        if has_tl {
-            cr.move_to(x - lw + tl_r, y);
-        } else {
-            cr.move_to(x + r, y);
+    fn union_inward_notch(region: &Region, x: f64, y: f64, width: f64, height: f64) {
+        if width > 0.0 && height > 0.0 {
+            let _ = region.union_rectangle(&RectangleInt::new(
+                x.floor() as i32, y.floor() as i32,
+                width.ceil() as i32, height.ceil() as i32,
+            ));
         }
-
-        // =================================================================
-        // Top edge, left → right, with optional inward top notch
-        // The notch pokes downward into the hole — the path detours down
-        // around it so the area stays as frame (not cleared).
-        // =================================================================
-        if has_top {
-            // Left portion of top edge to concave corner
-            cr.line_to(top_nl - top_ir, y);
-            // Concave corner: top edge turns down into notch left wall
-            if top_ir > 0.0 {
-                cr.arc(top_nl - top_ir, y + top_ir, top_ir, -pi2, 0.0);
-            }
-            // Left wall of notch going down
-            cr.line_to(top_nl, y + top_rev_h - top_nr_r);
-            // Convex bottom-left corner of notch
-            cr.arc_negative(top_nl + top_nr_r, y + top_rev_h - top_nr_r, top_nr_r, pi, pi2);
-            // Bottom edge of notch (left → right)
-            cr.line_to(top_nr - top_nr_r, y + top_rev_h);
-            // Convex bottom-right corner of notch
-            cr.arc_negative(top_nr - top_nr_r, y + top_rev_h - top_nr_r, top_nr_r, pi2, 0.0);
-            // Right wall of notch going up
-            cr.line_to(top_nr, y + top_ir);
-            // Concave corner: notch right wall turns back to top edge
-            if top_ir > 0.0 {
-                cr.arc(top_nr + top_ir, y + top_ir, top_ir, pi, 1.5 * pi);
-            }
-            // Continue top edge rightward
-            if has_tr {
-                cr.line_to(x + iw + rw - tr_r, y);
-            } else {
-                cr.line_to(x + iw - r, y);
-            }
-        } else {
-            if has_tr {
-                cr.line_to(x + iw + rw - tr_r, y);
-            } else {
-                cr.line_to(x + iw - r, y);
-            }
-        }
-
-        // =================================================================
-        // Top-right corner (side notch extends outward into right frame band)
-        // =================================================================
-        if has_tr {
-            cr.arc(x + iw + rw - tr_r, y + tr_r, tr_r, -pi2, 0.0);
-            cr.arc(x + iw + rw - tr_r, y + tr_h - tr_r, tr_r, 0.0, pi2);
-            cr.line_to(x + iw + tr_ir, y + tr_h);
-            if tr_ir > 0.0 {
-                cr.arc_negative(x + iw + tr_ir, y + tr_h + tr_ir, tr_ir, -pi2, pi);
-            }
-        } else {
-            cr.arc(x + iw - r, y + r, r, -pi2, 0.0);
-        }
-
-        // =================================================================
-        // Right edge, top → bottom
-        // =================================================================
-        if has_br {
-            cr.line_to(x + iw, y + ih - br_h - br_ir);
-            if br_ir > 0.0 {
-                cr.arc_negative(x + iw + br_ir, y + ih - br_h - br_ir, br_ir, pi, pi2);
-            }
-        } else {
-            cr.line_to(x + iw, y + ih - r);
-        }
-
-        // =================================================================
-        // Bottom-right corner (side notch extends outward into right frame band)
-        // =================================================================
-        if has_br {
-            cr.line_to(x + iw + rw - br_r, y + ih - br_h);
-            cr.arc(x + iw + rw - br_r, y + ih - br_h + br_r, br_r, -pi2, 0.0);
-            cr.arc(x + iw + rw - br_r, y + ih - br_r, br_r, 0.0, pi2);
-        } else {
-            cr.arc(x + iw - r, y + ih - r, r, 0.0, pi2);
-        }
-
-        // =================================================================
-        // Bottom edge, right → left, with optional inward bottom notch
-        // The notch pokes upward into the hole — the path detours up
-        // around it so the area stays as frame.
-        // =================================================================
-        if has_bot {
-            // Right portion of bottom edge to concave corner
-            cr.line_to(bot_nr + bot_ir, y + ih);
-            // Concave corner: bottom edge turns up into notch right wall
-            if bot_ir > 0.0 {
-                cr.arc(bot_nr + bot_ir, y + ih - bot_ir, bot_ir, pi2, pi);
-            }
-            // Right wall of notch going up
-            cr.line_to(bot_nr, y + ih - bot_rev_h + bot_nr_r);
-            // Convex top-right corner of notch
-            cr.arc_negative(bot_nr - bot_nr_r, y + ih - bot_rev_h + bot_nr_r, bot_nr_r, 0.0, -pi2);
-            // Top edge of notch (right → left)
-            cr.line_to(bot_nl + bot_nr_r, y + ih - bot_rev_h);
-            // Convex top-left corner of notch
-            cr.arc_negative(bot_nl + bot_nr_r, y + ih - bot_rev_h + bot_nr_r, bot_nr_r, -pi2, pi);
-            // Left wall of notch going down
-            cr.line_to(bot_nl, y + ih - bot_ir);
-            // Concave corner: notch left wall turns back to bottom edge
-            if bot_ir > 0.0 {
-                cr.arc(bot_nl - bot_ir, y + ih - bot_ir, bot_ir, 0.0, pi2);
-            }
-            // Continue bottom edge leftward
-            if has_bl {
-                cr.line_to(x - lw + bl_r, y + ih);
-            } else {
-                cr.line_to(x + r, y + ih);
-            }
-        } else {
-            if has_bl {
-                cr.line_to(x - lw + bl_r, y + ih);
-            } else {
-                cr.line_to(x + r, y + ih);
-            }
-        }
-
-        // =================================================================
-        // Bottom-left corner (side notch extends outward into left frame band)
-        // =================================================================
-        if has_bl {
-            cr.arc(x - lw + bl_r, y + ih - bl_r, bl_r, pi2, pi);
-            cr.arc(x - lw + bl_r, y + ih - bl_h + bl_r, bl_r, pi, 1.5 * pi);
-            cr.line_to(x - bl_ir, y + ih - bl_h);
-            if bl_ir > 0.0 {
-                cr.arc_negative(x - bl_ir, y + ih - bl_h - bl_ir, bl_ir, pi2, 0.0);
-            }
-        } else {
-            cr.arc(x + r, y + ih - r, r, pi2, pi);
-        }
-
-        // =================================================================
-        // Left edge, bottom → top
-        // =================================================================
-        if has_tl {
-            cr.line_to(x, y + tl_h + tl_ir);
-            if tl_ir > 0.0 {
-                cr.arc_negative(x - tl_ir, y + tl_h + tl_ir, tl_ir, 0.0, -pi2);
-            }
-        } else {
-            cr.line_to(x, y + r);
-        }
-
-        // =================================================================
-        // Top-left corner (side notch extends outward into left frame band)
-        // =================================================================
-        if has_tl {
-            cr.line_to(x - lw + tl_r, y + tl_h);
-            cr.arc(x - lw + tl_r, y + tl_h - tl_r, tl_r, pi2, pi);
-            cr.arc(x - lw + tl_r, y + tl_r, tl_r, pi, 1.5 * pi);
-        } else {
-            cr.arc(x + r, y + r, r, pi, 1.5 * pi);
-        }
-
-        cr.close_path();
     }
 }
 
@@ -734,8 +956,6 @@ impl FrameDrawWidget {
         glib::Object::builder().build()
     }
 
-    /// Update a style property and trigger a redraw.
-    /// Also invalidates the CSS cache so changes are picked up.
     pub fn update_style(&self, f: impl FnOnce(&mut FrameStyle)) {
         f(&mut self.imp().style.borrow_mut());
         self.imp().invalidate_css_cache();
