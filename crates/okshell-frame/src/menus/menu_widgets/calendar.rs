@@ -1,21 +1,15 @@
-use relm4::{
-    gtk::{
+use relm4::{gtk::{
+    self,
+    glib::{
         self,
-        glib::{
-            self,
-            SourceId
-        },
-        prelude::*,
-        Align,
-        Justification,
+        SourceId
     },
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-    once_cell,
-};
+    prelude::*,
+    Align,
+    Justification,
+}, ComponentParts, ComponentSender, once_cell, Component};
 use time::format_description::parse;
-use time::OffsetDateTime;
+use time::{Date, OffsetDateTime};
 
 static DATE_FORMAT: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
@@ -26,6 +20,7 @@ static DATE_FORMAT: once_cell::sync::Lazy<Vec<time::format_description::FormatIt
 pub(crate) struct CalendarModel {
     timer_id: Option<SourceId>,
     time: String,
+    current_date: Date,
 }
 
 #[derive(Debug)]
@@ -39,10 +34,11 @@ pub(crate) enum CalendarOutput {}
 pub(crate) struct CalendarInit {}
 
 #[relm4::component(pub)]
-impl SimpleComponent for CalendarModel {
+impl Component for CalendarModel {
     type Input = CalendarInput;
     type Output = CalendarOutput;
     type Init = CalendarInit;
+    type CommandOutput = ();
 
     view! {
         #[root]
@@ -61,6 +57,7 @@ impl SimpleComponent for CalendarModel {
                 set_justify: Justification::Center,
             },
 
+            #[name = "calendar"]
             gtk::Calendar {
                 set_can_focus: false,
                 set_focus_on_click: false,
@@ -91,6 +88,7 @@ impl SimpleComponent for CalendarModel {
         let model = CalendarModel {
             timer_id: Some(id),
             time: formatted,
+            current_date: now.date(),
         };
 
         let widgets = view_output!();
@@ -98,10 +96,12 @@ impl SimpleComponent for CalendarModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
+    fn update_with_view(
         &mut self,
+        widgets: &mut Self::Widgets,
         message: Self::Input,
-        _sender: ComponentSender<Self>,
+        sender: ComponentSender<Self>,
+        _root: &Self::Root
     ) {
         match message {
             CalendarInput::UpdateTime => {
@@ -111,8 +111,18 @@ impl SimpleComponent for CalendarModel {
                 let formatted = now.format(&DATE_FORMAT).unwrap();
 
                 self.time = formatted;
+
+                if now.date() != self.current_date {
+                    self.current_date = now.date();
+                    widgets.calendar.set_year(now.year());
+                    // GTK's months are 0-indexed, but time's is 1.
+                    widgets.calendar.set_month(now.month() as i32 - 1);
+                    widgets.calendar.set_day(now.day() as i32);
+                }
             }
         }
+
+        self.update_view(widgets, sender);
     }
 }
 
