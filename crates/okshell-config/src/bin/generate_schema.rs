@@ -155,13 +155,8 @@ fn render_tagged_union(
                 }
             }
         } else if variant["type"] == "object" {
-            if let Some(required) = variant["required"].as_array() {
-                // serde adjacently tagged: { "VariantName": { ... } }
-                let name = required[0].as_str().unwrap_or("?");
-                let inner = get_type(&variant["properties"][name], defs);
-                out.push_str(&format!("| `{}` | `{}` |\n", name, inner));
-            } else if let Some(tag) = variant["properties"]["type"]["const"].as_str() {
-                // serde internally tagged: { "type": "Coordinates", "lat": ..., "lon": ... }
+            if let Some(tag) = variant["properties"]["type"]["const"].as_str() {
+                // internally tagged: #[serde(tag = "type")]
                 let fields: Vec<String> = variant["properties"]
                     .as_object().unwrap()
                     .iter()
@@ -169,6 +164,11 @@ fn render_tagged_union(
                     .map(|(k, v)| format!("{}: {}", k, get_type(v, defs)))
                     .collect();
                 out.push_str(&format!("| `{}` | `{}` |\n", tag, fields.join(", ")));
+            } else if let Some(required) = variant["required"].as_array() {
+                // externally tagged: { "VariantName": { ... } }
+                let name = required[0].as_str().unwrap_or("?");
+                let inner = get_type(&variant["properties"][name], defs);
+                out.push_str(&format!("| `{}` | `{}` |\n", name, inner));
             }
         }
     }
