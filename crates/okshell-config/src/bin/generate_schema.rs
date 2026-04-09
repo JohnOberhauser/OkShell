@@ -21,8 +21,8 @@ fn main() {
         match classify(def) {
             Kind::Struct => render_struct(&mut out, def, defs),
             Kind::Enum => render_enum(&mut out, def),
-            Kind::TaggedUnion => render_tagged_union(&mut out, def),
-            Kind::Scalar => render_scalar(&mut out, def),
+            Kind::TaggedUnion => render_tagged_union(&mut out, def, defs),
+            Kind::Scalar => continue,
         }
     }
 
@@ -57,12 +57,22 @@ fn classify(def: &serde_json::Value) -> Kind {
     Kind::Scalar
 }
 
-fn get_type(node: &serde_json::Value) -> String {
+fn get_type(
+    node: &serde_json::Value,
+    defs: &serde_json::Map<String, serde_json::Value>,
+) -> String {
     if let Some(r) = node["$ref"].as_str() {
-        return r.split('/').last().unwrap_or("?").to_string();
+        let name = r.split('/').last().unwrap_or("?");
+        if let Some(def) = defs.get(name) {
+            if matches!(classify(def), Kind::Scalar) {
+                // Unwrap to the primitive
+                return def["type"].as_str().unwrap_or(name).to_string();
+            }
+        }
+        return name.to_string();
     }
     if node["type"] == "array" {
-        return format!("Vec<{}>", get_type(&node["items"]));
+        return format!("Vec<{}>", get_type(&node["items"], defs));
     }
     if let Some(t) = node["type"].as_str() {
         return t.to_string();
@@ -86,7 +96,7 @@ fn format_default(val: &serde_json::Value) -> String {
     }
 }
 
-fn render_struct(out: &mut String, def: &serde_json::Value, _defs: &serde_json::Map<String, serde_json::Value>) {
+fn render_struct(out: &mut String, def: &serde_json::Value, defs: &serde_json::Map<String, serde_json::Value>) {
     let Some(props) = def["properties"].as_object() else {
         out.push_str("_No properties._\n\n");
         return;
@@ -96,7 +106,7 @@ fn render_struct(out: &mut String, def: &serde_json::Value, _defs: &serde_json::
     out.push_str("|-------|------|---------|\n");
 
     for (field, prop) in props {
-        let ty = get_type(prop);
+        let ty = get_type(prop, defs);
         let default = format_default(&prop["default"]);
         out.push_str(&format!("| `{}` | `{}` | {} |\n", field, ty, default));
     }
@@ -126,7 +136,11 @@ fn render_enum(out: &mut String, def: &serde_json::Value) {
     out.push('\n');
 }
 
-fn render_tagged_union(out: &mut String, def: &serde_json::Value) {
+fn render_tagged_union(
+    out: &mut String,
+    def: &serde_json::Value,
+    defs: &serde_json::Map<String, serde_json::Value>,
+) {
     out.push_str("| Variant | Data |\n");
     out.push_str("|---------|------|\n");
 
@@ -144,7 +158,7 @@ fn render_tagged_union(out: &mut String, def: &serde_json::Value) {
             if let Some(required) = variant["required"].as_array() {
                 // serde adjacently tagged: { "VariantName": { ... } }
                 let name = required[0].as_str().unwrap_or("?");
-                let inner = get_type(&variant["properties"][name]);
+                let inner = get_type(&variant["properties"][name], defs);
                 out.push_str(&format!("| `{}` | `{}` |\n", name, inner));
             } else if let Some(tag) = variant["properties"]["type"]["const"].as_str() {
                 // serde internally tagged: { "type": "Coordinates", "lat": ..., "lon": ... }
@@ -152,21 +166,11 @@ fn render_tagged_union(out: &mut String, def: &serde_json::Value) {
                     .as_object().unwrap()
                     .iter()
                     .filter(|(k, _)| *k != "type")
-                    .map(|(k, v)| format!("{}: {}", k, get_type(v)))
+                    .map(|(k, v)| format!("{}: {}", k, get_type(v, defs)))
                     .collect();
                 out.push_str(&format!("| `{}` | `{}` |\n", tag, fields.join(", ")));
             }
         }
     }
     out.push('\n');
-}
-
-fn render_scalar(out: &mut String, def: &serde_json::Value) {
-    let ty = def["type"].as_str().unwrap_or("?");
-    let fmt = def["format"].as_str().unwrap_or("");
-    if fmt.is_empty() {
-        out.push_str(&format!("Scalar value of type `{}`.\n\n", ty));
-    } else {
-        out.push_str(&format!("Scalar value of type `{}` (format: `{}`).\n\n", ty, fmt));
-    }
 }
