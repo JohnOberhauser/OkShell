@@ -31,6 +31,9 @@ pub enum Themes {
     RosePine,
     RosePineDawn,
     RosePineMoon,
+    TokyoNight,
+    TokyoNightStorm,
+    TokyoNightLight,
     Varda,
 }
 
@@ -78,6 +81,9 @@ impl Themes {
             Self::RosePine => "Rosé Pine",
             Self::RosePineDawn => "Rosé Pine Dawn",
             Self::RosePineMoon => "Rosé Pine Moon",
+            Self::TokyoNight => "Tokyo Night",
+            Self::TokyoNightStorm => "Tokyo Night Storm",
+            Self::TokyoNightLight => "Tokyo Night Light",
             Self::Varda => "Varda",
         }
     }
@@ -110,6 +116,9 @@ impl Themes {
             Self::RosePine,
             Self::RosePineDawn,
             Self::RosePineMoon,
+            Self::TokyoNight,
+            Self::TokyoNightStorm,
+            Self::TokyoNightLight,
             Self::Varda,
         ]
     }

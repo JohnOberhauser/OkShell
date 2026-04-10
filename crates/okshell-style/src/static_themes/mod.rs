@@ -23,3 +23,6 @@ pub mod gruvbox_light_hard;
 pub mod gruvbox_light_medium;
 pub mod gruvbox_light_soft;
 pub mod nord_light;
+pub mod tokyo_night;
+pub mod tokyo_night_storm;
+pub mod tokyo_night_light;

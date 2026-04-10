@@ -24,6 +24,9 @@ use crate::static_themes::nord_light::nord_light;
 use crate::static_themes::rose_pine::rose_pine;
 use crate::static_themes::rose_pine_dawn::rose_pine_dawn;
 use crate::static_themes::rose_pine_moon::rose_pine_moon;
+use crate::static_themes::tokyo_night::tokyo_night;
+use crate::static_themes::tokyo_night_light::tokyo_night_light;
+use crate::static_themes::tokyo_night_storm::tokyo_night_storm;
 use crate::static_themes::varda::varda;
 
 pub fn static_theme(theme: &Themes) -> Option<MatugenTheme> {
@@ -53,6 +56,9 @@ pub fn static_theme(theme: &Themes) -> Option<MatugenTheme> {
         Themes::RosePine => Some(rose_pine()),
         Themes::RosePineDawn => Some(rose_pine_dawn()),
         Themes::RosePineMoon => Some(rose_pine_moon()),
+        Themes::TokyoNight => Some(tokyo_night()),
+        Themes::TokyoNightStorm => Some(tokyo_night_storm()),
+        Themes::TokyoNightLight => Some(tokyo_night_light()),
         Themes::Varda => Some(varda()),
     }
 }
