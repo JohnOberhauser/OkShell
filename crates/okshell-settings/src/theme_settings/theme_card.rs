@@ -210,7 +210,7 @@ impl ThemeCardModel {
 }
 
 fn theme_swatch_colors(theme: &Themes) -> Option<[String; 7]> {
-    let matugen_theme = static_theme(theme)?;
+    let matugen_theme = static_theme(theme, None)?;
     Some([
         matugen_theme.colors.surface.default.color.clone(),
         matugen_theme.colors.on_surface.default.color.clone(),

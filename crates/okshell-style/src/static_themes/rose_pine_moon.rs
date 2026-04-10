@@ -1,7 +1,10 @@
-use crate::matugen::json_struct::{color, Base16, Colors, Palettes, MatugenTheme};
+use crate::matugen::json_struct::{color, Base16, Colors, Palettes, MatugenTheme, OkShell};
 
-pub fn rose_pine_moon() -> MatugenTheme {
+pub fn rose_pine_moon(
+    okshell: OkShell,
+) -> MatugenTheme {
     MatugenTheme {
+        okshell,
         image: String::new(),
         is_dark_mode: true,
         mode: "dark".to_string(),

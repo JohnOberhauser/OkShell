@@ -1,5 +1,4 @@
 use std::path::PathBuf;
-use gtk4::glib::property::PropertyGet;
 use reactive_graph::effect::Effect;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
@@ -7,11 +6,11 @@ use relm4::gtk::{gdk, CssProvider, STYLE_PROVIDER_PRIORITY_USER};
 use tracing::{error, info};
 use okshell_cache::wallpaper::{current_wallpaper, wallpaper_store, WallpaperStateStoreFields};
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, Font, Matugen, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, Font, FontStoreFields, Matugen, ThemeStoreFields};
 use okshell_config::schema::themes::{Themes, WindowOpacity};
 use crate::compiled_css;
 use crate::matugen::matugen::{apply_matugen_debounced, apply_matugen_from_theme_debounced};
-use crate::matugen::json_struct::MatugenTheme;
+use crate::matugen::json_struct::{MatugenTheme, MatugenThemeCustomOnly, OkShell};
 use crate::matugen::static_theme_mapping::static_theme;
 use crate::style_manager::StyleManagerInput::*;
 use crate::style_manager::StyleManagerOutput::QueueFrameRedraw;
@@ -174,7 +173,7 @@ impl Component for StyleManagerModel {
                 let _ = sender.output(QueueFrameRedraw);
             }
             ReloadTheme(theme) => {
-                if let Some(static_theme) = static_theme(&theme) {
+                if let Some(static_theme) = static_theme(&theme, Some(build_okshell_matugen())) {
                     sender.input(SetMatugenCssWithStaticTheme(static_theme));
                 } else {
                     if theme == Themes::Default {
@@ -212,8 +211,11 @@ impl Component for StyleManagerModel {
                 });
             }
             SetMatugenCssWithWallpaper(path, matugen) => {
+                let theme_overrides = MatugenThemeCustomOnly {
+                    okshell: build_okshell_matugen(),
+                };
                 let sender = sender.clone();
-                apply_matugen_debounced(path, matugen, move |result| {
+                apply_matugen_debounced(path, matugen, theme_overrides, move |result| {
                     sender.input(MatugenComplete(result));
                 });
             }
@@ -246,7 +248,19 @@ impl Component for StyleManagerModel {
                     if font.secondary.is_empty() { "inherit" } else { &font.secondary },
                     if font.tertiary.is_empty() { "inherit" } else { &font.tertiary },
                 ));
+
+                sender.input(ReloadTheme(config_manager().config().theme().theme().get_untracked()));
             }
+        }
+    }
+}
+
+fn build_okshell_matugen() -> OkShell {
+    OkShell {
+        font: crate::matugen::json_struct::Font {
+            primary: config_manager().config().theme().font().primary().get_untracked(),
+            secondary: config_manager().config().theme().font().primary().get_untracked(),
+            tertiary: config_manager().config().theme().font().primary().get_untracked(),
         }
     }
 }

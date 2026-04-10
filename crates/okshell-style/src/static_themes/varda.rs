@@ -1,7 +1,10 @@
-use crate::matugen::json_struct::{color, Base16, Colors, Palettes, MatugenTheme};
+use crate::matugen::json_struct::{color, Base16, Colors, Palettes, MatugenTheme, OkShell};
 
-pub fn varda() -> MatugenTheme {
+pub fn varda(
+    okshell: OkShell,
+) -> MatugenTheme {
     MatugenTheme {
+        okshell,
         image: String::new(),
         is_dark_mode: true,
         mode: "dark".to_string(),

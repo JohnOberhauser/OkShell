@@ -1,7 +1,10 @@
-use crate::matugen::json_struct::{color, Base16, Colors, Palettes, MatugenTheme};
+use crate::matugen::json_struct::{color, Base16, Colors, Palettes, MatugenTheme, OkShell};
 
-pub fn tokyo_night_light() -> MatugenTheme {
+pub fn tokyo_night_light(
+    okshell: OkShell,
+) -> MatugenTheme {
     MatugenTheme {
+        okshell,
         image: String::new(),
         is_dark_mode: false,
         mode: "light".to_string(),

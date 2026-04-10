@@ -1,7 +1,10 @@
-use crate::matugen::json_struct::{color, Base16, Colors, Palettes, MatugenTheme};
+use crate::matugen::json_struct::{color, Base16, Colors, Palettes, MatugenTheme, OkShell};
 
-pub fn dracula() -> MatugenTheme {
+pub fn dracula(
+    okshell: OkShell,
+) -> MatugenTheme {
     MatugenTheme {
+        okshell,
         image: String::new(),
         is_dark_mode: true,
         mode: "dark".to_string(),

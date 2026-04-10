@@ -5,7 +5,7 @@ use std::sync::{Mutex};
 use relm4::gtk::glib;
 use tracing::{debug, info};
 use okshell_config::schema::config::Matugen;
-use crate::matugen::json_struct::MatugenTheme;
+use crate::matugen::json_struct::{MatugenTheme, MatugenThemeCustomOnly};
 use crate::matugen::css_mapping::to_css;
 
 // Stores the pending timeout handle so we can cancel it on the next call
@@ -14,6 +14,7 @@ static PENDING: Mutex<Option<glib::JoinHandle<()>>> = Mutex::new(None);
 pub fn apply_matugen_debounced(
     wallpaper: PathBuf,
     matugen: Matugen,
+    theme: MatugenThemeCustomOnly,
     on_done: impl Fn(anyhow::Result<String>) + 'static,
 ) {
     // Cancel any pending call
@@ -24,7 +25,7 @@ pub fn apply_matugen_debounced(
 
     *pending = Some(glib::spawn_future_local(async move {
         glib::timeout_future(std::time::Duration::from_millis(300)).await;
-        let result = apply_matugen(&wallpaper, matugen);
+        let result = apply_matugen(&wallpaper, matugen, theme);
         on_done(result);
     }));
 }
@@ -32,6 +33,7 @@ pub fn apply_matugen_debounced(
 pub fn apply_matugen(
     wallpaper: &std::path::Path,
     matugen: Matugen,
+    theme: MatugenThemeCustomOnly,
 ) -> anyhow::Result<String> {
     info!("Calling matugen: {:?}, {:?}", wallpaper.display(), matugen);
     let child = Command::new("matugen")
@@ -43,6 +45,7 @@ pub fn apply_matugen(
             "--type", matugen.scheme_type.to_string().as_str(),
             "--mode", matugen.mode.to_string().as_str(),
             "--contrast", matugen.contrast.to_string().as_str(),
+            "--import-json-string", serde_json::to_string(&theme)?.as_str(),
         ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

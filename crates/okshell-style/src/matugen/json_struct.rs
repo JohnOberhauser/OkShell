@@ -9,6 +9,13 @@ pub struct MatugenTheme {
     pub is_dark_mode: bool,
     pub mode: String,
     pub palettes: Palettes,
+    pub okshell: OkShell,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MatugenThemeCustomOnly {
+    pub okshell: OkShell,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -137,6 +144,20 @@ pub struct Palette {
     #[serde(rename = "98")]  pub t98: ColorEntry,
     #[serde(rename = "99")]  pub t99: ColorEntry,
     #[serde(rename = "100")] pub t100: ColorEntry,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct OkShell {
+    pub font: Font,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Font {
+    pub primary: String,
+    pub secondary: String,
+    pub tertiary: String,
 }
 
 impl Default for ColorEntry {
@@ -274,6 +295,24 @@ impl Default for Colors {
     }
 }
 
+impl Default for OkShell {
+    fn default() -> Self {
+        Self {
+            font: Default::default(),
+        }
+    }
+}
+
+impl Default for Font {
+    fn default() -> Self {
+        Self {
+            primary: String::new(),
+            secondary: String::new(),
+            tertiary: String::new(),
+        }
+    }
+}
+
 impl Default for MatugenTheme {
     fn default() -> Self {
         Self {
@@ -283,6 +322,7 @@ impl Default for MatugenTheme {
             is_dark_mode: true,
             mode: "dark".to_string(),
             palettes: Default::default(),
+            okshell: Default::default(),
         }
     }
 }
