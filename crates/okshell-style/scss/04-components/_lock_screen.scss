@@ -1,12 +1,13 @@
 .lockscreen-entry {
   all: unset;
+  line-height: 1.5;
   box-shadow: none;
   color: var(--on-surface);
   background-color: transparent;
-  font-size: 20px;
+  font-size: var(--font-xl);
   caret-color: transparent;
   placeholder {
-    font-size: 16px;
+    font-size: var(--font-lg);
     font-weight: bold;
     color: var(--on-surface);
   }
