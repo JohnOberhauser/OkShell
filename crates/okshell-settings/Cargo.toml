@@ -9,6 +9,7 @@ license.workspace = true
 
 [dependencies]
 dirs.workspace = true
+fontconfig.workspace = true
 okshell-common.workspace = true
 okshell-config.workspace = true
 okshell-style.workspace = true

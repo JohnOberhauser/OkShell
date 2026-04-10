@@ -1,12 +1,13 @@
 use std::path::PathBuf;
+use gtk4::glib::property::PropertyGet;
 use reactive_graph::effect::Effect;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::{gdk, CssProvider, STYLE_PROVIDER_PRIORITY_USER};
-use tracing::error;
+use tracing::{error, info};
 use okshell_cache::wallpaper::{current_wallpaper, wallpaper_store, WallpaperStateStoreFields};
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, Matugen, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, Font, Matugen, ThemeStoreFields};
 use okshell_config::schema::themes::{Themes, WindowOpacity};
 use crate::compiled_css;
 use crate::matugen::matugen::{apply_matugen_debounced, apply_matugen_from_theme_debounced};
@@ -21,6 +22,7 @@ pub struct StyleManagerModel {
     user_css_provider: CssProvider,
     theme_css_provider: CssProvider,
     opacity_css_provider: CssProvider,
+    font_css_provider: CssProvider,
 }
 
 #[derive(Debug)]
@@ -33,6 +35,7 @@ pub enum StyleManagerInput {
     SetMatugenCssWithStaticTheme(MatugenTheme),
     MatugenComplete(anyhow::Result<String>),
     WindowOpacityUpdate(WindowOpacity),
+    FontUpdate(Font),
 }
 
 #[derive(Debug)]
@@ -61,6 +64,7 @@ impl Component for StyleManagerModel {
         let user_css_provider = CssProvider::new();
         let theme_css_provider = CssProvider::new();
         let opacity_css_provider = CssProvider::new();
+        let font_css_provider = CssProvider::new();
 
         let display = gdk::Display::default().expect("No GDK display available");
         gtk::style_context_add_provider_for_display(
@@ -83,8 +87,14 @@ impl Component for StyleManagerModel {
 
         gtk::style_context_add_provider_for_display(
             &display,
-            &user_css_provider,
+            &font_css_provider,
             STYLE_PROVIDER_PRIORITY_USER + 3,
+        );
+
+        gtk::style_context_add_provider_for_display(
+            &display,
+            &user_css_provider,
+            STYLE_PROVIDER_PRIORITY_USER + 4,
         );
 
         base_css_provider.load_from_string(compiled_css());
@@ -133,10 +143,18 @@ impl Component for StyleManagerModel {
             sender_clone.input(WindowOpacityUpdate(window_opacity));
         });
 
+        let sender_clone = sender.clone();
+        Effect::new(move || {
+            let config = config_manager().config();
+            let font = config.theme().font().get();
+            sender_clone.input(FontUpdate(font));
+        });
+
         let model = StyleManagerModel {
             user_css_provider,
             theme_css_provider,
             opacity_css_provider,
+            font_css_provider,
         };
 
         let widgets = view_output!();
@@ -215,6 +233,19 @@ impl Component for StyleManagerModel {
                 self.opacity_css_provider.load_from_string(
                     &format!(r#":root {{ --window-opacity: {}; }}"#, opacity.get())
                 );
+            }
+            FontUpdate(font) => {
+                info!("applying fonts, {}, {}, {}", font.primary, font.secondary, font.tertiary);
+                self.font_css_provider.load_from_string(&format!(
+                    r#":root {{
+                        --font-family-primary: {};
+                        --font-family-secondary: {};
+                        --font-family-tertiary: {};
+                    }}"#,
+                    if font.primary.is_empty() { "inherit" } else { &font.primary },
+                    if font.secondary.is_empty() { "inherit" } else { &font.secondary },
+                    if font.tertiary.is_empty() { "inherit" } else { &font.tertiary },
+                ));
             }
         }
     }

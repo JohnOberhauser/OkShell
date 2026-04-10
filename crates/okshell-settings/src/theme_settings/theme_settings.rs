@@ -6,10 +6,9 @@ use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, RangeEx
 use relm4::prelude::FactoryVecDeque;
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields, MatugenStoreFields, Theme, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, MatugenStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
 use okshell_style::user_css::style_utils::list_available_styles;
-use crate::general_settings::GeneralSettingsInput;
 use crate::theme_settings::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
 
 #[derive(Debug)]
@@ -18,6 +17,10 @@ pub(crate) struct ThemeSettingsModel {
     active_shell_theme: String,
     available_app_icon_themes: gtk::StringList,
     active_apps_theme: String,
+    available_fonts: gtk::StringList,
+    active_primary_font: String,
+    active_secondary_font: String,
+    active_tertiary_font: String,
     available_css: gtk::StringList,
     active_css: String,
     matugen_preferences: gtk::StringList,
@@ -45,6 +48,9 @@ pub(crate) enum ThemeSettingsInput {
     WindowOpacitySelected(f64),
     ThemeSelected(Themes),
     CssFileSelected(Option<String>),
+    PrimaryFontSelected(Option<String>),
+    SecondaryFontSelected(Option<String>),
+    TertiaryFontSelected(Option<String>),
 
     ShellIconEffect(String),
     AppIconEffect(String),
@@ -55,6 +61,9 @@ pub(crate) enum ThemeSettingsInput {
     MatugenModeEffect(MatugenMode),
     MatugenContrastEffect(f64),
     ThemeEffect(Themes),
+    PrimaryFontEffect(String),
+    SecondaryFontEffect(String),
+    TertiaryFontEffect(String),
 }
 
 #[derive(Debug)]
@@ -179,6 +188,143 @@ impl Component for ThemeSettingsModel {
                                 .map(|s| s.string().to_string());
                             sender.input(ThemeSettingsInput::AppIconThemeSelected(selected));
                         } @app_handler,
+                    },
+                },
+
+                gtk::Separator {},
+
+                gtk::Label {
+                    add_css_class: "label-large-bold",
+                    set_label: "Font",
+                    set_halign: gtk::Align::Start,
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Primary font",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "The primary font. Sent to matugen as okshell.font.primary",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::DropDown {
+                        set_width_request: 200,
+                        set_valign: gtk::Align::Center,
+                        set_model: Some(&model.available_fonts),
+                        #[watch]
+                        #[block_signal(primary_font_handler)]
+                        set_selected: (0..model.available_fonts.n_items())
+                            .find(|&i| model.available_fonts.string(i).as_deref() == Some(model.active_primary_font.as_str()))
+                            .unwrap_or(0),
+                        connect_selected_notify[sender] => move |dd| {
+                            let selected = dd.selected_item()
+                                .and_downcast::<gtk::StringObject>()
+                                .map(|s| s.string().to_string());
+                            sender.input(ThemeSettingsInput::PrimaryFontSelected(selected));
+                        } @primary_font_handler,
+                    },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Secondary font",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "The secondary font. Sent to matugen as okshell.font.secondary",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::DropDown {
+                        set_width_request: 200,
+                        set_valign: gtk::Align::Center,
+                        set_model: Some(&model.available_fonts),
+                        #[watch]
+                        #[block_signal(secondary_font_handler)]
+                        set_selected: (0..model.available_fonts.n_items())
+                            .find(|&i| model.available_fonts.string(i).as_deref() == Some(model.active_secondary_font.as_str()))
+                            .unwrap_or(0),
+                        connect_selected_notify[sender] => move |dd| {
+                            let selected = dd.selected_item()
+                                .and_downcast::<gtk::StringObject>()
+                                .map(|s| s.string().to_string());
+                            sender.input(ThemeSettingsInput::SecondaryFontSelected(selected));
+                        } @secondary_font_handler,
+                    },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Tertiary font",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "The tertiary font. Sent to matugen as okshell.font.tertiary",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::DropDown {
+                        set_width_request: 200,
+                        set_valign: gtk::Align::Center,
+                        set_model: Some(&model.available_fonts),
+                        #[watch]
+                        #[block_signal(tertiary_font_handler)]
+                        set_selected: (0..model.available_fonts.n_items())
+                            .find(|&i| model.available_fonts.string(i).as_deref() == Some(model.active_tertiary_font.as_str()))
+                            .unwrap_or(0),
+                        connect_selected_notify[sender] => move |dd| {
+                            let selected = dd.selected_item()
+                                .and_downcast::<gtk::StringObject>()
+                                .map(|s| s.string().to_string());
+                            sender.input(ThemeSettingsInput::TertiaryFontSelected(selected));
+                        } @tertiary_font_handler,
                     },
                 },
 
@@ -500,6 +646,11 @@ impl Component for ThemeSettingsModel {
         let shell_theme_refs: Vec<&str> = shell_icon_themes.iter().map(|s| s.as_str()).collect();
         let available_shell_icon_themes = gtk::StringList::new(&shell_theme_refs);
 
+        let mut fonts = available_fonts();
+        fonts.insert(0, "(none)".to_string());
+        let font_refs: Vec<&str> = fonts.iter().map(|s| s.as_str()).collect();
+        let available_fonts = gtk::StringList::new(&font_refs);
+
         let mut style_sheets = list_available_styles();
         style_sheets.insert(0, "(none)".to_string());
         let style_refs: Vec<&str> = style_sheets.iter().map(|s| s.as_str()).collect();
@@ -591,11 +742,36 @@ impl Component for ThemeSettingsModel {
             sender_clone.input(ThemeSettingsInput::ThemeEffect(value));
         });
 
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().font().primary().get();
+            sender_clone.input(ThemeSettingsInput::PrimaryFontEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().font().secondary().get();
+            sender_clone.input(ThemeSettingsInput::SecondaryFontEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().font().tertiary().get();
+            sender_clone.input(ThemeSettingsInput::TertiaryFontEffect(value));
+        });
+
         let mut model = ThemeSettingsModel {
             available_shell_icon_themes,
             active_shell_theme: config_manager().config().theme().shell_icon_theme().get_untracked(),
             available_app_icon_themes,
             active_apps_theme: config_manager().config().theme().app_icon_theme().get_untracked(),
+            available_fonts,
+            active_primary_font: config_manager().config().theme().font().primary().get_untracked(),
+            active_secondary_font: config_manager().config().theme().font().secondary().get_untracked(),
+            active_tertiary_font: config_manager().config().theme().font().tertiary().get_untracked(),
             available_css,
             active_css: {
                 let css = config_manager().config().theme().css_file().get_untracked();
@@ -714,6 +890,30 @@ impl Component for ThemeSettingsModel {
                     }
                 });
             }
+            ThemeSettingsInput::PrimaryFontSelected(font) => {
+                config_manager().update_config(|config| {
+                    match font.as_deref() {
+                        Some("(none)") | None => config.theme.font.primary = String::new(),
+                        Some(font) => config.theme.font.primary = font.to_string(),
+                    }
+                });
+            }
+            ThemeSettingsInput::SecondaryFontSelected(font) => {
+                config_manager().update_config(|config| {
+                    match font.as_deref() {
+                        Some("(none)") | None => config.theme.font.secondary = String::new(),
+                        Some(font) => config.theme.font.secondary = font.to_string(),
+                    }
+                });
+            }
+            ThemeSettingsInput::TertiaryFontSelected(font) => {
+                config_manager().update_config(|config| {
+                    match font.as_deref() {
+                        Some("(none)") | None => config.theme.font.tertiary = String::new(),
+                        Some(font) => config.theme.font.tertiary = font.to_string(),
+                    }
+                });
+            }
 
             ThemeSettingsInput::ShellIconEffect(theme) => {
                 self.active_shell_theme = theme;
@@ -746,6 +946,15 @@ impl Component for ThemeSettingsModel {
                         guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
                     }
                 }
+            }
+            ThemeSettingsInput::PrimaryFontEffect(font) => {
+                self.active_primary_font = font;
+            }
+            ThemeSettingsInput::SecondaryFontEffect(font) => {
+                self.active_secondary_font = font;
+            }
+            ThemeSettingsInput::TertiaryFontEffect(font) => {
+                self.active_tertiary_font = font;
             }
         }
 
@@ -807,4 +1016,24 @@ fn available_app_icon_themes() -> Vec<String> {
     let mut themes: Vec<_> = themes.into_iter().collect();
     themes.sort();
     themes
+}
+
+fn available_fonts() -> Vec<String> {
+    let Some(fc) = fontconfig::Fontconfig::new() else {
+        return vec![];
+    };
+
+    let pattern = fontconfig::Pattern::new(&fc);
+    let font_set = fontconfig::list_fonts(&pattern, None);
+
+    let mut families = std::collections::HashSet::new();
+    for pattern in font_set.iter() {
+        if let Some(family) = pattern.get_string(fontconfig::FC_FAMILY) {
+            families.insert(family.to_string());
+        }
+    }
+
+    let mut families: Vec<_> = families.into_iter().collect();
+    families.sort();
+    families
 }

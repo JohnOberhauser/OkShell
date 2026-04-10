@@ -62,6 +62,7 @@ pub struct Theme {
     pub theme: Themes,
     pub matugen: Matugen,
     pub css_file: String,
+    pub font: Font,
 }
 
 impl Default for Theme {
@@ -73,6 +74,25 @@ impl Default for Theme {
             theme: Themes::Default,
             matugen: Matugen::default(),
             css_file: String::new(),
+            font: Font::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
+#[serde(default)]
+pub struct Font {
+    pub primary: String,
+    pub secondary: String,
+    pub tertiary: String,
+}
+
+impl Default for Font {
+    fn default() -> Self {
+        Self {
+            primary: String::new(),
+            secondary: String::new(),
+            tertiary: String::new(),
         }
     }
 }
