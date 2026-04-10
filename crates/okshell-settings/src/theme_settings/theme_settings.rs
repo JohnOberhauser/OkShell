@@ -216,7 +216,7 @@ impl Component for ThemeSettingsModel {
                         gtk::Label {
                             add_css_class: "label-small",
                             set_halign: gtk::Align::Start,
-                            set_label: "The primary font. Sent to matugen as okshell.font.primary",
+                            set_label: "The primary font in OkShell. Sent to matugen as okshell.font.primary",
                             set_hexpand: true,
                             set_xalign: 0.0,
                             set_wrap: true,
@@ -259,7 +259,7 @@ impl Component for ThemeSettingsModel {
                         gtk::Label {
                             add_css_class: "label-small",
                             set_halign: gtk::Align::Start,
-                            set_label: "The secondary font. Sent to matugen as okshell.font.secondary",
+                            set_label: "Sent to matugen as okshell.font.secondary",
                             set_hexpand: true,
                             set_xalign: 0.0,
                             set_wrap: true,
@@ -302,7 +302,7 @@ impl Component for ThemeSettingsModel {
                         gtk::Label {
                             add_css_class: "label-small",
                             set_halign: gtk::Align::Start,
-                            set_label: "The tertiary font. Sent to matugen as okshell.font.tertiary",
+                            set_label: "Sent to matugen as okshell.font.tertiary",
                             set_hexpand: true,
                             set_xalign: 0.0,
                             set_wrap: true,

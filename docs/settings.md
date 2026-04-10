@@ -11,7 +11,7 @@ Or click the Quick Action Settings menu widget.
 
 You can also edit the yaml config file directly in `~/.config/okshell/profiles/default.yaml`
 
-::: info
+::: info NOTE
 The default.yaml file is created automatically after changing any setting. If you have not changed a setting yet, it will not exist.
 :::
 

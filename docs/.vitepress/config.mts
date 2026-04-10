@@ -34,7 +34,8 @@ export default defineConfig({
         items: [
           { text: 'Matugen', link: '/matugen' },
           { text: 'Style sheets', link: '/style_sheets' },
-          { text: 'Icons', link: '/icons' }
+          { text: 'Icons', link: '/icons' },
+          { text: 'Fonts', link: '/fonts' }
         ]
       }
     ],

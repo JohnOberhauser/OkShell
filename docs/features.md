@@ -12,9 +12,7 @@ The frame can be hidden if you would rather the bars not appear to be connected 
 Bars can be configured with various widgets.
 You can have a top, bottom, right and/or left bar.
 
-Available bar widgets:
-
-::: details
+::: details Available bar widgets
 Audio Input  
 Audio Output  
 Battery  
@@ -43,9 +41,7 @@ Wallpaper
 
 There are various menus that can be opened through `okshellctl` or by click bar widgets.
 
-Available menus:
-
-::: details
+::: details Available menus
 App Launcher  
 Clock  
 Clipboard  
@@ -58,9 +54,7 @@ Wallpaper
 
 Each menu's widgets can be customized, and the layouts can be changed.
 
-Available menu widgets:
-
-::: details
+::: details Available menu widgets
 App Launcher  
 Audio Input  
 Audio Output  
