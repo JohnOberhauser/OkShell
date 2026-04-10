@@ -17,6 +17,10 @@ fn main() {
 
     // All defs
     for (name, def) in defs {
+        if matches!(classify(def), Kind::Scalar) {
+            continue;
+        }
+
         out.push_str(&format!("## {}\n\n", name));
         match classify(def) {
             Kind::Struct => render_struct(&mut out, def, defs),
