@@ -1,3 +1,4 @@
+use std::ops::Not;
 use relm4::prelude::*;
 use relm4::gtk;
 use relm4::gtk::prelude::*;
@@ -50,6 +51,8 @@ impl SimpleComponent for RevealerButtonIconLabelModel {
 
             #[name = "secondary_image"]
             gtk::Image {
+                #[watch]
+                set_visible: model.secondary_icon_name.is_empty().not(),
                 add_css_class: "revealer-button-icon-label-icon",
                 set_margin_start: 12,
                 #[watch]
