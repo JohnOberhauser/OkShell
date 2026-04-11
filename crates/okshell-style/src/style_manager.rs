@@ -6,7 +6,7 @@ use relm4::gtk::{gdk, CssProvider, STYLE_PROVIDER_PRIORITY_USER};
 use tracing::{error, info};
 use okshell_cache::wallpaper::{current_wallpaper, wallpaper_store, WallpaperStateStoreFields};
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, Font, FontStoreFields, Matugen, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, Font, FontStoreFields, Matugen, SizingStoreFields, ThemeAttributes, ThemeAttributesStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::{Themes, WindowOpacity};
 use crate::compiled_css;
 use crate::matugen::matugen::{apply_matugen_debounced, apply_matugen_from_theme_debounced};
@@ -20,8 +20,7 @@ use crate::user_css::user_style_manager::style_manager;
 pub struct StyleManagerModel {
     user_css_provider: CssProvider,
     theme_css_provider: CssProvider,
-    opacity_css_provider: CssProvider,
-    font_css_provider: CssProvider,
+    attributes_css_provider: CssProvider,
 }
 
 #[derive(Debug)]
@@ -33,8 +32,7 @@ pub enum StyleManagerInput {
     MatugenUpdate(Matugen),
     SetMatugenCssWithStaticTheme(MatugenTheme),
     MatugenComplete(anyhow::Result<String>),
-    WindowOpacityUpdate(WindowOpacity),
-    FontUpdate(Font),
+    AttributesUpdate(ThemeAttributes),
 }
 
 #[derive(Debug)]
@@ -62,8 +60,7 @@ impl Component for StyleManagerModel {
         let base_css_provider = CssProvider::new();
         let user_css_provider = CssProvider::new();
         let theme_css_provider = CssProvider::new();
-        let opacity_css_provider = CssProvider::new();
-        let font_css_provider = CssProvider::new();
+        let attributes_css_provider = CssProvider::new();
 
         let display = gdk::Display::default().expect("No GDK display available");
         gtk::style_context_add_provider_for_display(
@@ -80,20 +77,14 @@ impl Component for StyleManagerModel {
 
         gtk::style_context_add_provider_for_display(
             &display,
-            &opacity_css_provider,
+            &attributes_css_provider,
             STYLE_PROVIDER_PRIORITY_USER + 2,
         );
 
         gtk::style_context_add_provider_for_display(
             &display,
-            &font_css_provider,
-            STYLE_PROVIDER_PRIORITY_USER + 3,
-        );
-
-        gtk::style_context_add_provider_for_display(
-            &display,
             &user_css_provider,
-            STYLE_PROVIDER_PRIORITY_USER + 4,
+            STYLE_PROVIDER_PRIORITY_USER + 3,
         );
 
         base_css_provider.load_from_string(compiled_css());
@@ -138,22 +129,14 @@ impl Component for StyleManagerModel {
         let sender_clone = sender.clone();
         Effect::new(move || {
             let config = config_manager().config();
-            let window_opacity = config.theme().window_opacity().get();
-            sender_clone.input(WindowOpacityUpdate(window_opacity));
-        });
-
-        let sender_clone = sender.clone();
-        Effect::new(move || {
-            let config = config_manager().config();
-            let font = config.theme().font().get();
-            sender_clone.input(FontUpdate(font));
+            let attributes = config.theme().attributes().get();
+            sender_clone.input(AttributesUpdate(attributes));
         });
 
         let model = StyleManagerModel {
             user_css_provider,
             theme_css_provider,
-            opacity_css_provider,
-            font_css_provider,
+            attributes_css_provider,
         };
 
         let widgets = view_output!();
@@ -231,22 +214,24 @@ impl Component for StyleManagerModel {
                     }
                 }
             }
-            WindowOpacityUpdate(opacity) => {
-                self.opacity_css_provider.load_from_string(
-                    &format!(r#":root {{ --window-opacity: {}; }}"#, opacity.get())
-                );
-            }
-            FontUpdate(font) => {
-                info!("applying fonts, {}, {}, {}", font.primary, font.secondary, font.tertiary);
-                self.font_css_provider.load_from_string(&format!(
+            AttributesUpdate(attributes) => {
+                self.attributes_css_provider.load_from_string(&format!(
                     r#":root {{
                         --font-family-primary: {};
                         --font-family-secondary: {};
                         --font-family-tertiary: {};
+                        --window-opacity: {};
+                        --radius-sm: {}px;
+                        --radius-md: {}px;
+                        --border-width: {}px;
                     }}"#,
-                    if font.primary.is_empty() { "inherit" } else { &font.primary },
-                    if font.secondary.is_empty() { "inherit" } else { &font.secondary },
-                    if font.tertiary.is_empty() { "inherit" } else { &font.tertiary },
+                    if attributes.font.primary.is_empty() { "inherit" } else { &attributes.font.primary },
+                    if attributes.font.secondary.is_empty() { "inherit" } else { &attributes.font.secondary },
+                    if attributes.font.tertiary.is_empty() { "inherit" } else { &attributes.font.tertiary },
+                    attributes.window_opacity.get(),
+                    attributes.sizing.radius_small,
+                    attributes.sizing.radius_medium,
+                    attributes.sizing.border_width,
                 ));
 
                 sender.input(ReloadTheme(config_manager().config().theme().theme().get_untracked()));
@@ -258,9 +243,15 @@ impl Component for StyleManagerModel {
 fn build_okshell_matugen() -> OkShell {
     OkShell {
         font: crate::matugen::json_struct::Font {
-            primary: config_manager().config().theme().font().primary().get_untracked(),
-            secondary: config_manager().config().theme().font().primary().get_untracked(),
-            tertiary: config_manager().config().theme().font().primary().get_untracked(),
-        }
+            primary: config_manager().config().theme().attributes().font().primary().get_untracked(),
+            secondary: config_manager().config().theme().attributes().font().primary().get_untracked(),
+            tertiary: config_manager().config().theme().attributes().font().primary().get_untracked(),
+        },
+        sizing: crate::matugen::json_struct::Sizing {
+            radius_small: config_manager().config().theme().attributes().sizing().radius_small().get_untracked(),
+            radius_medium: config_manager().config().theme().attributes().sizing().radius_medium().get_untracked(),
+            border_width: config_manager().config().theme().attributes().sizing().border_width().get_untracked(),
+        },
+        opacity: config_manager().config().theme().attributes().window_opacity().get_untracked().get(),
     }
 }

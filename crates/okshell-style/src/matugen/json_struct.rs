@@ -150,6 +150,8 @@ pub struct Palette {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OkShell {
     pub font: Font,
+    pub sizing: Sizing,
+    pub opacity: f64,
 }
 
 #[allow(dead_code)]
@@ -158,6 +160,14 @@ pub struct Font {
     pub primary: String,
     pub secondary: String,
     pub tertiary: String,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Sizing {
+    pub radius_small: i32,
+    pub radius_medium: i32,
+    pub border_width: i32,
 }
 
 impl Default for ColorEntry {
@@ -299,6 +309,8 @@ impl Default for OkShell {
     fn default() -> Self {
         Self {
             font: Default::default(),
+            sizing: Default::default(),
+            opacity: 1.0,
         }
     }
 }
@@ -309,6 +321,16 @@ impl Default for Font {
             primary: String::new(),
             secondary: String::new(),
             tertiary: String::new(),
+        }
+    }
+}
+
+impl Default for Sizing {
+    fn default() -> Self {
+        Self {
+            radius_small: 0,
+            radius_medium: 0,
+            border_width: 0,
         }
     }
 }

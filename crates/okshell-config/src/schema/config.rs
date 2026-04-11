@@ -1,6 +1,7 @@
 use reactive_stores::{KeyMap, Patch, PatchField, Store, StorePath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use tracing::span::Attributes;
 use crate::schema::bar_widgets::BarWidget;
 use crate::schema::location_query::{LocationQueryConfig, OrdF64};
 use crate::schema::menu_widgets::{MenuWidget, QuickActionWidget, QuickActionsConfig, SpacerConfig};
@@ -58,11 +59,10 @@ impl Default for General {
 pub struct Theme {
     pub shell_icon_theme: String,
     pub app_icon_theme: String,
-    pub window_opacity: WindowOpacity,
     pub theme: Themes,
     pub matugen: Matugen,
     pub css_file: String,
-    pub font: Font,
+    pub attributes: ThemeAttributes,
 }
 
 impl Default for Theme {
@@ -70,11 +70,28 @@ impl Default for Theme {
         Self {
             shell_icon_theme: "OkMaterial".to_string(),
             app_icon_theme: "OkMaterial".to_string(),
-            window_opacity: WindowOpacity::new(1.0),
             theme: Themes::Default,
             matugen: Matugen::default(),
             css_file: String::new(),
+            attributes: ThemeAttributes::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
+#[serde(default)]
+pub struct ThemeAttributes {
+    pub font: Font,
+    pub sizing: Sizing,
+    pub window_opacity: WindowOpacity,
+}
+
+impl Default for ThemeAttributes {
+    fn default() -> Self {
+        Self {
+            window_opacity: WindowOpacity::new(1.0),
             font: Font::default(),
+            sizing: Sizing::default(),
         }
     }
 }
@@ -93,6 +110,24 @@ impl Default for Font {
             primary: String::new(),
             secondary: String::new(),
             tertiary: String::new(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
+#[serde(default)]
+pub struct Sizing {
+    pub radius_small: i32,
+    pub radius_medium: i32,
+    pub border_width: i32,
+}
+
+impl Default for Sizing {
+    fn default() -> Self {
+        Self {
+            radius_small: 4,
+            radius_medium: 8,
+            border_width: 2,
         }
     }
 }

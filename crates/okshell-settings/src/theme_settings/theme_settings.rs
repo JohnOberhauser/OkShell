@@ -6,7 +6,7 @@ use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, RangeEx
 use relm4::prelude::FactoryVecDeque;
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, MatugenStoreFields, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, MatugenStoreFields, SizingStoreFields, ThemeAttributesStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
 use okshell_style::user_css::style_utils::list_available_styles;
 use crate::theme_settings::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
@@ -21,6 +21,9 @@ pub(crate) struct ThemeSettingsModel {
     active_primary_font: String,
     active_secondary_font: String,
     active_tertiary_font: String,
+    radius_small: i32,
+    radius_medium: i32,
+    border_width: i32,
     available_css: gtk::StringList,
     active_css: String,
     matugen_preferences: gtk::StringList,
@@ -32,7 +35,6 @@ pub(crate) struct ThemeSettingsModel {
     matugen_contrast: f64,
     matugen_contrast_debounce: Option<glib::JoinHandle<()>>,
     window_opacity: f64,
-    window_opacity_debounce: Option<glib::JoinHandle<()>>,
     theme_cards: Option<FactoryVecDeque<ThemeCardModel>>,
     _effects: EffectScope,
 }
@@ -51,6 +53,9 @@ pub(crate) enum ThemeSettingsInput {
     PrimaryFontSelected(Option<String>),
     SecondaryFontSelected(Option<String>),
     TertiaryFontSelected(Option<String>),
+    RadiusSmallSelected(i32),
+    RadiusMediumSelected(i32),
+    BorderWidthSelected(i32),
 
     ShellIconEffect(String),
     AppIconEffect(String),
@@ -64,6 +69,9 @@ pub(crate) enum ThemeSettingsInput {
     PrimaryFontEffect(String),
     SecondaryFontEffect(String),
     TertiaryFontEffect(String),
+    RadiusSmallEffect(i32),
+    RadiusMediumEffect(i32),
+    BorderWidthEffect(i32),
 }
 
 #[derive(Debug)]
@@ -332,6 +340,128 @@ impl Component for ThemeSettingsModel {
 
                 gtk::Label {
                     add_css_class: "label-large-bold",
+                    set_label: "Sizing",
+                    set_halign: gtk::Align::Start,
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Radius Small",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Small corner radius. Sent to Matugen as okshell.sizing.radius_small",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::SpinButton {
+                        set_valign: gtk::Align::Center,
+                        set_range: (0.0, 1000.0),
+                        set_increments: (1.0, 10.0),
+                        #[watch]
+                        #[block_signal(radius_small_handler)]
+                        set_value: model.radius_small as f64,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(ThemeSettingsInput::RadiusSmallSelected(s.value() as i32));
+                        } @radius_small_handler,
+                    },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Radius Medium",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Medium corner radius. Sent to Matugen as okshell.sizing.radius_medium",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::SpinButton {
+                        set_valign: gtk::Align::Center,
+                        set_range: (0.0, 1000.0),
+                        set_increments: (1.0, 10.0),
+                        #[watch]
+                        #[block_signal(radius_medium_handler)]
+                        set_value: model.radius_medium as f64,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(ThemeSettingsInput::RadiusMediumSelected(s.value() as i32));
+                        } @radius_medium_handler,
+                    },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Border Width",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Width of the borders. Sent to Matugen as okshell.sizing.border_width",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::SpinButton {
+                        set_valign: gtk::Align::Center,
+                        set_range: (0.0, 20.0),
+                        set_increments: (1.0, 10.0),
+                        #[watch]
+                        #[block_signal(border_width_handler)]
+                        set_value: model.border_width as f64,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(ThemeSettingsInput::BorderWidthSelected(s.value() as i32));
+                        } @border_width_handler,
+                    },
+                },
+
+                gtk::Separator {},
+
+                gtk::Label {
+                    add_css_class: "label-large-bold",
                     set_label: "Custom CSS",
                     set_halign: gtk::Align::Start,
                 },
@@ -404,7 +534,7 @@ impl Component for ThemeSettingsModel {
                         gtk::Label {
                             add_css_class: "label-small",
                             set_halign: gtk::Align::Start,
-                            set_label: "Value from 0.5 to 1 where 1 is fully opaque.",
+                            set_label: "Value from 0.5 to 1 where 1 is fully opaque. Sent to Matugen as okshell.opacity",
                             set_hexpand: true,
                             set_xalign: 0.0,
                             set_wrap: true,
@@ -412,20 +542,17 @@ impl Component for ThemeSettingsModel {
                         },
                     },
 
-                    gtk::Scale {
-                        add_css_class: "ok-progress-bar",
-                        set_width_request: 200,
+                    gtk::SpinButton {
                         set_valign: gtk::Align::Center,
-                        set_can_focus: false,
-                        set_focus_on_click: false,
                         set_range: (0.5, 1.0),
                         set_increments: (0.1, 0.1),
+                        set_digits: 2,
                         #[watch]
-                        #[block_signal(opacity_handler)]
+                        #[block_signal(window_opacity_handler)]
                         set_value: model.window_opacity,
-                        connect_value_changed[sender] => move |scale| {
-                            sender.input(ThemeSettingsInput::WindowOpacitySelected(scale.value()));
-                        } @opacity_handler,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(ThemeSettingsInput::WindowOpacitySelected(s.value()));
+                        } @window_opacity_handler,
                     },
                 },
 
@@ -703,7 +830,7 @@ impl Component for ThemeSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
-            let value = config.theme().window_opacity().get();
+            let value = config.theme().attributes().window_opacity().get();
             sender_clone.input(ThemeSettingsInput::WindowOpacityEffect(value.get()));
         });
 
@@ -745,22 +872,43 @@ impl Component for ThemeSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
-            let value = config.theme().font().primary().get();
+            let value = config.theme().attributes().font().primary().get();
             sender_clone.input(ThemeSettingsInput::PrimaryFontEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
-            let value = config.theme().font().secondary().get();
+            let value = config.theme().attributes().font().secondary().get();
             sender_clone.input(ThemeSettingsInput::SecondaryFontEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
-            let value = config.theme().font().tertiary().get();
+            let value = config.theme().attributes().font().tertiary().get();
             sender_clone.input(ThemeSettingsInput::TertiaryFontEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().attributes().sizing().radius_small().get();
+            sender_clone.input(ThemeSettingsInput::RadiusSmallEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().attributes().sizing().radius_medium().get();
+            sender_clone.input(ThemeSettingsInput::RadiusMediumEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().attributes().sizing().border_width().get();
+            sender_clone.input(ThemeSettingsInput::BorderWidthEffect(value));
         });
 
         let mut model = ThemeSettingsModel {
@@ -769,9 +917,12 @@ impl Component for ThemeSettingsModel {
             available_app_icon_themes,
             active_apps_theme: config_manager().config().theme().app_icon_theme().get_untracked(),
             available_fonts,
-            active_primary_font: config_manager().config().theme().font().primary().get_untracked(),
-            active_secondary_font: config_manager().config().theme().font().secondary().get_untracked(),
-            active_tertiary_font: config_manager().config().theme().font().tertiary().get_untracked(),
+            active_primary_font: config_manager().config().theme().attributes().font().primary().get_untracked(),
+            active_secondary_font: config_manager().config().theme().attributes().font().secondary().get_untracked(),
+            active_tertiary_font: config_manager().config().theme().attributes().font().tertiary().get_untracked(),
+            radius_small: config_manager().config().theme().attributes().sizing().radius_small().get_untracked(),
+            radius_medium: config_manager().config().theme().attributes().sizing().radius_medium().get_untracked(),
+            border_width: config_manager().config().theme().attributes().sizing().border_width().get_untracked(),
             available_css,
             active_css: {
                 let css = config_manager().config().theme().css_file().get_untracked();
@@ -785,8 +936,7 @@ impl Component for ThemeSettingsModel {
             active_matugen_mode: config_manager().config().theme().matugen().mode().get_untracked(),
             matugen_contrast: config_manager().config().theme().matugen().contrast().get_untracked().get(),
             matugen_contrast_debounce: None,
-            window_opacity: config_manager().config().theme().window_opacity().get_untracked().get(),
-            window_opacity_debounce: None,
+            window_opacity: config_manager().config().theme().attributes().window_opacity().get_untracked().get(),
             theme_cards: None,
             _effects: effects,
         };
@@ -860,15 +1010,9 @@ impl Component for ThemeSettingsModel {
                 }));
             }
             ThemeSettingsInput::WindowOpacitySelected(opacity) => {
-                if let Some(handle) = self.window_opacity_debounce.take() {
-                    handle.abort();
-                }
-                self.window_opacity_debounce = Some(glib::spawn_future_local(async move {
-                    glib::timeout_future(std::time::Duration::from_millis(500)).await;
-                    config_manager().update_config(|config| {
-                        config.theme.window_opacity = WindowOpacity::new(opacity);
-                    });
-                }));
+                config_manager().update_config(|config| {
+                    config.theme.attributes.window_opacity = WindowOpacity::new(opacity);
+                });
             }
             ThemeSettingsInput::ThemeSelected(theme) => {
                 config_manager().update_config(|config| {
@@ -893,26 +1037,41 @@ impl Component for ThemeSettingsModel {
             ThemeSettingsInput::PrimaryFontSelected(font) => {
                 config_manager().update_config(|config| {
                     match font.as_deref() {
-                        Some("(none)") | None => config.theme.font.primary = String::new(),
-                        Some(font) => config.theme.font.primary = font.to_string(),
+                        Some("(none)") | None => config.theme.attributes.font.primary = String::new(),
+                        Some(font) => config.theme.attributes.font.primary = font.to_string(),
                     }
                 });
             }
             ThemeSettingsInput::SecondaryFontSelected(font) => {
                 config_manager().update_config(|config| {
                     match font.as_deref() {
-                        Some("(none)") | None => config.theme.font.secondary = String::new(),
-                        Some(font) => config.theme.font.secondary = font.to_string(),
+                        Some("(none)") | None => config.theme.attributes.font.secondary = String::new(),
+                        Some(font) => config.theme.attributes.font.secondary = font.to_string(),
                     }
                 });
             }
             ThemeSettingsInput::TertiaryFontSelected(font) => {
                 config_manager().update_config(|config| {
                     match font.as_deref() {
-                        Some("(none)") | None => config.theme.font.tertiary = String::new(),
-                        Some(font) => config.theme.font.tertiary = font.to_string(),
+                        Some("(none)") | None => config.theme.attributes.font.tertiary = String::new(),
+                        Some(font) => config.theme.attributes.font.tertiary = font.to_string(),
                     }
                 });
+            }
+            ThemeSettingsInput::RadiusSmallSelected(radius) => {
+                config_manager().update_config(|config| {
+                    config.theme.attributes.sizing.radius_small = radius;
+                })
+            }
+            ThemeSettingsInput::RadiusMediumSelected(radius) => {
+                config_manager().update_config(|config| {
+                    config.theme.attributes.sizing.radius_medium = radius;
+                })
+            }
+            ThemeSettingsInput::BorderWidthSelected(width) => {
+                config_manager().update_config(|config| {
+                    config.theme.attributes.sizing.border_width = width;
+                })
             }
 
             ThemeSettingsInput::ShellIconEffect(theme) => {
@@ -955,6 +1114,15 @@ impl Component for ThemeSettingsModel {
             }
             ThemeSettingsInput::TertiaryFontEffect(font) => {
                 self.active_tertiary_font = font;
+            }
+            ThemeSettingsInput::RadiusSmallEffect(radius) => {
+                self.radius_small = radius;
+            }
+            ThemeSettingsInput::RadiusMediumEffect(radius) => {
+                self.radius_medium = radius;
+            }
+            ThemeSettingsInput::BorderWidthEffect(radius) => {
+                self.border_width = radius;
             }
         }
 
