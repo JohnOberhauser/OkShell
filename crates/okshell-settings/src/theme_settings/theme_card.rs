@@ -92,7 +92,6 @@ impl FactoryComponent for ThemeCardModel {
                     set_spacing: 8,
                     add_css_class: "theme-swatches",
 
-                    #[name = "swatch0"] gtk::DrawingArea { set_size_request: (16, 16), },
                     #[name = "swatch1"] gtk::DrawingArea { set_size_request: (16, 16), },
                     #[name = "swatch2"] gtk::DrawingArea { set_size_request: (16, 16), },
                     #[name = "swatch3"] gtk::DrawingArea { set_size_request: (16, 16), },
@@ -187,7 +186,6 @@ impl ThemeCardModel {
 
             // Swatches
             let swatches = [
-                (&widgets.swatch0, &colors[0]),
                 (&widgets.swatch1, &colors[1]),
                 (&widgets.swatch2, &colors[2]),
                 (&widgets.swatch3, &colors[3]),
