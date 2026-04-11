@@ -15,6 +15,20 @@ If you want Matugen to automatically change the themes of other programs on your
 See the [documentation](https://iniox.github.io/#matugen) to get started.
 :::
 
+## OkShell Expressions
+
+Some non-color values in theme settings are sent to Matugen so you can keep your app themes in sync:
+
+```
+{{ okshell.font.primary }}
+{{ okshell.font.secondary }}
+{{ okshell.font.tertiary }}
+{{ okshell.sizing.radius_widget }}
+{{ okshell.sizing.radius_window }}
+{{ okshell.sizing.border_width }}
+{{ okshell.opacity }}
+```
+
 ## What if I don't want to theme with Matugen
 
 You don't have to.  Set your color scheme to `Default` and check out the next section about style sheets.
