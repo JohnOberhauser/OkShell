@@ -19,11 +19,17 @@ use crate::static_themes::gruvbox_dark_soft::gruvbox_dark_soft;
 use crate::static_themes::gruvbox_light_hard::gruvbox_light_hard;
 use crate::static_themes::gruvbox_light_medium::gruvbox_light_medium;
 use crate::static_themes::gruvbox_light_soft::gruvbox_light_soft;
+use crate::static_themes::kanagawa_dragon::kanagawa_dragon;
+use crate::static_themes::kanagawa_lotus::kanagawa_lotus;
+use crate::static_themes::kanagawa_wave::kanagawa_wave;
 use crate::static_themes::nord_dark::nord_dark;
 use crate::static_themes::nord_light::nord_light;
+use crate::static_themes::one_dark::one_dark;
 use crate::static_themes::rose_pine::rose_pine;
 use crate::static_themes::rose_pine_dawn::rose_pine_dawn;
 use crate::static_themes::rose_pine_moon::rose_pine_moon;
+use crate::static_themes::solarized_dark::solarized_dark;
+use crate::static_themes::solarized_light::solarized_light;
 use crate::static_themes::tokyo_night::tokyo_night;
 use crate::static_themes::tokyo_night_light::tokyo_night_light;
 use crate::static_themes::tokyo_night_storm::tokyo_night_storm;
@@ -55,11 +61,17 @@ pub fn static_theme(
         Themes::GruvboxLightHard => Some(gruvbox_light_hard(okshell)),
         Themes::GruvboxLightMedium => Some(gruvbox_light_medium(okshell)),
         Themes::GruvboxLightSoft => Some(gruvbox_light_soft(okshell)),
+        Themes::KanagawaDragon => Some(kanagawa_dragon(okshell)),
+        Themes::KanagawaLotus => Some(kanagawa_lotus(okshell)),
+        Themes::KanagawaWave => Some(kanagawa_wave(okshell)),
         Themes::NordDark => Some(nord_dark(okshell)),
         Themes::NordLight => Some(nord_light(okshell)),
+        Themes::OneDark => Some(one_dark(okshell)),
         Themes::RosePine => Some(rose_pine(okshell)),
         Themes::RosePineDawn => Some(rose_pine_dawn(okshell)),
         Themes::RosePineMoon => Some(rose_pine_moon(okshell)),
+        Themes::SolarizedDark => Some(solarized_dark(okshell)),
+        Themes::SolarizedLight => Some(solarized_light(okshell)),
         Themes::TokyoNight => Some(tokyo_night(okshell)),
         Themes::TokyoNightStorm => Some(tokyo_night_storm(okshell)),
         Themes::TokyoNightLight => Some(tokyo_night_light(okshell)),
