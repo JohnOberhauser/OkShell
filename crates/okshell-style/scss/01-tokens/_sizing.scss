@@ -1,8 +1,10 @@
 :root {
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-round: 90px;
+  //overridden by style manager
+  --radius-widget: 8px;
+  //overridden by style manager
+  --radius-window: 8px;
 
+  //overridden by style manager
   --border-width: 2px;
 
   --padding-sm: 4px;
@@ -21,5 +23,5 @@
   --font-xxxl: 48px;
 
   --frame-border-width: var(--border-width);
-  --frame-border-radius: var(--radius-md);
+  --frame-border-radius: var(--radius-window);
 }

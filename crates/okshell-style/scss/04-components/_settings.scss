@@ -2,7 +2,7 @@
 
 .monitor-chip {
   padding-left: 12px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-widget);
   background-color: var(--primary);
 }
 
@@ -10,13 +10,13 @@
   margin-top: 4px;
   margin-left: 3px;
   padding: 6px 12px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-widget);
   background-color: var(--primary);
 }
 
 .settings-bar-widget-section {
   padding: 20px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-widget);
   border: 2px solid var(--outline);
 }
 
@@ -33,7 +33,7 @@
 
 .settings-menu-widget-section {
   padding: 20px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-widget);
   border: 2px solid var(--outline);
 }
 

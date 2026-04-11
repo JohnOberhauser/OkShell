@@ -1,7 +1,7 @@
 calendar {
   background-color: var(--surface);
   border: 2px solid var(--outline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-widget);
   padding: 10px;
 }
 
@@ -23,7 +23,7 @@ calendar grid label {
 }
 
 calendar grid label.today {
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-widget);
   background-color: var(--primary);
   color: var(--on-primary);
 }

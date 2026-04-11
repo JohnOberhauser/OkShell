@@ -117,16 +117,16 @@ impl Default for Font {
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Sizing {
-    pub radius_small: i32,
-    pub radius_medium: i32,
+    pub radius_widget: i32,
+    pub radius_window: i32,
     pub border_width: i32,
 }
 
 impl Default for Sizing {
     fn default() -> Self {
         Self {
-            radius_small: 4,
-            radius_medium: 8,
+            radius_widget: 8,
+            radius_window: 8,
             border_width: 2,
         }
     }

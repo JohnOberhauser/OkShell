@@ -21,8 +21,8 @@ pub(crate) struct ThemeSettingsModel {
     active_primary_font: String,
     active_secondary_font: String,
     active_tertiary_font: String,
-    radius_small: i32,
-    radius_medium: i32,
+    radius_widget: i32,
+    radius_window: i32,
     border_width: i32,
     available_css: gtk::StringList,
     active_css: String,
@@ -53,8 +53,8 @@ pub(crate) enum ThemeSettingsInput {
     PrimaryFontSelected(Option<String>),
     SecondaryFontSelected(Option<String>),
     TertiaryFontSelected(Option<String>),
-    RadiusSmallSelected(i32),
-    RadiusMediumSelected(i32),
+    RadiusWidgetSelected(i32),
+    RadiusWindowSelected(i32),
     BorderWidthSelected(i32),
 
     ShellIconEffect(String),
@@ -69,8 +69,8 @@ pub(crate) enum ThemeSettingsInput {
     PrimaryFontEffect(String),
     SecondaryFontEffect(String),
     TertiaryFontEffect(String),
-    RadiusSmallEffect(i32),
-    RadiusMediumEffect(i32),
+    RadiusWidgetEffect(i32),
+    RadiusWindowEffect(i32),
     BorderWidthEffect(i32),
 }
 
@@ -354,14 +354,14 @@ impl Component for ThemeSettingsModel {
                         gtk::Label {
                             add_css_class: "label-medium-bold",
                             set_halign: gtk::Align::Start,
-                            set_label: "Radius Small",
+                            set_label: "Widget Radius",
                             set_hexpand: true,
                         },
 
                         gtk::Label {
                             add_css_class: "label-small",
                             set_halign: gtk::Align::Start,
-                            set_label: "Small corner radius. Sent to Matugen as okshell.sizing.radius_small",
+                            set_label: "Corner radius of widgets. Sent to Matugen as okshell.sizing.radius_widget",
                             set_hexpand: true,
                             set_xalign: 0.0,
                             set_wrap: true,
@@ -375,9 +375,9 @@ impl Component for ThemeSettingsModel {
                         set_increments: (1.0, 10.0),
                         #[watch]
                         #[block_signal(radius_small_handler)]
-                        set_value: model.radius_small as f64,
+                        set_value: model.radius_widget as f64,
                         connect_value_changed[sender] => move |s| {
-                            sender.input(ThemeSettingsInput::RadiusSmallSelected(s.value() as i32));
+                            sender.input(ThemeSettingsInput::RadiusWidgetSelected(s.value() as i32));
                         } @radius_small_handler,
                     },
                 },
@@ -392,14 +392,14 @@ impl Component for ThemeSettingsModel {
                         gtk::Label {
                             add_css_class: "label-medium-bold",
                             set_halign: gtk::Align::Start,
-                            set_label: "Radius Medium",
+                            set_label: "Window Radius",
                             set_hexpand: true,
                         },
 
                         gtk::Label {
                             add_css_class: "label-small",
                             set_halign: gtk::Align::Start,
-                            set_label: "Medium corner radius. Sent to Matugen as okshell.sizing.radius_medium",
+                            set_label: "Corner radius of windows. Sent to Matugen as okshell.sizing.radius_window",
                             set_hexpand: true,
                             set_xalign: 0.0,
                             set_wrap: true,
@@ -413,9 +413,9 @@ impl Component for ThemeSettingsModel {
                         set_increments: (1.0, 10.0),
                         #[watch]
                         #[block_signal(radius_medium_handler)]
-                        set_value: model.radius_medium as f64,
+                        set_value: model.radius_window as f64,
                         connect_value_changed[sender] => move |s| {
-                            sender.input(ThemeSettingsInput::RadiusMediumSelected(s.value() as i32));
+                            sender.input(ThemeSettingsInput::RadiusWindowSelected(s.value() as i32));
                         } @radius_medium_handler,
                     },
                 },
@@ -893,15 +893,15 @@ impl Component for ThemeSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
-            let value = config.theme().attributes().sizing().radius_small().get();
-            sender_clone.input(ThemeSettingsInput::RadiusSmallEffect(value));
+            let value = config.theme().attributes().sizing().radius_widget().get();
+            sender_clone.input(ThemeSettingsInput::RadiusWidgetEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
-            let value = config.theme().attributes().sizing().radius_medium().get();
-            sender_clone.input(ThemeSettingsInput::RadiusMediumEffect(value));
+            let value = config.theme().attributes().sizing().radius_window().get();
+            sender_clone.input(ThemeSettingsInput::RadiusWindowEffect(value));
         });
 
         let sender_clone = sender.clone();
@@ -920,8 +920,8 @@ impl Component for ThemeSettingsModel {
             active_primary_font: config_manager().config().theme().attributes().font().primary().get_untracked(),
             active_secondary_font: config_manager().config().theme().attributes().font().secondary().get_untracked(),
             active_tertiary_font: config_manager().config().theme().attributes().font().tertiary().get_untracked(),
-            radius_small: config_manager().config().theme().attributes().sizing().radius_small().get_untracked(),
-            radius_medium: config_manager().config().theme().attributes().sizing().radius_medium().get_untracked(),
+            radius_widget: config_manager().config().theme().attributes().sizing().radius_widget().get_untracked(),
+            radius_window: config_manager().config().theme().attributes().sizing().radius_window().get_untracked(),
             border_width: config_manager().config().theme().attributes().sizing().border_width().get_untracked(),
             available_css,
             active_css: {
@@ -1058,14 +1058,14 @@ impl Component for ThemeSettingsModel {
                     }
                 });
             }
-            ThemeSettingsInput::RadiusSmallSelected(radius) => {
+            ThemeSettingsInput::RadiusWidgetSelected(radius) => {
                 config_manager().update_config(|config| {
-                    config.theme.attributes.sizing.radius_small = radius;
+                    config.theme.attributes.sizing.radius_widget = radius;
                 })
             }
-            ThemeSettingsInput::RadiusMediumSelected(radius) => {
+            ThemeSettingsInput::RadiusWindowSelected(radius) => {
                 config_manager().update_config(|config| {
-                    config.theme.attributes.sizing.radius_medium = radius;
+                    config.theme.attributes.sizing.radius_window = radius;
                 })
             }
             ThemeSettingsInput::BorderWidthSelected(width) => {
@@ -1115,11 +1115,11 @@ impl Component for ThemeSettingsModel {
             ThemeSettingsInput::TertiaryFontEffect(font) => {
                 self.active_tertiary_font = font;
             }
-            ThemeSettingsInput::RadiusSmallEffect(radius) => {
-                self.radius_small = radius;
+            ThemeSettingsInput::RadiusWidgetEffect(radius) => {
+                self.radius_widget = radius;
             }
-            ThemeSettingsInput::RadiusMediumEffect(radius) => {
-                self.radius_medium = radius;
+            ThemeSettingsInput::RadiusWindowEffect(radius) => {
+                self.radius_window = radius;
             }
             ThemeSettingsInput::BorderWidthEffect(radius) => {
                 self.border_width = radius;

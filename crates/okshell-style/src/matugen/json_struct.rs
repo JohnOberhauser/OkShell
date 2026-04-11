@@ -165,8 +165,8 @@ pub struct Font {
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Sizing {
-    pub radius_small: i32,
-    pub radius_medium: i32,
+    pub radius_widget: i32,
+    pub radius_window: i32,
     pub border_width: i32,
 }
 
@@ -328,8 +328,8 @@ impl Default for Font {
 impl Default for Sizing {
     fn default() -> Self {
         Self {
-            radius_small: 0,
-            radius_medium: 0,
+            radius_widget: 0,
+            radius_window: 0,
             border_width: 0,
         }
     }

@@ -221,16 +221,16 @@ impl Component for StyleManagerModel {
                         --font-family-secondary: {};
                         --font-family-tertiary: {};
                         --window-opacity: {};
-                        --radius-sm: {}px;
-                        --radius-md: {}px;
+                        --radius-widget: {}px;
+                        --radius-window: {}px;
                         --border-width: {}px;
                     }}"#,
                     if attributes.font.primary.is_empty() { "inherit" } else { &attributes.font.primary },
                     if attributes.font.secondary.is_empty() { "inherit" } else { &attributes.font.secondary },
                     if attributes.font.tertiary.is_empty() { "inherit" } else { &attributes.font.tertiary },
                     attributes.window_opacity.get(),
-                    attributes.sizing.radius_small,
-                    attributes.sizing.radius_medium,
+                    attributes.sizing.radius_widget,
+                    attributes.sizing.radius_window,
                     attributes.sizing.border_width,
                 ));
 
@@ -248,8 +248,8 @@ fn build_okshell_matugen() -> OkShell {
             tertiary: config_manager().config().theme().attributes().font().primary().get_untracked(),
         },
         sizing: crate::matugen::json_struct::Sizing {
-            radius_small: config_manager().config().theme().attributes().sizing().radius_small().get_untracked(),
-            radius_medium: config_manager().config().theme().attributes().sizing().radius_medium().get_untracked(),
+            radius_widget: config_manager().config().theme().attributes().sizing().radius_widget().get_untracked(),
+            radius_window: config_manager().config().theme().attributes().sizing().radius_window().get_untracked(),
             border_width: config_manager().config().theme().attributes().sizing().border_width().get_untracked(),
         },
         opacity: config_manager().config().theme().attributes().window_opacity().get_untracked().get(),

@@ -2,7 +2,7 @@
   all: unset;
   background-color: var(#{$bg});
   color: var(#{$fg});
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-widget);
   image, label {
     color: var(#{$fg-content});
     -gtk-icon-size: var(--icon-sm);

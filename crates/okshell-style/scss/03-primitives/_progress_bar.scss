@@ -6,7 +6,7 @@
   all: unset;
   background: var(--primary-container);
   min-height: 8px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-widget);
 }
 .ok-progress-bar trough slider {
   all: unset;
@@ -15,6 +15,6 @@
 .ok-progress-bar trough highlight {
   all: unset;
   min-width: 8px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-widget);
   background: var(--on-primary-container);
 }
