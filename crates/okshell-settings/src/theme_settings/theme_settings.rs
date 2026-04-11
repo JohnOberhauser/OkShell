@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::{glib};
-use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, RangeExt, WidgetExt};
+use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, WidgetExt};
 use relm4::prelude::FactoryVecDeque;
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
@@ -724,20 +724,17 @@ impl Component for ThemeSettingsModel {
                         },
                     },
 
-                    gtk::Scale {
-                        add_css_class: "ok-progress-bar",
-                        set_width_request: 200,
+                    gtk::SpinButton {
                         set_valign: gtk::Align::Center,
-                        set_can_focus: false,
-                        set_focus_on_click: false,
                         set_range: (-1.0, 1.0),
                         set_increments: (0.1, 0.1),
+                        set_digits: 2,
                         #[watch]
-                        #[block_signal(contrast_handler)]
+                        #[block_signal(matugen_contrast_handler)]
                         set_value: model.matugen_contrast,
-                        connect_value_changed[sender] => move |scale| {
-                            sender.input(ThemeSettingsInput::MatugenContrastSelected(scale.value()));
-                        } @contrast_handler,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(ThemeSettingsInput::MatugenContrastSelected(s.value()));
+                        } @matugen_contrast_handler,
                     },
                 },
 
