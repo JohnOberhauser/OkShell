@@ -10,7 +10,6 @@ use relm4::gtk::prelude::{ButtonExt, WidgetExt, AppInfoExt, OrientableExt, Popov
 use tracing::{error};
 use wayle_hyprland::{Address, Client};
 use okshell_cache::pinned_apps::{pin_app, unpin_app, PinnedApp};
-use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
 use okshell_services::hyprland_service;
@@ -95,6 +94,8 @@ impl Component for HyprlandDockItemModel {
         #[root]
         #[name = "root"]
         gtk::Box {
+            add_css_class: "hyprland-dock-item",
+
             gtk::Overlay {
                 add_overlay = &gtk::Box {
                     add_css_class: "bar-dock-indicator-container",

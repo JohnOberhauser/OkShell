@@ -5,7 +5,9 @@ use std::{
     marker::PhantomData,
     time::Duration,
 };
-use relm4::gtk::glib;
+use std::cell::RefCell;
+use std::rc::Rc;
+use relm4::gtk::{gdk, glib};
 use gtk::prelude::*;
 use relm4::{
     gtk,
@@ -34,6 +36,7 @@ pub struct DynamicBoxFactory<Item, Key> {
 pub enum DynamicBoxInput<Item, Key> {
     SetItems(Vec<Item>),
     FinalizeRemoval(Key),
+    Reorder { from: Key, to: Key },
 }
 
 impl<Item, Key> Debug for DynamicBoxInput<Item, Key> {
@@ -41,6 +44,7 @@ impl<Item, Key> Debug for DynamicBoxInput<Item, Key> {
         match self {
             Self::SetItems(items) => f.debug_tuple("SetItems").field(&items.len()).finish(),
             Self::FinalizeRemoval(_) => write!(f, "FinalizeRemoval(..)"),
+            Self::Reorder { .. } => write!(f, "Reorder(..)"),
         }
     }
 }
@@ -62,6 +66,7 @@ pub struct DynamicBoxInit<Item, Key> {
     /// If true, reverse the order of the provided list.
     pub reverse: bool,
     pub retain_entries: bool,
+    pub allow_drag_and_drop: bool,
 }
 
 /// A keyed container that:
@@ -93,18 +98,25 @@ where
     exit_anchors: HashMap<Key, ExitAnchor<Key>>,
     retain_entries: bool,
     hidden: HashSet<Key>,
+    allow_drag_and_drop: bool,
+    drag_key: Rc<RefCell<Option<Key>>>,
+}
+
+#[derive(Debug)]
+pub enum DynamicBoxOutput<Key> {
+    Reordered(Vec<Key>),
 }
 
 #[relm4::component(pub)]
 impl<Item, Key> Component for DynamicBoxModel<Item, Key>
 where
-    Key: Eq + Hash + Clone + 'static,
+    Key: Eq + Hash + Clone + Debug + 'static,
     Item: 'static,
 {
     type CommandOutput = ();
     type Init = DynamicBoxInit<Item, Key>;
     type Input = DynamicBoxInput<Item, Key>;
-    type Output = ();
+    type Output = DynamicBoxOutput<Key>;
 
     view! {
         #[root]
@@ -134,6 +146,8 @@ where
             exit_anchors: HashMap::new(),
             retain_entries: init.retain_entries,
             hidden: HashSet::new(),
+            allow_drag_and_drop: init.allow_drag_and_drop,
+            drag_key: Rc::new(RefCell::new(None)),
         };
 
         let widgets = view_output!();
@@ -145,7 +159,7 @@ where
         &mut self,
         _widgets: &mut Self::Widgets,
         message: Self::Input,
-        _sender: ComponentSender<Self>,
+        sender: ComponentSender<Self>,
         root: &Self::Root,
     ) {
         match message {
@@ -157,6 +171,29 @@ where
             }
             DynamicBoxInput::FinalizeRemoval(key) => {
                 self.finalize_removal(root, key);
+            }
+            DynamicBoxInput::Reorder { from, to } => {
+                if from == to { return; }
+
+                // Remove `from` from its current position
+                let Some(from_idx) = self.order.iter().position(|k| *k == from) else { return };
+                self.order.remove(from_idx);
+
+                // Insert before `to`
+                let to_idx = self.order.iter().position(|k| *k == to).unwrap_or(self.order.len());
+                self.order.insert(to_idx, from.clone());
+
+                // Reorder GTK children to match
+                let mut prev: Option<gtk::Widget> = None;
+                for key in self.order.iter() {
+                    if let Some(entry) = self.entries.get(key) {
+                        let w: gtk::Widget = entry.revealer.clone().upcast();
+                        root.reorder_child_after(&w, prev.as_ref());
+                        prev = Some(w);
+                    }
+                }
+
+                let _ = sender.output(DynamicBoxOutput::Reordered(self.order.clone()));
             }
         }
     }
@@ -214,6 +251,10 @@ where
                 revealer.set_child(Some(&child_widget));
                 revealer.set_reveal_child(false);
                 revealer.add_css_class("dynamic_box_revealer");
+
+                if self.allow_drag_and_drop {
+                    self.attach_drag_and_drop_controllers(&revealer, key);
+                }
 
                 root.append(&revealer);
 
@@ -396,6 +437,63 @@ where
         for (k, e) in &self.entries {
             f(k, e);
         }
+    }
+
+    fn attach_drag_and_drop_controllers(&self, revealer: &gtk::Revealer, key: &Key) {
+        let drag_key = self.drag_key.clone();
+        let key_for_drag = key.clone();
+        let child = revealer.child().unwrap();
+
+        // --- Source ---
+        let source = gtk::DragSource::new();
+        source.set_actions(gdk::DragAction::MOVE);
+
+        source.connect_prepare(move |_src, _x, _y| {
+            *drag_key.borrow_mut() = Some(key_for_drag.clone());
+            // We still need to return *something* — an empty string is fine,
+            // the real key travels via the Rc side channel.
+            Some(gdk::ContentProvider::for_value(&"".to_value()))
+        });
+
+        source.connect_drag_begin(|src, _drag| {
+            if let Some(w) = src.widget() {
+                w.add_css_class("dragging");
+            }
+        });
+
+        source.connect_drag_end({
+            let drag_key = self.drag_key.clone();
+            move |src, _drag, _delete| {
+                if let Some(w) = src.widget() {
+                    w.remove_css_class("dragging");
+                }
+                // Clear in case drop didn't fire (cancelled drag)
+                *drag_key.borrow_mut() = None;
+            }
+        });
+
+        child.add_controller(source);
+
+        // --- Target ---
+        let target = gtk::DropTarget::new(glib::Type::STRING, gdk::DragAction::MOVE);
+        let drag_key = self.drag_key.clone();
+        let to_key = key.clone();
+        let tx = self.finalize_tx.clone();
+
+        target.connect_drop(move |_target, _value, _x, _y| {
+            let from = drag_key.borrow_mut().take();
+            if let Some(from_key) = from {
+                if from_key != to_key {
+                    let _ = tx.send(DynamicBoxInput::Reorder {
+                        from: from_key,
+                        to: to_key.clone(),
+                    });
+                }
+            }
+            true
+        });
+
+        child.add_controller(target);
     }
 }
 

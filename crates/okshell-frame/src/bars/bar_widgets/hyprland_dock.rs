@@ -20,7 +20,7 @@ use crate::bars::bar::BarType;
 use crate::bars::bar_widgets::app_launcher::{AppLauncherInit, AppLauncherModel, AppLauncherOutput};
 use crate::bars::bar_widgets::hyprland_dock::HyprlandDockOutput::AppLauncherClicked;
 use crate::bars::bar_widgets::hyprland_dock_item::{HyprlandDockItemInit, HyprlandDockItemInput, HyprlandDockItemModel};
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
+use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel, DynamicBoxOutput};
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetControllerExtSafe;
 use okshell_config::config_manager::config_manager;
@@ -43,6 +43,7 @@ pub(crate) struct HyprlandDockModel {
 #[derive(Debug)]
 pub(crate) enum HyprlandDockInput {
     ThemeChanged(String),
+    OnReordered(Vec<String>),
 }
 
 #[derive(Debug)]
@@ -125,8 +126,13 @@ impl Component for HyprlandDockModel {
                     transition_duration_ms: 200,
                     reverse: false,
                     retain_entries: false,
+                    allow_drag_and_drop: true,
                 })
-                .detach();
+                .forward(sender.input_sender(), |msg| {
+                    match msg { DynamicBoxOutput::Reordered(keys) => {
+                        HyprlandDockInput::OnReordered(keys)
+                    } }
+                });
 
         let app_launcher_controller = AppLauncherModel::builder()
             .launch(AppLauncherInit{
@@ -190,6 +196,26 @@ impl Component for HyprlandDockModel {
                             .send(HyprlandDockItemInput::ThemeChanged(theme));
                     }
                 });
+            }
+            HyprlandDockInput::OnReordered(classes_in_new_order) => {
+                let store = pinned_apps_store();
+                let current_pinned = store.read_untracked().apps.clone();
+
+                let pinned_map: std::collections::HashMap<&str, _> = current_pinned
+                    .iter()
+                    .map(|app| (app.hyprland_class.as_str(), app))
+                    .collect();
+
+                let reordered_pinned: Vec<_> = classes_in_new_order
+                    .iter()
+                    .filter_map(|class| pinned_map.get(class.as_str()).copied().cloned())
+                    .collect();
+
+                if reordered_pinned.iter().map(|a| &a.hyprland_class).collect::<Vec<_>>()
+                    != current_pinned.iter().map(|a| &a.hyprland_class).collect::<Vec<_>>()
+                {
+                    store.write().apps = reordered_pinned;
+                }
             }
         }
     }

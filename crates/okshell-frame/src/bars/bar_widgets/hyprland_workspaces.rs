@@ -122,6 +122,7 @@ impl Component for HyprlandWorkspacesModel {
                     transition_duration_ms: 200,
                     reverse: false,
                     retain_entries: false,
+                    allow_drag_and_drop: false,
                 })
                 .detach();
 

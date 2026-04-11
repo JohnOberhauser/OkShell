@@ -182,6 +182,7 @@ impl Component for AppLauncherModel {
                     transition_duration_ms: 0,
                     reverse: false,
                     retain_entries: true,
+                    allow_drag_and_drop: false,
                 })
                 .detach();
 
