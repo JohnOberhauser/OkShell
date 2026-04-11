@@ -3,6 +3,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use tracing::span::Attributes;
 use crate::schema::bar_widgets::BarWidget;
+use crate::schema::content_fit::ContentFit;
 use crate::schema::location_query::{LocationQueryConfig, OrdF64};
 use crate::schema::menu_widgets::{MenuWidget, QuickActionWidget, QuickActionsConfig, SpacerConfig};
 use crate::schema::position::{NotificationPosition, Position};
@@ -321,12 +322,14 @@ impl Default for Notifications {
 #[serde(default)]
 pub struct Wallpaper {
     pub wallpaper_dir: String,
+    pub content_fit: ContentFit,
 }
 
 impl Default for Wallpaper {
     fn default() -> Self {
         Self {
             wallpaper_dir: "".to_string(),
+            content_fit: ContentFit::Cover,
         }
     }
 }

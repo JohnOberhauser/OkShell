@@ -1,24 +1,29 @@
 use std::path::PathBuf;
-use gtk4::prelude::{Cast, MediaStreamExt};
+use gtk4::prelude::{Cast};
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
-use reactive_graph::prelude::Get;
+use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::gdk;
 use relm4::gtk::glib;
 use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
 use okshell_cache::wallpaper::{wallpaper_store, WallpaperStateStoreFields};
 use okshell_common::scoped_effects::EffectScope;
+use okshell_config::config_manager::config_manager;
+use okshell_config::schema::config::{ConfigStoreFields, WallpaperStoreFields};
+use okshell_config::schema::content_fit::ContentFit;
 
 const TRANSITION_DURATION_MS: u32 = 200;
 
 #[derive(Debug, Clone)]
 pub struct WallpaperModel {
+    content_fit: ContentFit,
     _effects: EffectScope,
 }
 
 #[derive(Debug)]
 pub enum WallpaperInput {
     PathUpdated(Option<PathBuf>),
+    ContentFitChanged(ContentFit),
 }
 
 #[derive(Debug)]
@@ -80,7 +85,14 @@ impl Component for WallpaperModel {
             sender_clone.input(WallpaperInput::PathUpdated(path));
         });
 
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().content_fit().get();
+            sender_clone.input(WallpaperInput::ContentFitChanged(value));
+        });
+
         let model = WallpaperModel {
+            content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
             _effects: effects,
         };
 
@@ -106,12 +118,13 @@ impl Component for WallpaperModel {
                         stack.remove(&existing);
                     }
 
-                    let widget = make_wallpaper_widget(&path);  // ← here
+                    let widget = make_wallpaper_widget(&path, gtk_content_fit(&self.content_fit));
 
                     let old_child = stack.visible_child();
                     stack.add_named(&widget, Some(&new_name));
 
                     let stack_clone = stack.clone();
+                    // Ensure the new image has been fully realized before starting the transition
                     glib::idle_add_local_once(move || {
                         stack_clone.set_visible_child_name(&new_name);
 
@@ -130,15 +143,46 @@ impl Component for WallpaperModel {
                     });
                 }
             }
+            WallpaperInput::ContentFitChanged(content_fit) => {
+                self.content_fit = content_fit;
+                let fit = gtk_content_fit(&self.content_fit);
+                let mut child = widgets.stack.first_child();
+                while let Some(widget) = child {
+                    child = widget.next_sibling();
+                    if let Some(picture) = widget.downcast_ref::<gtk::Picture>() {
+                        picture.set_content_fit(fit);
+                    }
+                }
+            }
         }
     }
 }
 
-fn make_wallpaper_widget(path: &std::path::Path) -> gtk::Widget {
+fn make_wallpaper_widget(
+    path: &std::path::Path,
+    content_fit: gtk::ContentFit,
+) -> gtk::Widget {
     let picture = gtk::Picture::for_filename(&path);
     picture.set_hexpand(true);
     picture.set_vexpand(true);
-    picture.set_content_fit(gtk::ContentFit::Cover);
+    picture.set_content_fit(content_fit);
     picture.set_can_shrink(true);
     picture.upcast()
+}
+
+fn gtk_content_fit(content_fit: &ContentFit) -> gtk::ContentFit {
+    match content_fit {
+        ContentFit::Contain => {
+            gtk::ContentFit::Contain
+        }
+        ContentFit::Cover => {
+            gtk::ContentFit::Cover
+        }
+        ContentFit::Fill => {
+            gtk::ContentFit::Fill
+        }
+        ContentFit::ScaleDown => {
+            gtk::ContentFit::ScaleDown
+        }
+    }
 }

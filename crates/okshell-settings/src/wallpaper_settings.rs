@@ -1,21 +1,26 @@
-use reactive_graph::prelude::Get;
+use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::gio;
 use relm4::gtk::prelude::{BoxExt, ButtonExt, FileExt, OrientableExt, WidgetExt};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, WallpaperStoreFields};
+use okshell_config::schema::content_fit::ContentFit;
 
 #[derive(Debug, Clone)]
 pub(crate) struct WallpaperSettingsModel {
     wallpaper_directory: String,
+    content_fit: ContentFit,
     _effects: EffectScope,
 }
 
 #[derive(Debug)]
 pub(crate) enum WallpaperSettingsInput {
     ChangeWallpaperDirectoryClicked,
-    WallpaperDirectoryChanged(String),
+    ContentFitChanged(ContentFit),
+    
+    WallpaperDirectoryEffect(String),
+    ContentFitEffect(ContentFit),
 }
 
 #[derive(Debug)]
@@ -42,6 +47,7 @@ impl Component for WallpaperSettingsModel {
             set_propagate_natural_width: false,
             set_hexpand: true,
             set_vexpand: true,
+
             gtk::Box {
                 add_css_class: "settings-page",
                 set_orientation: gtk::Orientation::Vertical,
@@ -80,7 +86,46 @@ impl Component for WallpaperSettingsModel {
                     },
 
                 },
+                
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
 
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Content fit",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "How the wallpaper should fit into the space.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::DropDown {
+                        set_width_request: 150,
+                        set_valign: gtk::Align::Center,
+                        set_model: Some(&gtk::StringList::new(&ContentFit::display_names())),
+                        #[watch]
+                        #[block_signal(handler)]
+                        set_selected: model.content_fit.to_index(),
+                        connect_selected_notify[sender] => move |dd| {
+                            sender.input(WallpaperSettingsInput::ContentFitChanged(
+                                ContentFit::from_index(dd.selected())
+                            ));
+                        } @handler,
+                    },
+                },
             }
         }
     }
@@ -95,13 +140,19 @@ impl Component for WallpaperSettingsModel {
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let config = config_manager().config();
-            let wallpaper_dir = config.wallpaper().wallpaper_dir().get();
-            sender_clone.input(WallpaperSettingsInput::WallpaperDirectoryChanged(wallpaper_dir));
+            let wallpaper_dir = config_manager().config().wallpaper().wallpaper_dir().get();
+            sender_clone.input(WallpaperSettingsInput::WallpaperDirectoryEffect(wallpaper_dir));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().content_fit().get();
+            sender_clone.input(WallpaperSettingsInput::ContentFitEffect(value));
         });
 
         let model = WallpaperSettingsModel {
             wallpaper_directory: "".to_string(),
+            content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
             _effects: effects,
         };
 
@@ -130,8 +181,7 @@ impl Component for WallpaperSettingsModel {
                     move |result| {
                         if let Ok(file) = result {
                             if let Some(path) = file.path() {
-                                let config_manager = config_manager();
-                                config_manager.update_config(|config| {
+                                config_manager().update_config(|config| {
                                     config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
                                 });
                             }
@@ -139,8 +189,17 @@ impl Component for WallpaperSettingsModel {
                     },
                 );
             }
-            WallpaperSettingsInput::WallpaperDirectoryChanged(path) => {
+            WallpaperSettingsInput::ContentFitChanged(content_fit) => {
+                config_manager().update_config(|config| {
+                    config.wallpaper.content_fit = content_fit;
+                });
+            }
+            
+            WallpaperSettingsInput::WallpaperDirectoryEffect(path) => {
                 self.wallpaper_directory = path;
+            }
+            WallpaperSettingsInput::ContentFitEffect(content_fit) => {
+                self.content_fit = content_fit;
             }
         }
 
