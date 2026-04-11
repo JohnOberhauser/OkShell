@@ -1,6 +1,6 @@
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use relm4::prelude::*;
-use relm4::gtk::{self, gdk, prelude::*, glib, Widget, Stack};
+use relm4::gtk::{self, gdk, prelude::*, glib, Widget};
 use reactive_graph::traits::*;
 use relm4::RelmRemoveAllExt;
 use tracing::info;
@@ -9,6 +9,7 @@ use okshell_common::scoped_effects::EffectScope;
 use okshell_config::{
     schema::config::*
 };
+use okshell_config::config_manager::config_manager;
 use okshell_config::schema::position::Position;
 use crate::bars::bar::{BarInit, BarModel, BarOutput, BarType};
 
@@ -612,6 +613,18 @@ impl Component for Frame {
             })
             .detach();
 
+        let top_sender = top_spacer.sender().clone();
+        let bottom_sender = bottom_spacer.sender().clone();
+        let left_sender = left_spacer.sender().clone();
+        let right_sender = right_spacer.sender().clone();
+        effects.push(move |_| {
+            let border_width = config_manager().config().theme().attributes().sizing().border_width().get();
+            top_sender.emit(FrameSpacerInput::BorderHeightUpdated(border_width));
+            bottom_sender.emit(FrameSpacerInput::BorderHeightUpdated(border_width));
+            left_sender.emit(FrameSpacerInput::BorderWidthUpdated(border_width));
+            right_sender.emit(FrameSpacerInput::BorderWidthUpdated(border_width));
+        });
+
         let model = Frame {
             top_bar,
             bottom_bar,
@@ -982,9 +995,8 @@ impl Frame {
             false,
             move |values| {
                 let height = values[2].get::<i32>().expect("height i32");
-                let border = frame_widget.border_width() as i32;
-                frame_widget.update_style(|s| s.top_thickness = (height + border) as f64);
-                let _ = top_sender.send(FrameSpacerInput::HeightUpdated(height + border));
+                frame_widget.update_style(|s| s.top_thickness = (height) as f64);
+                let _ = top_sender.send(FrameSpacerInput::HeightUpdated(height));
                 None
             },
         );
@@ -996,9 +1008,8 @@ impl Frame {
             false,
             move |values| {
                 let height = values[2].get::<i32>().expect("height i32");
-                let border = frame_widget.border_width() as i32;
-                frame_widget.update_style(|s| s.bottom_thickness = (height + border) as f64);
-                let _ = bottom_sender.send(FrameSpacerInput::HeightUpdated(height + border));
+                frame_widget.update_style(|s| s.bottom_thickness = (height ) as f64);
+                let _ = bottom_sender.send(FrameSpacerInput::HeightUpdated(height));
                 None
             },
         );
@@ -1013,15 +1024,13 @@ impl Frame {
                 None
             },
         );
-        let frame_widget = widgets.frame_draw_widget.clone();
         let left_sender = self.left_spacer.sender().clone();
         widgets.left_bar_container.connect_local(
             "resized",
             false,
             move |values| {
                 let width = values[1].get::<i32>().expect("width i32");
-                let border = frame_widget.border_width() as i32;
-                let _ = left_sender.send(FrameSpacerInput::WidthUpdated(width + border));
+                let _ = left_sender.send(FrameSpacerInput::WidthUpdated(width));
                 None
             },
         );
@@ -1036,15 +1045,13 @@ impl Frame {
                 None
             },
         );
-        let frame_widget = widgets.frame_draw_widget.clone();
         let right_sender = self.right_spacer.sender().clone();
         widgets.right_bar_container.connect_local(
             "resized",
             false,
             move |values| {
                 let width = values[1].get::<i32>().expect("width i32");
-                let border = frame_widget.border_width() as i32;
-                let _ = right_sender.send(FrameSpacerInput::WidthUpdated(width + border));
+                let _ = right_sender.send(FrameSpacerInput::WidthUpdated(width));
                 None
             },
         );

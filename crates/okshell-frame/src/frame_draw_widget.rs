@@ -775,10 +775,15 @@ mod imp {
 
             let style = self.get_resolved_style();
 
-            let hole_x = style.left_thickness;
-            let hole_y = style.top_thickness;
-            let hole_width = (total_width - style.left_thickness - style.right_thickness).max(0.0);
-            let hole_height = (total_height - style.top_thickness - style.bottom_thickness).max(0.0);
+            let total_top_thickness = style.top_thickness;
+            let total_bottom_thickness = style.bottom_thickness;
+            let total_left_thickness = style.left_thickness;
+            let total_right_thickness = style.right_thickness;
+
+            let hole_x = total_left_thickness;
+            let hole_y = total_top_thickness;
+            let hole_width = (total_width - total_left_thickness - total_right_thickness).max(0.0);
+            let hole_height = (total_height - total_top_thickness - total_bottom_thickness).max(0.0);
             let border_radius = style.border_radius.clamp(0.0, hole_width.min(hole_height) / 2.0);
 
             let vertices = build_hole_vertices(&style, hole_x, hole_y, hole_width, hole_height);
@@ -867,34 +872,51 @@ mod imp {
                 .union_rectangle(&RectangleInt::new(0, 0, window_width, window_height))
                 .expect("region union");
 
-            // Subtract main hole
+            let border_width = style.border_width.ceil() as i32;
+            let border_width_f = style.border_width;
+
+            // Subtract main hole (inset by border_width so the border stays in the input region)
             region
                 .subtract_rectangle(&RectangleInt::new(
-                    hole_left, hole_top,
-                    (hole_right - hole_left).max(0),
-                    (hole_bottom - hole_top).max(0),
+                    hole_left + border_width,
+                    hole_top + border_width,
+                    (hole_right - hole_left - border_width * 2).max(0),
+                    (hole_bottom - hole_top - border_width * 2).max(0),
                 ))
                 .expect("region subtract hole");
 
             let left_expander_width = style.left_expander_width.ceil() as i32;
             let right_expander_width = style.right_expander_width.ceil() as i32;
 
-            // Subtract side expander negative-space areas
-            // These extend the hole leftward/rightward into the frame band
+            // Subtract side expander negative-space areas (inset by border_width)
+            // Left top expander: shrink width from the right (hole edge) by border_width
             subtract_rect(&region,
-                          hole_left - left_expander_width, hole_top,
-                          left_expander_width, style.left_top_expander_height.ceil() as i32);
+                          hole_left - left_expander_width,
+                          hole_top,
+                          (left_expander_width - border_width).max(0),
+                          style.left_top_expander_height.ceil() as i32);
+            // Left bottom expander
             subtract_rect(&region,
-                          hole_left - left_expander_width, hole_bottom - style.left_bottom_expander_height.ceil() as i32,
-                          left_expander_width, style.left_bottom_expander_height.ceil() as i32);
+                          hole_left - left_expander_width,
+                          hole_bottom - style.left_bottom_expander_height.ceil() as i32,
+                          (left_expander_width - border_width).max(0),
+                          style.left_bottom_expander_height.ceil() as i32);
+            // Right top expander: shift x rightward by border_width, shrink width
             subtract_rect(&region,
-                          hole_right, hole_top,
-                          right_expander_width, style.right_top_expander_height.ceil() as i32);
+                          hole_right + border_width,
+                          hole_top,
+                          (right_expander_width - border_width).max(0),
+                          style.right_top_expander_height.ceil() as i32);
+            // Right bottom expander
             subtract_rect(&region,
-                          hole_right, hole_bottom - style.right_bottom_expander_height.ceil() as i32,
-                          right_expander_width, style.right_bottom_expander_height.ceil() as i32);
+                          hole_right + border_width,
+                          hole_bottom - style.right_bottom_expander_height.ceil() as i32,
+                          (right_expander_width - border_width).max(0),
+                          style.right_bottom_expander_height.ceil() as i32);
 
-            // Union back inward revealer notches so frame captures input there
+            // Union back inward revealer notches so frame captures input there.
+            // Expand each notch by border_width on sides that touch the hole edge
+            // so the border strip is also covered.
             let (top_revealer_width, top_revealer_height) = style.top_revealer_size;
             let (bottom_revealer_width, bottom_revealer_height) = style.bottom_revealer_size;
             let (top_left_revealer_width, top_left_revealer_height) = style.top_left_revealer_size;
@@ -902,26 +924,47 @@ mod imp {
             let (bottom_left_revealer_width, bottom_left_revealer_height) = style.bottom_left_revealer_size;
             let (bottom_right_revealer_width, bottom_right_revealer_height) = style.bottom_right_revealer_size;
 
-            // Center top/bottom revealers
+            // Center top revealer: touches top hole edge, expand upward
             union_inward_notch(&region,
-                               hole_x + hole_width / 2.0 - top_revealer_width / 2.0, hole_y,
-                               top_revealer_width, top_revealer_height);
+                               hole_x + hole_width / 2.0 - top_revealer_width / 2.0,
+                               hole_y - border_width_f,
+                               top_revealer_width,
+                               top_revealer_height + border_width_f);
+
+            // Center bottom revealer: touches bottom hole edge, expand downward
             union_inward_notch(&region,
                                hole_x + hole_width / 2.0 - bottom_revealer_width / 2.0,
                                hole_y + hole_height - bottom_revealer_height,
-                               bottom_revealer_width, bottom_revealer_height);
+                               bottom_revealer_width,
+                               bottom_revealer_height + border_width_f);
 
-            // Corner revealers
-            union_inward_notch(&region, hole_x, hole_y,
-                               top_left_revealer_width, top_left_revealer_height);
-            union_inward_notch(&region, hole_x + hole_width - top_right_revealer_width, hole_y,
-                               top_right_revealer_width, top_right_revealer_height);
-            union_inward_notch(&region, hole_x, hole_y + hole_height - bottom_left_revealer_height,
-                               bottom_left_revealer_width, bottom_left_revealer_height);
+            // Top-left corner revealer: touches top and left hole edges
+            union_inward_notch(&region,
+                               hole_x - border_width_f,
+                               hole_y - border_width_f,
+                               top_left_revealer_width + border_width_f,
+                               top_left_revealer_height + border_width_f);
+
+            // Top-right corner revealer: touches top and right hole edges
+            union_inward_notch(&region,
+                               hole_x + hole_width - top_right_revealer_width,
+                               hole_y - border_width_f,
+                               top_right_revealer_width + border_width_f,
+                               top_right_revealer_height + border_width_f);
+
+            // Bottom-left corner revealer: touches bottom and left hole edges
+            union_inward_notch(&region,
+                               hole_x - border_width_f,
+                               hole_y + hole_height - bottom_left_revealer_height,
+                               bottom_left_revealer_width + border_width_f,
+                               bottom_left_revealer_height + border_width_f);
+
+            // Bottom-right corner revealer: touches bottom and right hole edges
             union_inward_notch(&region,
                                hole_x + hole_width - bottom_right_revealer_width,
                                hole_y + hole_height - bottom_right_revealer_height,
-                               bottom_right_revealer_width, bottom_right_revealer_height);
+                               bottom_right_revealer_width + border_width_f,
+                               bottom_right_revealer_height + border_width_f);
 
             surface.set_input_region(&region);
         }
