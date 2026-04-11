@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum Themes {
     Default,
-    Matugen,
+    Wallpaper,
     BloodRust,
     CatppuccinFrappe,
     CatppuccinLatte,
@@ -56,7 +56,7 @@ impl Themes {
     pub fn label(&self) -> &'static str {
         match self {
             Self::Default => "Default",
-            Self::Matugen => "Matugen",
+            Self::Wallpaper => "Wallpaper",
             Self::BloodRust => "Blood Rust",
             Self::CatppuccinFrappe => "Catppuccin Frappé",
             Self::CatppuccinLatte => "Catppuccin Latte",
@@ -91,7 +91,7 @@ impl Themes {
     pub fn all() -> &'static [Self] {
         &[
             Self::Default,
-            Self::Matugen,
+            Self::Wallpaper,
             Self::BloodRust,
             Self::CatppuccinFrappe,
             Self::CatppuccinLatte,

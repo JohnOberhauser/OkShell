@@ -161,7 +161,7 @@ impl Component for StyleManagerModel {
                 } else {
                     if theme == Themes::Default {
                         self.theme_css_provider.load_from_string("");
-                    } else if theme == Themes::Matugen {
+                    } else if theme == Themes::Wallpaper {
                         if let Some(current_wallpaper) = current_wallpaper() {
                             let matugen = config_manager().config().theme().matugen().get_untracked();
                             sender.input(SetMatugenCssWithWallpaper(current_wallpaper, matugen));
@@ -174,14 +174,14 @@ impl Component for StyleManagerModel {
             }
             WallpaperUpdate(path) => {
                 if let Some(path) = path {
-                    if config_manager().config().theme().theme().get_untracked() == Themes::Matugen {
+                    if config_manager().config().theme().theme().get_untracked() == Themes::Wallpaper {
                         let matugen = config_manager().config().theme().matugen().get_untracked();
                         sender.input(SetMatugenCssWithWallpaper(path, matugen));
                     }
                 }
             }
             MatugenUpdate(matugen) => {
-                if config_manager().config().theme().theme().get_untracked() == Themes::Matugen {
+                if config_manager().config().theme().theme().get_untracked() == Themes::Wallpaper {
                     if let Some(current_wallpaper) = current_wallpaper() {
                         sender.input(SetMatugenCssWithWallpaper(current_wallpaper, matugen));
                     }

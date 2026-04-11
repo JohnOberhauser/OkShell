@@ -513,7 +513,7 @@ impl Component for ThemeSettingsModel {
 
                 gtk::Label {
                     add_css_class: "label-large-bold",
-                    set_label: "Layer Windows",
+                    set_label: "Layers and Windows",
                     set_halign: gtk::Align::Start,
                 },
 
@@ -560,8 +560,18 @@ impl Component for ThemeSettingsModel {
 
                 gtk::Label {
                     add_css_class: "label-large-bold",
-                    set_label: "Matugen",
+                    set_label: "Wallpaper Matugen",
                     set_halign: gtk::Align::Start,
+                },
+
+                gtk::Label {
+                    add_css_class: "label-small",
+                    set_halign: gtk::Align::Start,
+                    set_label: "Change how the Wallpaper theme chooses colors.",
+                    set_hexpand: true,
+                    set_xalign: 0.0,
+                    set_wrap: true,
+                    set_natural_wrap_mode: gtk::NaturalWrapMode::None,
                 },
 
                 gtk::Box {

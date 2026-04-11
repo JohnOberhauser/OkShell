@@ -7,7 +7,7 @@ All non-default, built-in theming in OkShell happens through Matugen.
 
 You can change your theme in `Settings` -> `Theme` -> `Color Scheme`.
 If you choose `Default`, Matugen will not be used.
-If you choose `Matugen`, the theme will change based on the wallpaper you have selected.
+If you choose `Wallpaper`, the theme will change based on the wallpaper you have selected.
 If you choose a static theme, Matugen will apply that static theme to all your programs configured with Matugen.
 
 ::: tip

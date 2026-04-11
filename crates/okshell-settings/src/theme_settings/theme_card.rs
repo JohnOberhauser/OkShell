@@ -75,7 +75,7 @@ impl FactoryComponent for ThemeCardModel {
                 },
 
                 gtk::Label {
-                    set_visible: self.theme == Themes::Matugen,
+                    set_visible: self.theme == Themes::Wallpaper,
                     add_css_class: "label-small",
                     set_halign: gtk::Align::Center,
                     set_label: "Generate colors based on the selected wallpaper.",
@@ -86,7 +86,7 @@ impl FactoryComponent for ThemeCardModel {
                 },
 
                 gtk::Box {
-                    set_visible: self.theme != Themes::Matugen && self.theme != Themes::Default,
+                    set_visible: self.theme != Themes::Wallpaper && self.theme != Themes::Default,
                     set_orientation: gtk::Orientation::Horizontal,
                     set_halign: gtk::Align::Center,
                     set_spacing: 8,

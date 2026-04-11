@@ -35,7 +35,7 @@ pub fn static_theme(
 ) -> Option<MatugenTheme> {
     let okshell = okshell.unwrap_or_default();
     match theme {
-        Themes::Default | Themes::Matugen => None,
+        Themes::Default | Themes::Wallpaper => None,
         Themes::BloodRust => Some(blood_rust(okshell)),
         Themes::CatppuccinFrappe => Some(catppuccin_frappe(okshell)),
         Themes::CatppuccinLatte => Some(catppuccin_latte(okshell)),
