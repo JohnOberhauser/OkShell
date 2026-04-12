@@ -167,19 +167,24 @@ impl Component for WallpaperModel {
             }
             WallpaperInput::ThemeChanged(theme) => {
                 self.theme = theme;
-                sender.input(WallpaperInput::SetWallpaper(
-                    self.path.clone(),
-                    self.theme,
-                    self.apply_theme_filter
-                ))
+                if self.apply_theme_filter {
+                    sender.input(WallpaperInput::SetWallpaper(
+                        self.path.clone(),
+                        self.theme,
+                        self.apply_theme_filter
+                    ))
+                }
             }
             WallpaperInput::ApplyThemeChanged(apply_theme) => {
+                let changed = self.apply_theme_filter == apply_theme;
                 self.apply_theme_filter = apply_theme;
-                sender.input(WallpaperInput::SetWallpaper(
-                    self.path.clone(),
-                    self.theme,
-                    self.apply_theme_filter
-                ))
+                if changed {
+                    sender.input(WallpaperInput::SetWallpaper(
+                        self.path.clone(),
+                        self.theme,
+                        self.apply_theme_filter
+                    ))
+                }
             }
             WallpaperInput::SetWallpaper(path, theme, apply_theme) => {
                 if let Some(path) = path {
