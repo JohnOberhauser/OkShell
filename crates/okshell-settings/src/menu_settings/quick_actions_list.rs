@@ -14,6 +14,8 @@ pub struct QuickActionListModel {
 pub enum QuickActionListInput {
     AddAction(QuickActionWidget),
     RemoveAction(DynamicIndex),
+    MoveUp(DynamicIndex),
+    MoveDown(DynamicIndex),
 }
 
 #[derive(Debug)]
@@ -58,6 +60,8 @@ impl Component for QuickActionListModel {
             .launch(gtk::ListBox::default())
             .forward(sender.input_sender(), |output| match output {
                 QuickActionRowOutput::Remove(idx) => QuickActionListInput::RemoveAction(idx),
+                QuickActionRowOutput::MoveUp(idx) => QuickActionListInput::MoveUp(idx),
+                QuickActionRowOutput::MoveDown(idx) => QuickActionListInput::MoveDown(idx),
             });
 
         {
@@ -94,6 +98,20 @@ impl Component for QuickActionListModel {
                 self.actions.guard().remove(index.current_index());
                 self.emit_changed(&sender);
                 self.rebuild_add_menu(widgets, &sender);
+            }
+            QuickActionListInput::MoveUp(index) => {
+                let idx = index.current_index();
+                if idx > 0 {
+                    self.actions.guard().move_to(idx, idx - 1);
+                    self.emit_changed(&sender);
+                }
+            }
+            QuickActionListInput::MoveDown(index) => {
+                let idx = index.current_index();
+                if idx + 1 < self.actions.len() {
+                    self.actions.guard().move_to(idx, idx + 1);
+                    self.emit_changed(&sender);
+                }
             }
         }
 
