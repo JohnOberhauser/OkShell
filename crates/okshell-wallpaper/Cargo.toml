@@ -17,4 +17,5 @@ okshell-config.workspace = true
 okshell-style.workspace = true
 reactive_graph.workspace = true
 relm4.workspace = true
+tokio.workspace = true
 tracing.workspace = true

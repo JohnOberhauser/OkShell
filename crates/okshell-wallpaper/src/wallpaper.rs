@@ -1,4 +1,6 @@
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use gtk4::prelude::{Cast};
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use reactive_graph::prelude::{Get, GetUntracked};
@@ -12,9 +14,8 @@ use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields, WallpaperStoreFields};
 use okshell_config::schema::content_fit::ContentFit;
 use okshell_config::schema::themes::Themes;
-use okshell_style::matugen::json_struct::{MatugenTheme, OkShell};
+use okshell_style::matugen::json_struct::{MatugenTheme};
 use okshell_style::matugen::static_theme_mapping::static_theme;
-use okshell_style::static_themes::tokyo_night::tokyo_night;
 
 const TRANSITION_DURATION_MS: u32 = 200;
 
@@ -24,6 +25,7 @@ pub struct WallpaperModel {
     apply_theme_filter: bool,
     theme: Themes,
     path: Option<PathBuf>,
+    cancel_token: Arc<AtomicBool>,
     _effects: EffectScope,
 }
 
@@ -44,7 +46,15 @@ pub struct WallpaperInit {
 }
 
 #[derive(Debug)]
-pub enum WallpaperCommandOutput {}
+pub enum WallpaperCommandOutput {
+    FilteredReady {
+        name: String,
+        buf: Vec<u8>,
+        width: u32,
+        height: u32,
+        content_fit: gtk::ContentFit,
+    },
+}
 
 #[relm4::component(pub)]
 impl Component for WallpaperModel {
@@ -118,6 +128,7 @@ impl Component for WallpaperModel {
             apply_theme_filter: config_manager().config().wallpaper().apply_theme_filter().get_untracked(),
             theme: config_manager().config().theme().theme().get_untracked(),
             path: None,
+            cancel_token: Arc::new(AtomicBool::new(false)),
             _effects: effects,
         };
 
@@ -171,98 +182,121 @@ impl Component for WallpaperModel {
             }
             WallpaperInput::SetWallpaper(path, theme, apply_theme) => {
                 if let Some(path) = path {
-                    let stack = &widgets.stack;
                     let new_name = format!(
                         "{}{}{}",
-                        path.to_string_lossy().to_string(),
+                        path.to_string_lossy(),
                         theme.label(),
-                        if apply_theme {
-                            "t"
-                        } else {
-                            "f"
-                        }
+                        if apply_theme { "t" } else { "f" }
                     );
-
-                    if let Some(existing) = stack.child_by_name(&new_name) {
-                        stack.remove(&existing);
-                    }
-
-                    let widget;
 
                     let static_theme = static_theme(&theme, None);
 
                     if apply_theme && static_theme.is_some() {
-                        widget = make_filtered_wallpaper(
-                            &path,
-                            &extract_palette(&static_theme.unwrap()),
-                            1.0,
-                            gtk_content_fit(&self.content_fit),
-                        );
+                        // cancel any in-flight job
+                        self.cancel_token.store(true, Ordering::Relaxed);
+                        let cancel_token = Arc::new(AtomicBool::new(false));
+                        self.cancel_token = cancel_token.clone();
+
+                        let palette = extract_palette(&static_theme.unwrap());
+                        let content_fit = gtk_content_fit(&self.content_fit);
+
+                        sender.command(move |out, _shutdown| async move {
+                            let result = tokio::task::spawn_blocking(move || {
+                                let img = image::open(&path).ok()?.into_rgba8();
+                                let (w, h) = img.dimensions();
+                                let mut buf = img.into_raw();
+                                apply_palette_remap(&mut buf, &palette, 1.0, &cancel_token)?;
+                                Some((buf, w, h))
+                            }).await.ok().flatten();
+
+                            if let Some((buf, w, h)) = result {
+                                out.send(WallpaperCommandOutput::FilteredReady {
+                                    name: new_name,
+                                    buf,
+                                    width: w,
+                                    height: h,
+                                    content_fit,
+                                }).ok();
+                            }
+                        });
                     } else {
-                        widget = make_wallpaper_widget(&path, gtk_content_fit(&self.content_fit));
-                    }
-
-                    let old_child = stack.visible_child();
-                    stack.add_named(&widget, Some(&new_name));
-
-                    let stack_clone = stack.clone();
-                    // Ensure the new image has been fully realized before starting the transition
-                    glib::idle_add_local_once(move || {
-                        stack_clone.set_visible_child_name(&new_name);
-
-                        if let Some(old) = old_child {
-                            let stack_clone2 = stack_clone.clone();
-                            glib::timeout_add_local_once(
-                                std::time::Duration::from_millis(TRANSITION_DURATION_MS as u64 + 50),
-                                move || {
-                                    // Guard: only remove if still parented to this stack
-                                    if old.parent().as_ref() == Some(stack_clone2.upcast_ref()) {
-                                        stack_clone2.remove(&old);
-                                    }
-                                },
-                            );
+                        // unfiltered path — apply directly on main thread
+                        let stack = &widgets.stack;
+                        if let Some(existing) = stack.child_by_name(&new_name) {
+                            stack.remove(&existing);
                         }
-                    });
+                        let widget = make_wallpaper_widget(&path, gtk_content_fit(&self.content_fit));
+                        let old_child = stack.visible_child();
+                        stack.add_named(&widget, Some(&new_name));
+                        transition_stack(stack, &new_name, old_child);
+                    }
                 }
+            }
+        }
+    }
+
+    fn update_cmd_with_view(
+        &mut self,
+        widgets: &mut Self::Widgets,
+        message: Self::CommandOutput,
+        _sender: ComponentSender<Self>,
+        _root: &Self::Root,
+    ) {
+        match message {
+            WallpaperCommandOutput::FilteredReady { name, buf, width, height, content_fit } => {
+                let stack = &widgets.stack;
+                if let Some(existing) = stack.child_by_name(&name) {
+                    stack.remove(&existing);
+                }
+
+                let bytes = glib::Bytes::from_owned(buf);
+                let texture = gdk::MemoryTexture::new(
+                    width as i32,
+                    height as i32,
+                    gdk::MemoryFormat::R8g8b8a8,
+                    &bytes,
+                    (width * 4) as usize,
+                );
+
+                let picture = gtk::Picture::for_paintable(&texture);
+                picture.set_hexpand(true);
+                picture.set_vexpand(true);
+                picture.set_content_fit(content_fit);
+                picture.set_can_shrink(true);
+
+                let old_child = stack.visible_child();
+                stack.add_named(&picture.upcast::<gtk::Widget>(), Some(&name));
+                transition_stack(stack, &name, old_child);
             }
         }
     }
 }
 
+fn transition_stack(stack: &gtk::Stack, new_name: &str, old_child: Option<gtk::Widget>) {
+    let stack_clone = stack.clone();
+    let new_name = new_name.to_string();
+    glib::idle_add_local_once(move || {
+        stack_clone.set_visible_child_name(&new_name);
+
+        if let Some(old) = old_child {
+            let stack_clone2 = stack_clone.clone();
+            glib::timeout_add_local_once(
+                std::time::Duration::from_millis(TRANSITION_DURATION_MS as u64 + 50),
+                move || {
+                    if old.parent().as_ref() == Some(stack_clone2.upcast_ref()) {
+                        stack_clone2.remove(&old);
+                    }
+                },
+            );
+        }
+    });
+}
+
 fn make_wallpaper_widget(
-    path: &std::path::Path,
+    path: &Path,
     content_fit: gtk::ContentFit,
 ) -> gtk::Widget {
     let picture = gtk::Picture::for_filename(&path);
-    picture.set_hexpand(true);
-    picture.set_vexpand(true);
-    picture.set_content_fit(content_fit);
-    picture.set_can_shrink(true);
-    picture.upcast()
-}
-
-fn make_filtered_wallpaper(
-    path: &Path,
-    palette: &[(u8, u8, u8)],
-    strength: f32,
-    content_fit: gtk::ContentFit,
-) -> gtk::Widget {
-    let img = image::open(path).unwrap().into_rgba8();
-    let (w, h) = img.dimensions();
-
-    let mut buf = img.into_raw();
-    apply_palette_remap(&mut buf, palette, strength);
-
-    let bytes = glib::Bytes::from_owned(buf);
-    let texture = gdk::MemoryTexture::new(
-        w as i32,
-        h as i32,
-        gdk::MemoryFormat::R8g8b8a8,
-        &bytes,
-        (w * 4) as usize,  // row stride
-    );
-
-    let picture = gtk::Picture::for_paintable(&texture);
     picture.set_hexpand(true);
     picture.set_vexpand(true);
     picture.set_content_fit(content_fit);
@@ -315,17 +349,25 @@ fn dedup_by_perceptual_distance(colors: &mut Vec<(u8, u8, u8)>, min_distance: f3
     *colors = kept;
 }
 
-fn apply_palette_remap(buf: &mut [u8], palette: &[(u8, u8, u8)], strength: f32) {
-    // precompute palette in OkLAB
+fn apply_palette_remap(
+    buf: &mut [u8],
+    palette: &[(u8, u8, u8)],
+    strength: f32,
+    cancel: &AtomicBool,
+) -> Option<()> {
     let lab_palette: Vec<_> = palette.iter()
         .map(|&(r, g, b)| srgb_to_oklab(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0))
         .collect();
 
-    for pixel in buf.chunks_exact_mut(4) {
+    for (i, pixel) in buf.chunks_exact_mut(4).enumerate() {
+        // check cancellation every 4096 pixels
+        if i % 4096 == 0 && cancel.load(Ordering::Relaxed) {
+            return None;
+        }
+
         let (r, g, b) = (pixel[0], pixel[1], pixel[2]);
         let (l, a, bp) = srgb_to_oklab(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0);
 
-        // find nearest palette color in OkLAB
         let (_, best) = lab_palette.iter().enumerate()
             .min_by(|(_, a_lab), (_, b_lab)| {
                 let da = (a_lab.0 - l).powi(2) + (a_lab.1 - a).powi(2) + (a_lab.2 - bp).powi(2);
@@ -334,14 +376,13 @@ fn apply_palette_remap(buf: &mut [u8], palette: &[(u8, u8, u8)], strength: f32) 
             })
             .unwrap();
 
-        // preserve original luminance, take chroma from palette match
         let remapped = oklab_to_srgb(l, best.1, best.2);
-
         pixel[0] = lerp_u8(r, (remapped.0 * 255.0) as u8, strength);
         pixel[1] = lerp_u8(g, (remapped.1 * 255.0) as u8, strength);
         pixel[2] = lerp_u8(b, (remapped.2 * 255.0) as u8, strength);
-        // alpha untouched
     }
+
+    Some(())
 }
 
 fn oklab_to_srgb(l: f32, a: f32, b: f32) -> (f32, f32, f32) {
