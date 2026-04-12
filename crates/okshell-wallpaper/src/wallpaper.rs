@@ -9,9 +9,11 @@ use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
 use okshell_cache::wallpaper::{wallpaper_store, WallpaperStateStoreFields};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, WallpaperStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields, WallpaperStoreFields};
 use okshell_config::schema::content_fit::ContentFit;
+use okshell_config::schema::themes::Themes;
 use okshell_style::matugen::json_struct::{MatugenTheme, OkShell};
+use okshell_style::matugen::static_theme_mapping::static_theme;
 use okshell_style::static_themes::tokyo_night::tokyo_night;
 
 const TRANSITION_DURATION_MS: u32 = 200;
@@ -19,6 +21,9 @@ const TRANSITION_DURATION_MS: u32 = 200;
 #[derive(Debug, Clone)]
 pub struct WallpaperModel {
     content_fit: ContentFit,
+    apply_theme_filter: bool,
+    theme: Themes,
+    path: Option<PathBuf>,
     _effects: EffectScope,
 }
 
@@ -26,6 +31,9 @@ pub struct WallpaperModel {
 pub enum WallpaperInput {
     PathUpdated(Option<PathBuf>),
     ContentFitChanged(ContentFit),
+    ThemeChanged(Themes),
+    ApplyThemeChanged(bool),
+    SetWallpaper(Option<PathBuf>, Themes, bool),
 }
 
 #[derive(Debug)]
@@ -93,8 +101,23 @@ impl Component for WallpaperModel {
             sender_clone.input(WallpaperInput::ContentFitChanged(value));
         });
 
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().apply_theme_filter().get();
+            sender_clone.input(WallpaperInput::ApplyThemeChanged(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().theme().theme().get();
+            sender_clone.input(WallpaperInput::ThemeChanged(value));
+        });
+
         let model = WallpaperModel {
             content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
+            apply_theme_filter: config_manager().config().wallpaper().apply_theme_filter().get_untracked(),
+            theme: config_manager().config().theme().theme().get_untracked(),
+            path: None,
             _effects: effects,
         };
 
@@ -107,26 +130,77 @@ impl Component for WallpaperModel {
         &mut self,
         widgets: &mut Self::Widgets,
         message: Self::Input,
-        _sender: ComponentSender<Self>,
+        sender: ComponentSender<Self>,
         _root: &Self::Root,
     ) {
         match message {
             WallpaperInput::PathUpdated(path) => {
+                self.path = path;
+                sender.input(WallpaperInput::SetWallpaper(
+                    self.path.clone(),
+                    self.theme,
+                    self.apply_theme_filter
+                ))
+            }
+            WallpaperInput::ContentFitChanged(content_fit) => {
+                self.content_fit = content_fit;
+                let fit = gtk_content_fit(&self.content_fit);
+                let mut child = widgets.stack.first_child();
+                while let Some(widget) = child {
+                    child = widget.next_sibling();
+                    if let Some(picture) = widget.downcast_ref::<gtk::Picture>() {
+                        picture.set_content_fit(fit);
+                    }
+                }
+            }
+            WallpaperInput::ThemeChanged(theme) => {
+                self.theme = theme;
+                sender.input(WallpaperInput::SetWallpaper(
+                    self.path.clone(),
+                    self.theme,
+                    self.apply_theme_filter
+                ))
+            }
+            WallpaperInput::ApplyThemeChanged(apply_theme) => {
+                self.apply_theme_filter = apply_theme;
+                sender.input(WallpaperInput::SetWallpaper(
+                    self.path.clone(),
+                    self.theme,
+                    self.apply_theme_filter
+                ))
+            }
+            WallpaperInput::SetWallpaper(path, theme, apply_theme) => {
                 if let Some(path) = path {
                     let stack = &widgets.stack;
-                    let new_name = path.to_string_lossy().to_string();
+                    let new_name = format!(
+                        "{}{}{}",
+                        path.to_string_lossy().to_string(),
+                        theme.label(),
+                        if apply_theme {
+                            "t"
+                        } else {
+                            "f"
+                        }
+                    );
 
                     if let Some(existing) = stack.child_by_name(&new_name) {
                         stack.remove(&existing);
                     }
 
-                    let widget = make_wallpaper_widget(&path, gtk_content_fit(&self.content_fit));
-                    // let widget = make_filtered_wallpaper(
-                    //     &path,
-                    //     &extract_palette(&tokyo_night(OkShell::default())),
-                    //     1.0,
-                    //     gtk_content_fit(&self.content_fit),
-                    // );
+                    let widget;
+
+                    let static_theme = static_theme(&theme, None);
+
+                    if apply_theme && static_theme.is_some() {
+                        widget = make_filtered_wallpaper(
+                            &path,
+                            &extract_palette(&static_theme.unwrap()),
+                            1.0,
+                            gtk_content_fit(&self.content_fit),
+                        );
+                    } else {
+                        widget = make_wallpaper_widget(&path, gtk_content_fit(&self.content_fit));
+                    }
 
                     let old_child = stack.visible_child();
                     stack.add_named(&widget, Some(&new_name));
@@ -149,17 +223,6 @@ impl Component for WallpaperModel {
                             );
                         }
                     });
-                }
-            }
-            WallpaperInput::ContentFitChanged(content_fit) => {
-                self.content_fit = content_fit;
-                let fit = gtk_content_fit(&self.content_fit);
-                let mut child = widgets.stack.first_child();
-                while let Some(widget) = child {
-                    child = widget.next_sibling();
-                    if let Some(picture) = widget.downcast_ref::<gtk::Picture>() {
-                        picture.set_content_fit(fit);
-                    }
                 }
             }
         }

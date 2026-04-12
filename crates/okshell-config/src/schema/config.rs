@@ -323,6 +323,7 @@ impl Default for Notifications {
 pub struct Wallpaper {
     pub wallpaper_dir: String,
     pub content_fit: ContentFit,
+    pub apply_theme_filter: bool,
 }
 
 impl Default for Wallpaper {
@@ -330,6 +331,7 @@ impl Default for Wallpaper {
         Self {
             wallpaper_dir: "".to_string(),
             content_fit: ContentFit::Cover,
+            apply_theme_filter: false,
         }
     }
 }

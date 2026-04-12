@@ -1,6 +1,6 @@
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::gio;
+use relm4::gtk::{gio, glib};
 use relm4::gtk::prelude::{BoxExt, ButtonExt, FileExt, OrientableExt, WidgetExt};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
@@ -11,6 +11,7 @@ use okshell_config::schema::content_fit::ContentFit;
 pub(crate) struct WallpaperSettingsModel {
     wallpaper_directory: String,
     content_fit: ContentFit,
+    apply_theme_filter: bool,
     _effects: EffectScope,
 }
 
@@ -18,9 +19,11 @@ pub(crate) struct WallpaperSettingsModel {
 pub(crate) enum WallpaperSettingsInput {
     ChangeWallpaperDirectoryClicked,
     ContentFitChanged(ContentFit),
+    ThemeFilterChanged(bool),
     
     WallpaperDirectoryEffect(String),
     ContentFitEffect(ContentFit),
+    ThemeFilterEffect(bool),
 }
 
 #[derive(Debug)]
@@ -126,6 +129,43 @@ impl Component for WallpaperSettingsModel {
                         } @handler,
                     },
                 },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Theme filter",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Apply a filter to the wallpaper when a static theme is selected.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        #[watch]
+                        #[block_signal(apply_theme_filter_handler)]
+                        set_active: model.apply_theme_filter,
+                        connect_state_set[sender] => move |_, enabled| {
+                            sender.input(WallpaperSettingsInput::ThemeFilterChanged(enabled));
+                            glib::Propagation::Proceed
+                        } @apply_theme_filter_handler,
+                    }
+                },
             }
         }
     }
@@ -150,9 +190,16 @@ impl Component for WallpaperSettingsModel {
             sender_clone.input(WallpaperSettingsInput::ContentFitEffect(value));
         });
 
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().apply_theme_filter().get();
+            sender_clone.input(WallpaperSettingsInput::ThemeFilterEffect(value));
+        });
+
         let model = WallpaperSettingsModel {
             wallpaper_directory: "".to_string(),
             content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
+            apply_theme_filter: config_manager().config().wallpaper().apply_theme_filter().get_untracked(),
             _effects: effects,
         };
 
@@ -194,12 +241,20 @@ impl Component for WallpaperSettingsModel {
                     config.wallpaper.content_fit = content_fit;
                 });
             }
+            WallpaperSettingsInput::ThemeFilterChanged(apply) => {
+                config_manager().update_config(|config| {
+                    config.wallpaper.apply_theme_filter = apply;
+                })
+            }
             
             WallpaperSettingsInput::WallpaperDirectoryEffect(path) => {
                 self.wallpaper_directory = path;
             }
             WallpaperSettingsInput::ContentFitEffect(content_fit) => {
                 self.content_fit = content_fit;
+            }
+            WallpaperSettingsInput::ThemeFilterEffect(filter) => {
+                self.apply_theme_filter = filter;
             }
         }
 
