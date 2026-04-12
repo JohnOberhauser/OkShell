@@ -10,6 +10,7 @@ license.workspace = true
 [dependencies]
 gtk4.workspace = true
 gtk4-layer-shell.workspace = true
+image.workspace = true
 okshell-cache.workspace = true
 okshell-common.workspace = true
 okshell-config.workspace = true
