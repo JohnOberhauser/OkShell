@@ -37,6 +37,7 @@ pub(crate) struct HyprlandDockModel {
     dynamic_box: Controller<DynamicBoxModel<DockItem, String>>,
     orientation: Orientation,
     app_launcher_controller: Controller<AppLauncherModel>,
+    ordered_keys: Vec<String>,
     _effect: EffectScope,
 }
 
@@ -168,6 +169,7 @@ impl Component for HyprlandDockModel {
             dynamic_box: dynamic,
             orientation: params.orientation,
             app_launcher_controller,
+            ordered_keys: Vec::new(),
             _effect: effects,
         };
 
@@ -198,6 +200,8 @@ impl Component for HyprlandDockModel {
                 });
             }
             HyprlandDockInput::OnReordered(classes_in_new_order) => {
+                self.ordered_keys = classes_in_new_order.clone();
+
                 let store = pinned_apps_store();
                 let current_pinned = store.read_untracked().apps.clone();
 
@@ -263,6 +267,28 @@ impl Component for HyprlandDockModel {
                         pinned: false,
                     });
                 rows.extend(unpinned_rows);
+
+                // Sort rows according to remembered drag-and-drop order.
+                if !self.ordered_keys.is_empty() {
+                    let position_map: std::collections::HashMap<&str, usize> = self
+                        .ordered_keys
+                        .iter()
+                        .enumerate()
+                        .map(|(i, k)| (k.as_str(), i))
+                        .collect();
+
+                    rows.sort_by_key(|item| {
+                        position_map
+                            .get(item.class.as_str())
+                            .copied()
+                            .unwrap_or(usize::MAX)
+                    });
+                }
+
+                // Prune ordered_keys: remove classes that no longer exist in the dock.
+                let current_classes: std::collections::HashSet<&str> =
+                    rows.iter().map(|r| r.class.as_str()).collect();
+                self.ordered_keys.retain(|k| current_classes.contains(k.as_str()));
 
                 self.dynamic_box.sender().send(DynamicBoxInput::SetItems(rows)).unwrap();
 
