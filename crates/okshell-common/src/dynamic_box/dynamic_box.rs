@@ -174,14 +174,15 @@ where
             }
             DynamicBoxInput::Reorder { from, to } => {
                 if from == to { return; }
-
-                // Remove `from` from its current position
                 let Some(from_idx) = self.order.iter().position(|k| *k == from) else { return };
+                let Some(to_idx_before_remove) = self.order.iter().position(|k| *k == to) else { return };
+                let moving_forward = from_idx < to_idx_before_remove;
+
                 self.order.remove(from_idx);
 
-                // Insert before `to`
                 let to_idx = self.order.iter().position(|k| *k == to).unwrap_or(self.order.len());
-                self.order.insert(to_idx, from.clone());
+                let insert_idx = if moving_forward { to_idx + 1 } else { to_idx };
+                self.order.insert(insert_idx, from.clone());
 
                 // Reorder GTK children to match
                 let mut prev: Option<gtk::Widget> = None;
@@ -192,7 +193,6 @@ where
                         prev = Some(w);
                     }
                 }
-
                 let _ = sender.output(DynamicBoxOutput::Reordered(self.order.clone()));
             }
         }
