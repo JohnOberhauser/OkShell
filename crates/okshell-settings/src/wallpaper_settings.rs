@@ -147,7 +147,7 @@ impl Component for WallpaperSettingsModel {
                         gtk::Label {
                             add_css_class: "label-small",
                             set_halign: gtk::Align::Start,
-                            set_label: "Apply a filter to the wallpaper when a static theme is selected.",
+                            set_label: "Apply a filter to the wallpaper when a static theme is selected. Wallpaper transitions may take longer with this enabled.",
                             set_hexpand: true,
                             set_xalign: 0.0,
                             set_wrap: true,
