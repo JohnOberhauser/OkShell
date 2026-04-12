@@ -1,8 +1,9 @@
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 use std::sync::atomic::{AtomicBool, Ordering};
 use gtk4::prelude::{Cast};
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
+use rayon::prelude::*;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::gdk;
@@ -323,18 +324,10 @@ fn dedup_by_perceptual_distance(colors: &mut Vec<(u8, u8, u8)>, min_distance: f3
     let mut kept: Vec<(u8, u8, u8)> = Vec::with_capacity(colors.len());
 
     for &color in colors.iter() {
-        let lab = srgb_to_oklab(
-            color.0 as f32 / 255.0,
-            color.1 as f32 / 255.0,
-            color.2 as f32 / 255.0,
-        );
+        let lab = srgb_to_oklab(color.0, color.1, color.2);
 
         let too_close = kept.iter().any(|&k| {
-            let k_lab = srgb_to_oklab(
-                k.0 as f32 / 255.0,
-                k.1 as f32 / 255.0,
-                k.2 as f32 / 255.0,
-            );
+            let k_lab = srgb_to_oklab(k.0, k.1, k.2);
             let dl = lab.0 - k_lab.0;
             let da = lab.1 - k_lab.1;
             let db = lab.2 - k_lab.2;
@@ -356,17 +349,22 @@ fn apply_palette_remap(
     cancel: &AtomicBool,
 ) -> Option<()> {
     let lab_palette: Vec<_> = palette.iter()
-        .map(|&(r, g, b)| srgb_to_oklab(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0))
+        .map(|&(r, g, b)| srgb_to_oklab(r, g, b))
         .collect();
 
-    for (i, pixel) in buf.chunks_exact_mut(4).enumerate() {
-        // check cancellation every 4096 pixels
-        if i % 4096 == 0 && cancel.load(Ordering::Relaxed) {
-            return None;
+    let cancelled = AtomicBool::new(false);
+
+    buf.par_chunks_exact_mut(4).for_each(|pixel| {
+        if cancelled.load(Ordering::Relaxed) {
+            return;
+        }
+        if cancel.load(Ordering::Relaxed) {
+            cancelled.store(true, Ordering::Relaxed);
+            return;
         }
 
         let (r, g, b) = (pixel[0], pixel[1], pixel[2]);
-        let (l, a, bp) = srgb_to_oklab(r as f32 / 255.0, g as f32 / 255.0, b as f32 / 255.0);
+        let (l, a, bp) = srgb_to_oklab(pixel[0], pixel[1], pixel[2]);
 
         let (_, best) = lab_palette.iter().enumerate()
             .min_by(|(_, a_lab), (_, b_lab)| {
@@ -377,15 +375,42 @@ fn apply_palette_remap(
             .unwrap();
 
         let remapped = oklab_to_srgb(l, best.1, best.2);
-        pixel[0] = lerp_u8(r, (remapped.0 * 255.0) as u8, strength);
-        pixel[1] = lerp_u8(g, (remapped.1 * 255.0) as u8, strength);
-        pixel[2] = lerp_u8(b, (remapped.2 * 255.0) as u8, strength);
-    }
+        pixel[0] = lerp_u8(r, remapped.0, strength);
+        pixel[1] = lerp_u8(g, remapped.1, strength);
+        pixel[2] = lerp_u8(b, remapped.2, strength);
+    });
 
-    Some(())
+    if cancel.load(Ordering::Relaxed) { None } else { Some(()) }
 }
 
-fn oklab_to_srgb(l: f32, a: f32, b: f32) -> (f32, f32, f32) {
+static SRGB_TO_LINEAR: LazyLock<[f32; 256]> = LazyLock::new(|| {
+    let mut table = [0.0f32; 256];
+    for i in 0..256 {
+        let x = i as f32 / 255.0;
+        table[i] = if x <= 0.04045 {
+            x / 12.92
+        } else {
+            ((x + 0.055) / 1.055).powf(2.4)
+        };
+    }
+    table
+});
+
+static LINEAR_TO_SRGB: LazyLock<[u8; 4096]> = LazyLock::new(|| {
+    let mut table = [0u8; 4096];
+    for i in 0..4096 {
+        let x = i as f32 / 4095.0;
+        let v = if x <= 0.0031308 {
+            12.92 * x
+        } else {
+            1.055 * x.powf(1.0 / 2.4) - 0.055
+        };
+        table[i] = (v * 255.0).clamp(0.0, 255.0) as u8;
+    }
+    table
+});
+
+fn oklab_to_srgb(l: f32, a: f32, b: f32) -> (u8, u8, u8) {
     let l_ = l + 0.3963377774 * a + 0.2158037573 * b;
     let m_ = l - 0.1055613458 * a - 0.0638541728 * b;
     let s_ = l - 0.0894841775 * a - 1.2914855480 * b;
@@ -394,12 +419,15 @@ fn oklab_to_srgb(l: f32, a: f32, b: f32) -> (f32, f32, f32) {
     let m = m_ * m_ * m_;
     let s = s_ * s_ * s_;
 
-    let r =  4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+    let r = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
     let g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
     let b = -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s;
 
-    // linear to sRGB
-    (linearize_inv(r), linearize_inv(g), linearize_inv(b))
+    (
+        LINEAR_TO_SRGB[(r.clamp(0.0, 1.0) * 4095.0) as usize],
+        LINEAR_TO_SRGB[(g.clamp(0.0, 1.0) * 4095.0) as usize],
+        LINEAR_TO_SRGB[(b.clamp(0.0, 1.0) * 4095.0) as usize],
+    )
 }
 
 fn linearize_inv(x: f32) -> f32 {
@@ -414,17 +442,18 @@ fn lerp_u8(a: u8, b: u8, t: f32) -> u8 {
     (a as f32 + (b as f32 - a as f32) * t).clamp(0.0, 255.0) as u8
 }
 
-fn srgb_to_oklab(r: f32, g: f32, b: f32) -> (f32, f32, f32) {
-    // linearize sRGB
-    let r = if r <= 0.04045 { r / 12.92 } else { ((r + 0.055) / 1.055).powf(2.4) };
-    let g = if g <= 0.04045 { g / 12.92 } else { ((g + 0.055) / 1.055).powf(2.4) };
-    let b = if b <= 0.04045 { b / 12.92 } else { ((b + 0.055) / 1.055).powf(2.4) };
+fn srgb_to_oklab(r: u8, g: u8, b: u8) -> (f32, f32, f32) {
+    let r = SRGB_TO_LINEAR[r as usize];
+    let g = SRGB_TO_LINEAR[g as usize];
+    let b = SRGB_TO_LINEAR[b as usize];
 
     let l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
     let m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
     let s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
 
-    let l = l.cbrt(); let m = m.cbrt(); let s = s.cbrt();
+    let l = l.cbrt();
+    let m = m.cbrt();
+    let s = s.cbrt();
 
     (
         0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,

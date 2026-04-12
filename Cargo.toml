@@ -77,6 +77,7 @@ okshell-style = { path = "crates/okshell-style" }
 okshell-utils = { path = "crates/okshell-utils" }
 okshell-wallpaper = { path = "crates/okshell-wallpaper" }
 pam = "0.8.0"
+rayon = "1.11.0"
 reactive_graph = { version = "0.2.12", features = ["effects"] }
 reactive_stores = "0.4.2"
 relm4 = { version = "0.10.1" }
