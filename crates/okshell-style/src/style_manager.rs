@@ -3,13 +3,13 @@ use reactive_graph::effect::Effect;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::{gdk, CssProvider, STYLE_PROVIDER_PRIORITY_USER};
-use tracing::{error, info};
+use tracing::{error};
 use okshell_cache::wallpaper::{current_wallpaper, wallpaper_store, WallpaperStateStoreFields};
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, Font, FontStoreFields, Matugen, SizingStoreFields, ThemeAttributes, ThemeAttributesStoreFields, ThemeStoreFields};
-use okshell_config::schema::themes::{Themes, WindowOpacity};
+use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, Matugen, SizingStoreFields, ThemeAttributes, ThemeAttributesStoreFields, ThemeStoreFields};
+use okshell_config::schema::themes::{Themes};
 use crate::compiled_css;
-use crate::matugen::matugen::{apply_matugen_debounced, apply_matugen_from_theme_debounced};
+use crate::matugen::matugen::{apply_matugen_from_image_queued, apply_matugen_from_theme_queued};
 use crate::matugen::json_struct::{MatugenTheme, MatugenThemeCustomOnly, OkShell};
 use crate::matugen::static_theme_mapping::static_theme;
 use crate::style_manager::StyleManagerInput::*;
@@ -189,7 +189,7 @@ impl Component for StyleManagerModel {
             }
             SetMatugenCssWithStaticTheme(theme) => {
                 let sender = sender.clone();
-                apply_matugen_from_theme_debounced(theme, move |result| {
+                apply_matugen_from_theme_queued(theme, move |result| {
                     sender.input(MatugenComplete(result));
                 });
             }
@@ -198,7 +198,7 @@ impl Component for StyleManagerModel {
                     okshell: build_okshell_matugen(),
                 };
                 let sender = sender.clone();
-                apply_matugen_debounced(path, matugen, theme_overrides, move |result| {
+                apply_matugen_from_image_queued(path, matugen, theme_overrides, move |result| {
                     sender.input(MatugenComplete(result));
                 });
             }
