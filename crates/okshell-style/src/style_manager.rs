@@ -1,10 +1,9 @@
-use std::path::PathBuf;
 use reactive_graph::effect::Effect;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::{gdk, CssProvider, STYLE_PROVIDER_PRIORITY_USER};
 use tracing::{error};
-use okshell_cache::wallpaper::{current_wallpaper, wallpaper_store, WallpaperStateStoreFields};
+use okshell_cache::wallpaper::{source_path, wallpaper_store, WallpaperStateStoreFields};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, Matugen, SizingStoreFields, ThemeAttributes, ThemeAttributesStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::{Themes};
@@ -27,8 +26,8 @@ pub struct StyleManagerModel {
 pub enum StyleManagerInput {
     ReloadUserCss(String),
     ReloadTheme(Themes),
-    WallpaperUpdate(Option<PathBuf>),
-    SetMatugenCssWithWallpaper(PathBuf, Matugen),
+    WallpaperRevisionChanged,
+    SetMatugenCssWithWallpaper(Matugen),
     MatugenUpdate(Matugen),
     SetMatugenCssWithStaticTheme(MatugenTheme),
     MatugenComplete(anyhow::Result<String>),
@@ -114,9 +113,8 @@ impl Component for StyleManagerModel {
 
         let sender_clone = sender.clone();
         Effect::new(move || {
-            let store = wallpaper_store();
-            let path = store.path().get();
-            sender_clone.input(WallpaperUpdate(path));
+            let _revision = wallpaper_store().revision().get();
+            sender_clone.input(WallpaperRevisionChanged);
         });
 
         let sender_clone = sender.clone();
@@ -162,9 +160,10 @@ impl Component for StyleManagerModel {
                     if theme == Themes::Default {
                         self.theme_css_provider.load_from_string("");
                     } else if theme == Themes::Wallpaper {
-                        if let Some(current_wallpaper) = current_wallpaper() {
+                        let source = source_path();
+                        if source.exists() {
                             let matugen = config_manager().config().theme().matugen().get_untracked();
-                            sender.input(SetMatugenCssWithWallpaper(current_wallpaper, matugen));
+                            sender.input(SetMatugenCssWithWallpaper(matugen));
                         } else {
                             self.theme_css_provider.load_from_string("");
                         }
@@ -172,18 +171,20 @@ impl Component for StyleManagerModel {
                 }
                 let _ = sender.output(QueueFrameRedraw);
             }
-            WallpaperUpdate(path) => {
-                if let Some(path) = path {
-                    if config_manager().config().theme().theme().get_untracked() == Themes::Wallpaper {
+            WallpaperRevisionChanged => {
+                if config_manager().config().theme().theme().get_untracked() == Themes::Wallpaper {
+                    let source = source_path();
+                    if source.exists() {
                         let matugen = config_manager().config().theme().matugen().get_untracked();
-                        sender.input(SetMatugenCssWithWallpaper(path, matugen));
+                        sender.input(SetMatugenCssWithWallpaper(matugen));
                     }
                 }
             }
             MatugenUpdate(matugen) => {
                 if config_manager().config().theme().theme().get_untracked() == Themes::Wallpaper {
-                    if let Some(current_wallpaper) = current_wallpaper() {
-                        sender.input(SetMatugenCssWithWallpaper(current_wallpaper, matugen));
+                    let source = source_path();
+                    if source.exists() {
+                        sender.input(SetMatugenCssWithWallpaper(matugen));
                     }
                 }
             }
@@ -193,12 +194,12 @@ impl Component for StyleManagerModel {
                     sender.input(MatugenComplete(result));
                 });
             }
-            SetMatugenCssWithWallpaper(path, matugen) => {
+            SetMatugenCssWithWallpaper(matugen) => {
                 let theme_overrides = MatugenThemeCustomOnly {
                     okshell: build_okshell_matugen(),
                 };
                 let sender = sender.clone();
-                apply_matugen_from_image_queued(path, matugen, theme_overrides, move |result| {
+                apply_matugen_from_image_queued(source_path(), matugen, theme_overrides, move |result| {
                     sender.input(MatugenComplete(result));
                 });
             }

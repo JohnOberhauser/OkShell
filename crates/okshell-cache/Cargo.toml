@@ -8,6 +8,10 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
+image.workspace = true
+okshell-config.workspace = true
+okshell-image.workspace = true
 reactive_graph.workspace = true
 reactive_stores.workspace = true
 relm4.workspace = true
+tracing.workspace = true

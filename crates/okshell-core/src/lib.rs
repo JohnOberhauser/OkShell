@@ -31,6 +31,9 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let config_manager = okshell_config::config_manager::config_manager();
     config_manager.watch_config();
 
+    // Initialize the effects in the wallpaper store
+    let _ = okshell_cache::wallpaper::wallpaper_store();
+
     let location_query = LocationQuery::from(
         config_manager.config().general().weather_location_query().get_untracked()
     );

@@ -130,7 +130,7 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                     }
                 }
                 IPCCommand::SetWallpaper(path) => {
-                    set_wallpaper(path);
+                    set_wallpaper(&path);
                 }
                 IPCCommand::Lock => {
                     session_lock().lock();

@@ -14,8 +14,6 @@ grass.workspace = true
 [dependencies]
 anyhow.workspace = true
 gtk4.workspace = true
-image.workspace = true
-lutgen.workspace = true
 okshell-cache.workspace = true
 okshell-config.workspace = true
 notify.workspace = true

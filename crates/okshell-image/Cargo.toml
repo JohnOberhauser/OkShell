@@ -11,5 +11,4 @@ license.workspace = true
 image.workspace = true
 lutgen.workspace = true
 okshell-config.workspace = true
-okshell-style.workspace = true
 tracing.workspace = true

@@ -359,7 +359,7 @@ impl Component for WallpaperMenuWidgetModel {
                 }
             }
             WallpaperMenuWidgetInput::FileClicked(path) => {
-                set_wallpaper(path);
+                set_wallpaper(&path);
             }
         }
 

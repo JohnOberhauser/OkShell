@@ -8,7 +8,7 @@ use relm4::gtk::prelude::*;
 use time::format_description::parse;
 use time::OffsetDateTime;
 use tracing::info;
-use okshell_cache::wallpaper::{current_wallpaper};
+use okshell_cache::wallpaper::{display_path};
 use okshell_session::session_lock::session_lock;
 use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
 use crate::utils::username::current_username;
@@ -323,7 +323,7 @@ impl Component for LockScreenModel {
 
         let widgets = view_output!();
 
-        widgets.wallpaper.set_filename(current_wallpaper());
+        widgets.wallpaper.set_filename(Some(display_path()));
 
         session_lock().assign_window_to_monitor(&widgets.root, &params.monitor);
 

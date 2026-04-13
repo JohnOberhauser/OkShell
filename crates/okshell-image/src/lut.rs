@@ -1,7 +1,7 @@
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use image::{ImageBuffer, Rgb};
+use image::{ImageBuffer, ImageReader, Rgb};
 use lutgen::identity::correct_image;
 use okshell_config::schema::themes::Themes;
 
@@ -117,7 +117,13 @@ pub fn apply_theme_filter(
 
     let hald_clut = load_embedded_clut(clut_bytes);
 
-    let mut img = image::open(path).ok()?.into_rgba8();
+    let mut img = ImageReader::open(path)
+        .ok()?
+        .with_guessed_format()
+        .ok()?
+        .decode()
+        .ok()?
+        .into_rgba8();
     let (width, height) = img.dimensions();
 
     let original = if strength < 1.0 {
