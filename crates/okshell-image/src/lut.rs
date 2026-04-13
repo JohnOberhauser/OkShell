@@ -1,9 +1,12 @@
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Instant;
 
-use image::{ImageBuffer, ImageReader, Rgb};
+use relm4::gtk::gdk_pixbuf::Pixbuf;
+use image::{ImageBuffer, Rgb, RgbaImage};
 use lutgen::identity::correct_image;
 use okshell_config::schema::themes::Themes;
+use tracing::{debug, info};
 
 const CLUT_BLOOD_RUST: &[u8] = include_bytes!("../cluts/blood_rust.bin");
 const CLUT_CATPPUCCIN_FRAPPE: &[u8] = include_bytes!("../cluts/catppuccin_frappe.bin");
@@ -115,38 +118,75 @@ pub fn apply_theme_filter(
         return None;
     }
 
+    let t0 = Instant::now();
     let hald_clut = load_embedded_clut(clut_bytes);
+    debug!("lut: load clut: {:?}", t0.elapsed());
 
-    let mut img = ImageReader::open(path)
-        .ok()?
-        .with_guessed_format()
-        .ok()?
-        .decode()
-        .ok()?
-        .into_rgba8();
+    let t1 = Instant::now();
+    let mut img = decode_pixbuf_rgba(path)?;
     let (width, height) = img.dimensions();
+    debug!("lut: decode image ({}x{}): {:?}", width, height, t1.elapsed());
 
+    let t2 = Instant::now();
     let original = if strength < 1.0 {
         Some(img.clone())
     } else {
         None
     };
+    debug!("lut: clone for blend: {:?}", t2.elapsed());
 
+    let t3 = Instant::now();
     correct_image(&mut img, &hald_clut);
+    debug!("lut: correct_image: {:?}", t3.elapsed());
 
     if cancel.load(Ordering::Relaxed) {
         return None;
     }
 
+    let t4 = Instant::now();
     if let Some(original) = original {
         blend_buffers(img.as_mut(), original.as_raw(), strength as f32);
     }
+    debug!("lut: blend: {:?}", t4.elapsed());
 
     Some(RemapResult {
         buf: img.into_raw(),
         width,
         height,
     })
+}
+
+/// Decode an image file to RGBA using gdk-pixbuf.
+pub fn decode_pixbuf_rgba(path: &Path) -> Option<RgbaImage> {
+    let pixbuf = Pixbuf::from_file(path).ok()?;
+
+    let width = pixbuf.width() as u32;
+    let height = pixbuf.height() as u32;
+    let n_channels = pixbuf.n_channels() as u32;
+    let rowstride = pixbuf.rowstride() as u32;
+    let has_alpha = pixbuf.has_alpha();
+    let pixels = unsafe { pixbuf.pixels() };
+
+    let mut rgba_buf = vec![0u8; (width * height * 4) as usize];
+
+    for y in 0..height {
+        let row_offset = (y * rowstride) as usize;
+        for x in 0..width {
+            let src = row_offset + (x * n_channels) as usize;
+            let dst = ((y * width + x) * 4) as usize;
+
+            rgba_buf[dst] = pixels[src];         // R
+            rgba_buf[dst + 1] = pixels[src + 1]; // G
+            rgba_buf[dst + 2] = pixels[src + 2]; // B
+            rgba_buf[dst + 3] = if has_alpha {
+                pixels[src + 3]
+            } else {
+                255
+            };
+        }
+    }
+
+    RgbaImage::from_raw(width, height, rgba_buf)
 }
 
 fn load_embedded_clut(bytes: &[u8]) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
