@@ -1,0 +1,15 @@
+[package]
+name = "okshell-clut-gen"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+description = "OkShell generates CLUTs for each static theme."
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+image.workspace = true
+lutgen.workspace = true
+okshell-config.workspace = true
+okshell-style.workspace = true
+tracing.workspace = true

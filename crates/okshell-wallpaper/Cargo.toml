@@ -10,12 +10,11 @@ license.workspace = true
 [dependencies]
 gtk4.workspace = true
 gtk4-layer-shell.workspace = true
-image.workspace = true
 okshell-cache.workspace = true
 okshell-common.workspace = true
 okshell-config.workspace = true
+okshell-image.workspace = true
 okshell-style.workspace = true
-rayon.workspace = true
 reactive_graph.workspace = true
 relm4.workspace = true
 tokio.workspace = true
