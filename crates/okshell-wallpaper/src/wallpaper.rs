@@ -14,8 +14,7 @@ use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields, WallpaperStoreFields};
 use okshell_config::schema::content_fit::ContentFit;
 use okshell_config::schema::themes::Themes;
-use okshell_image::lut::{apply_theme_filter, PaletteRemapConfig};
-use okshell_style::matugen::static_theme_mapping::static_theme;
+use okshell_image::lut::{apply_theme_filter};
 
 const TRANSITION_DURATION_MS: u32 = 200;
 
@@ -222,9 +221,7 @@ impl Component for WallpaperModel {
                         if apply_theme { "t" } else { "f" }
                     );
 
-                    let static_theme = static_theme(&theme, None);
-
-                    if apply_theme && static_theme.is_some() {
+                    if apply_theme && theme != Themes::Default && theme != Themes::Wallpaper {
                         // cancel any in-flight job
                         self.cancel_token.store(true, Ordering::Relaxed);
                         let cancel_token = Arc::new(AtomicBool::new(false));
@@ -252,7 +249,6 @@ impl Component for WallpaperModel {
                             }
                         });
                     } else {
-                        // unfiltered path — apply directly on main thread
                         let stack = &widgets.stack;
                         if let Some(existing) = stack.child_by_name(&new_name) {
                             stack.remove(&existing);
