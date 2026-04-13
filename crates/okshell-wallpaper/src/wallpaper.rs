@@ -1,4 +1,3 @@
-use std::path::Path;
 use gtk4::prelude::Cast;
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use reactive_graph::prelude::{Get, GetUntracked};
@@ -6,7 +5,7 @@ use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::gdk;
 use relm4::gtk::glib;
 use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
-use okshell_cache::wallpaper::{display_path, wallpaper_store, WallpaperStateStoreFields};
+use okshell_cache::wallpaper::{current_wallpaper_image, wallpaper_store, WallpaperImage, WallpaperStateStoreFields};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, WallpaperStoreFields};
@@ -106,19 +105,17 @@ impl Component for WallpaperModel {
     ) {
         match message {
             WallpaperInput::WallpaperChanged(revision) => {
-                let path = display_path();
-                if !path.exists() {
-                    // Wallpaper cleared — remove all children
+                let Some(image) = current_wallpaper_image() else {
                     while let Some(child) = widgets.stack.first_child() {
                         widgets.stack.remove(&child);
                     }
                     return;
-                }
+                };
 
                 let name = format!("wallpaper-{revision}");
                 let stack = &widgets.stack;
 
-                let widget = make_wallpaper_widget(&path, gtk_content_fit(&self.content_fit));
+                let widget = make_wallpaper_widget(&image, gtk_content_fit(&self.content_fit));
                 let old_child = stack.visible_child();
                 stack.add_named(&widget, Some(&name));
                 transition_stack(stack, &name, old_child);
@@ -159,10 +156,19 @@ fn transition_stack(stack: &gtk::Stack, new_name: &str, old_child: Option<gtk::W
 }
 
 fn make_wallpaper_widget(
-    path: &Path,
+    image: &WallpaperImage,
     content_fit: gtk::ContentFit,
 ) -> gtk::Widget {
-    let picture = gtk::Picture::for_filename(&path);
+    let bytes = glib::Bytes::from(&*image.buf);
+    let texture = gdk::MemoryTexture::new(
+        image.width as i32,
+        image.height as i32,
+        gdk::MemoryFormat::R8g8b8a8,
+        &bytes,
+        (image.width * 4) as usize,
+    );
+
+    let picture = gtk::Picture::for_paintable(&texture);
     picture.set_hexpand(true);
     picture.set_vexpand(true);
     picture.set_content_fit(content_fit);
