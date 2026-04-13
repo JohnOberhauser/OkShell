@@ -1,17 +1,15 @@
 [package]
-name = "okshell-cache"
+name = "okshell-image"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-description = "OkShell cache"
+description = "OkShell image manipulation."
 repository.workspace = true
 license.workspace = true
 
 [dependencies]
-image.workspace = true
-okshell-config.workspace = true
-okshell-image.workspace = true
-reactive_graph.workspace = true
-reactive_stores.workspace = true
 relm4.workspace = true
+image.workspace = true
+lutgen.workspace = true
+okshell-config.workspace = true
 tracing.workspace = true

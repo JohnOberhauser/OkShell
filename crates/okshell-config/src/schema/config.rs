@@ -334,7 +334,7 @@ impl Default for Wallpaper {
             wallpaper_dir: "".to_string(),
             content_fit: ContentFit::Cover,
             apply_theme_filter: false,
-            theme_filter_strength: ThemeFilterStrength::new(0.7),
+            theme_filter_strength: ThemeFilterStrength::new(1.0),
         }
     }
 }

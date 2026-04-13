@@ -1,14 +1,15 @@
 use gtk4::glib;
-use gtk4::glib::{SourceId};
+use gtk4::glib::SourceId;
 use pam::Client;
-use reactive_graph::prelude::GetUntracked;
+use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, once_cell, Component, ComponentParts, ComponentSender};
-use relm4::gtk::{gdk};
+use relm4::gtk::gdk;
 use relm4::gtk::prelude::*;
 use time::format_description::parse;
 use time::OffsetDateTime;
 use tracing::info;
-use okshell_cache::wallpaper::{current_wallpaper};
+use okshell_cache::wallpaper::{current_wallpaper_image, wallpaper_store, WallpaperStateStoreFields};
+use okshell_common::scoped_effects::EffectScope;
 use okshell_session::session_lock::session_lock;
 use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
 use crate::utils::username::current_username;
@@ -28,7 +29,6 @@ static DAY_FORMAT: once_cell::sync::Lazy<Vec<time::format_description::FormatIte
         parse("[weekday repr:long], [month repr:long] [day padding:none]").unwrap()
     });
 
-// matches the css transition duration in .lockscreen-content
 pub static LOCK_SCREEN_REVEALER_TRANSITION_DURATION: u32 = 300;
 
 #[derive(Debug)]
@@ -58,6 +58,7 @@ pub struct LockScreenModel {
     revealed: bool,
     stack_state: StackState,
     fingerprint_state: FingerprintState,
+    _effects: EffectScope,
 }
 
 #[derive(Debug)]
@@ -74,6 +75,7 @@ pub enum LockScreenInput {
     HideScreen,
     PasswordSuccess,
     PasswordFailed,
+    WallpaperChanged,
 }
 
 #[derive(Debug)]
@@ -309,6 +311,13 @@ impl Component for LockScreenModel {
 
         let day = now.format(&DAY_FORMAT).unwrap();
 
+        let mut effects = EffectScope::new();
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let _revision = wallpaper_store().revision().get();
+            sender_clone.input(LockScreenInput::WallpaperChanged);
+        });
+
         let model = LockScreenModel {
             show_password: false,
             place_holder_text: String::new(),
@@ -319,11 +328,13 @@ impl Component for LockScreenModel {
             revealed: false,
             stack_state: StackState::Nothing,
             fingerprint_state: FingerprintState::Normal,
+            _effects: effects,
         };
 
         let widgets = view_output!();
 
-        widgets.wallpaper.set_filename(current_wallpaper());
+        // Set initial wallpaper
+        set_wallpaper_picture(&widgets.wallpaper);
 
         session_lock().assign_window_to_monitor(&widgets.root, &params.monitor);
 
@@ -440,9 +451,29 @@ impl Component for LockScreenModel {
                 self.day_label = day;
                 self.time_label = time;
             }
+            LockScreenInput::WallpaperChanged => {
+                set_wallpaper_picture(&widgets.wallpaper);
+            }
         }
 
         self.update_view(widgets, sender);
+    }
+}
+
+/// Set the lock screen wallpaper picture from the in-memory buffer.
+fn set_wallpaper_picture(picture: &gtk::Picture) {
+    if let Some(image) = current_wallpaper_image() {
+        let bytes = glib::Bytes::from(&*image.buf);
+        let texture = gdk::MemoryTexture::new(
+            image.width as i32,
+            image.height as i32,
+            gdk::MemoryFormat::R8g8b8a8,
+            &bytes,
+            (image.width * 4) as usize,
+        );
+        picture.set_paintable(Some(&texture));
+    } else {
+        picture.set_paintable(None::<&gdk::Texture>);
     }
 }
 
