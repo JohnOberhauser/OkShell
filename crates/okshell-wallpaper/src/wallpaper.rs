@@ -341,6 +341,7 @@ fn make_wallpaper_widget(
 fn extract_palette(theme: &MatugenTheme) -> Vec<(u8, u8, u8)> {
     let mut colors = vec![
         theme.colors.surface.default.as_rgb(),
+        theme.colors.surface_bright.default.as_rgb(),
         theme.colors.on_surface.default.as_rgb(),
         theme.colors.primary.default.as_rgb(),
         theme.colors.secondary.default.as_rgb(),
