@@ -24,6 +24,7 @@ const TRANSITION_DURATION_MS: u32 = 200;
 pub struct WallpaperModel {
     content_fit: ContentFit,
     apply_theme_filter: bool,
+    filter_strength: f64,
     theme: Themes,
     path: Option<PathBuf>,
     cancel_token: Arc<AtomicBool>,
@@ -36,7 +37,8 @@ pub enum WallpaperInput {
     ContentFitChanged(ContentFit),
     ThemeChanged(Themes),
     ApplyThemeChanged(bool),
-    SetWallpaper(Option<PathBuf>, Themes, bool),
+    FilterStrengthChanged(f64),
+    SetWallpaper(Option<PathBuf>, Themes, bool, f64),
 }
 
 #[derive(Debug)]
@@ -124,9 +126,16 @@ impl Component for WallpaperModel {
             sender_clone.input(WallpaperInput::ThemeChanged(value));
         });
 
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().theme_filter_strength().get();
+            sender_clone.input(WallpaperInput::FilterStrengthChanged(value.get()));
+        });
+
         let model = WallpaperModel {
             content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
             apply_theme_filter: config_manager().config().wallpaper().apply_theme_filter().get_untracked(),
+            filter_strength: config_manager().config().wallpaper().theme_filter_strength().get_untracked().get(),
             theme: config_manager().config().theme().theme().get_untracked(),
             path: None,
             cancel_token: Arc::new(AtomicBool::new(false)),
@@ -151,7 +160,8 @@ impl Component for WallpaperModel {
                 sender.input(WallpaperInput::SetWallpaper(
                     self.path.clone(),
                     self.theme,
-                    self.apply_theme_filter
+                    self.apply_theme_filter,
+                    self.filter_strength,
                 ))
             }
             WallpaperInput::ContentFitChanged(content_fit) => {
@@ -171,7 +181,8 @@ impl Component for WallpaperModel {
                     sender.input(WallpaperInput::SetWallpaper(
                         self.path.clone(),
                         self.theme,
-                        self.apply_theme_filter
+                        self.apply_theme_filter,
+                        self.filter_strength,
                     ))
                 }
             }
@@ -182,11 +193,28 @@ impl Component for WallpaperModel {
                     sender.input(WallpaperInput::SetWallpaper(
                         self.path.clone(),
                         self.theme,
-                        self.apply_theme_filter
+                        self.apply_theme_filter,
+                        self.filter_strength,
                     ))
                 }
             }
-            WallpaperInput::SetWallpaper(path, theme, apply_theme) => {
+            WallpaperInput::FilterStrengthChanged(filter_strength) => {
+                self.filter_strength = filter_strength;
+                if self.apply_theme_filter {
+                    sender.input(WallpaperInput::SetWallpaper(
+                        self.path.clone(),
+                        self.theme,
+                        self.apply_theme_filter,
+                        self.filter_strength,
+                    ))
+                }
+            }
+            WallpaperInput::SetWallpaper(
+                path,
+                theme,
+                apply_theme,
+                filter_strength,
+            ) => {
                 if let Some(path) = path {
                     let new_name = format!(
                         "{}{}{}",
@@ -197,7 +225,7 @@ impl Component for WallpaperModel {
 
                     let static_theme = static_theme(&theme, None);
 
-                    if apply_theme && static_theme.is_some() {
+                    if apply_theme && filter_strength != 0.0 && static_theme.is_some() {
                         // cancel any in-flight job
                         self.cancel_token.store(true, Ordering::Relaxed);
                         let cancel_token = Arc::new(AtomicBool::new(false));
@@ -211,7 +239,7 @@ impl Component for WallpaperModel {
                                 let img = image::open(&path).ok()?.into_rgba8();
                                 let (w, h) = img.dimensions();
                                 let mut buf = img.into_raw();
-                                apply_palette_remap(&mut buf, &palette, 0.4, &cancel_token)?;
+                                apply_palette_remap(&mut buf, &palette, filter_strength as f32, &cancel_token)?;
                                 Some((buf, w, h))
                             }).await.ok().flatten();
 
