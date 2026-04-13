@@ -3,12 +3,11 @@ use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
-use image::ImageReader;
 use reactive_graph::effect::Effect;
 use reactive_graph::prelude::{Get, GetUntracked, Update};
 use reactive_stores::{ArcStore, Store};
 use relm4::gtk::glib;
-use tracing::info;
+use tracing::{info};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields, WallpaperStoreFields};
 use okshell_config::schema::themes::Themes;
@@ -201,13 +200,7 @@ fn refilter() {
 
 /// Decode any image format into an RGBA WallpaperImage.
 fn decode_source(path: &Path) -> Option<WallpaperImage> {
-    let img = ImageReader::open(path)
-        .ok()?
-        .with_guessed_format()
-        .ok()?
-        .decode()
-        .ok()?
-        .into_rgba8();
+    let img = okshell_image::lut::decode_pixbuf_rgba(path)?;
     let (width, height) = img.dimensions();
     Some(WallpaperImage {
         buf: Arc::new(img.into_raw()),
@@ -257,5 +250,6 @@ fn load_from_disk() -> Option<WallpaperImage> {
 }
 
 fn bump_revision() {
+    info!("bumping revision");
     WALLPAPER.update(|s| s.revision += 1);
 }

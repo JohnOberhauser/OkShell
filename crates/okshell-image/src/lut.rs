@@ -1,12 +1,10 @@
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Instant;
 
 use relm4::gtk::gdk_pixbuf::Pixbuf;
 use image::{ImageBuffer, Rgb, RgbaImage};
 use lutgen::identity::correct_image;
 use okshell_config::schema::themes::Themes;
-use tracing::{debug, info};
 
 const CLUT_BLOOD_RUST: &[u8] = include_bytes!("../cluts/blood_rust.bin");
 const CLUT_CATPPUCCIN_FRAPPE: &[u8] = include_bytes!("../cluts/catppuccin_frappe.bin");
@@ -118,36 +116,26 @@ pub fn apply_theme_filter(
         return None;
     }
 
-    let t0 = Instant::now();
     let hald_clut = load_embedded_clut(clut_bytes);
-    debug!("lut: load clut: {:?}", t0.elapsed());
 
-    let t1 = Instant::now();
     let mut img = decode_pixbuf_rgba(path)?;
     let (width, height) = img.dimensions();
-    debug!("lut: decode image ({}x{}): {:?}", width, height, t1.elapsed());
 
-    let t2 = Instant::now();
     let original = if strength < 1.0 {
         Some(img.clone())
     } else {
         None
     };
-    debug!("lut: clone for blend: {:?}", t2.elapsed());
 
-    let t3 = Instant::now();
     correct_image(&mut img, &hald_clut);
-    debug!("lut: correct_image: {:?}", t3.elapsed());
 
     if cancel.load(Ordering::Relaxed) {
         return None;
     }
 
-    let t4 = Instant::now();
     if let Some(original) = original {
         blend_buffers(img.as_mut(), original.as_raw(), strength as f32);
     }
-    debug!("lut: blend: {:?}", t4.elapsed());
 
     Some(RemapResult {
         buf: img.into_raw(),
