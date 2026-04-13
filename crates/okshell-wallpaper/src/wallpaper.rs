@@ -187,7 +187,7 @@ impl Component for WallpaperModel {
                 }
             }
             WallpaperInput::ApplyThemeChanged(apply_theme) => {
-                let changed = self.apply_theme_filter == apply_theme;
+                let changed = self.apply_theme_filter != apply_theme;
                 self.apply_theme_filter = apply_theme;
                 if changed {
                     sender.input(WallpaperInput::SetWallpaper(
