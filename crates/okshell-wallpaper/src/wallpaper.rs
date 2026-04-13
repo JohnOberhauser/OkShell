@@ -234,6 +234,7 @@ impl Component for WallpaperModel {
                                 apply_theme_filter(
                                     &path,
                                     &theme,
+                                    filter_strength,
                                     &cancel_token,
                                 )
                             }).await.ok().flatten();

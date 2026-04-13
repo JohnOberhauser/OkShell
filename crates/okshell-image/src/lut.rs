@@ -106,6 +106,7 @@ pub struct RemapResult {
 pub fn apply_theme_filter(
     path: &Path,
     theme: &Themes,
+    strength: f64,
     cancel: &AtomicBool,
 ) -> Option<RemapResult> {
     let clut_bytes = embedded_clut(theme)?;
@@ -119,10 +120,20 @@ pub fn apply_theme_filter(
     let mut img = image::open(path).ok()?.into_rgba8();
     let (width, height) = img.dimensions();
 
+    let original = if strength < 1.0 {
+        Some(img.clone())
+    } else {
+        None
+    };
+
     correct_image(&mut img, &hald_clut);
 
     if cancel.load(Ordering::Relaxed) {
         return None;
+    }
+
+    if let Some(original) = original {
+        blend_buffers(img.as_mut(), original.as_raw(), strength as f32);
     }
 
     Some(RemapResult {
@@ -135,4 +146,14 @@ pub fn apply_theme_filter(
 fn load_embedded_clut(bytes: &[u8]) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
     ImageBuffer::from_raw(HALD8_DIM, HALD8_DIM, bytes.to_vec())
         .expect("embedded CLUT data is invalid")
+}
+
+fn lerp_u8(a: u8, b: u8, t: f32) -> u8 {
+    (a as f32 + (b as f32 - a as f32) * t).clamp(0.0, 255.0) as u8
+}
+
+fn blend_buffers(dst: &mut [u8], src: &[u8], t: f32) {
+    for (d, s) in dst.iter_mut().zip(src.iter()) {
+        *d = lerp_u8(*s, *d, t);
+    }
 }
