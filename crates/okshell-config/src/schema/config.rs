@@ -9,6 +9,7 @@ use crate::schema::menu_widgets::{MenuWidget, QuickActionWidget, QuickActionsCon
 use crate::schema::position::{NotificationPosition, Position};
 use crate::schema::temperature::TemperatureUnitConfig;
 use crate::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
+use crate::schema::wallpaper::ThemeFilterStrength;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
@@ -324,6 +325,7 @@ pub struct Wallpaper {
     pub wallpaper_dir: String,
     pub content_fit: ContentFit,
     pub apply_theme_filter: bool,
+    pub theme_filter_strength: ThemeFilterStrength,
 }
 
 impl Default for Wallpaper {
@@ -332,6 +334,7 @@ impl Default for Wallpaper {
             wallpaper_dir: "".to_string(),
             content_fit: ContentFit::Cover,
             apply_theme_filter: false,
+            theme_filter_strength: ThemeFilterStrength::new(0.7),
         }
     }
 }

@@ -6,12 +6,14 @@ use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, WallpaperStoreFields};
 use okshell_config::schema::content_fit::ContentFit;
+use okshell_config::schema::wallpaper::ThemeFilterStrength;
 
 #[derive(Debug, Clone)]
 pub(crate) struct WallpaperSettingsModel {
     wallpaper_directory: String,
     content_fit: ContentFit,
     apply_theme_filter: bool,
+    filter_strength: f64,
     _effects: EffectScope,
 }
 
@@ -20,10 +22,12 @@ pub(crate) enum WallpaperSettingsInput {
     ChangeWallpaperDirectoryClicked,
     ContentFitChanged(ContentFit),
     ThemeFilterChanged(bool),
+    FilterStrengthChanged(f64),
     
     WallpaperDirectoryEffect(String),
     ContentFitEffect(ContentFit),
     ThemeFilterEffect(bool),
+    FilterStrengthEffect(f64),
 }
 
 #[derive(Debug)]
@@ -166,6 +170,45 @@ impl Component for WallpaperSettingsModel {
                         } @apply_theme_filter_handler,
                     }
                 },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Theme filter strength",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "A higher value will more aggressively apply theme colors.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::SpinButton {
+                        set_valign: gtk::Align::Center,
+                        set_range: (0.0, 1.0),
+                        set_increments: (0.1, 0.1),
+                        set_digits: 2,
+                        #[watch]
+                        #[block_signal(filter_strength_handler)]
+                        set_value: model.filter_strength,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(WallpaperSettingsInput::FilterStrengthChanged(s.value()));
+                        } @filter_strength_handler,
+                    },
+                },
             }
         }
     }
@@ -196,10 +239,17 @@ impl Component for WallpaperSettingsModel {
             sender_clone.input(WallpaperSettingsInput::ThemeFilterEffect(value));
         });
 
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().theme_filter_strength().get();
+            sender_clone.input(WallpaperSettingsInput::FilterStrengthEffect(value.get()));
+        });
+
         let model = WallpaperSettingsModel {
             wallpaper_directory: "".to_string(),
             content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
             apply_theme_filter: config_manager().config().wallpaper().apply_theme_filter().get_untracked(),
+            filter_strength: config_manager().config().wallpaper().theme_filter_strength().get_untracked().get(),
             _effects: effects,
         };
 
@@ -246,6 +296,11 @@ impl Component for WallpaperSettingsModel {
                     config.wallpaper.apply_theme_filter = apply;
                 })
             }
+            WallpaperSettingsInput::FilterStrengthChanged(strength) => {
+                config_manager().update_config(|config| {
+                    config.wallpaper.theme_filter_strength = ThemeFilterStrength::new(strength)
+                })
+            }
             
             WallpaperSettingsInput::WallpaperDirectoryEffect(path) => {
                 self.wallpaper_directory = path;
@@ -255,6 +310,9 @@ impl Component for WallpaperSettingsModel {
             }
             WallpaperSettingsInput::ThemeFilterEffect(filter) => {
                 self.apply_theme_filter = filter;
+            }
+            WallpaperSettingsInput::FilterStrengthEffect(filter) => {
+                self.filter_strength = filter;
             }
         }
 

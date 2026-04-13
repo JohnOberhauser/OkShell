@@ -211,7 +211,7 @@ impl Component for WallpaperModel {
                                 let img = image::open(&path).ok()?.into_rgba8();
                                 let (w, h) = img.dimensions();
                                 let mut buf = img.into_raw();
-                                apply_palette_remap(&mut buf, &palette, 1.0, &cancel_token)?;
+                                apply_palette_remap(&mut buf, &palette, 0.4, &cancel_token)?;
                                 Some((buf, w, h))
                             }).await.ok().flatten();
 
