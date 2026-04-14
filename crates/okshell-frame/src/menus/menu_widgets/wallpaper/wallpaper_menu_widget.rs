@@ -11,7 +11,7 @@ use okshell_config::schema::config::{ConfigStoreFields, MatugenStoreFields, Them
 use okshell_config::schema::content_fit::ContentFit;
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes};
 use okshell_config::schema::wallpaper::ThemeFilterStrength;
-use okshell_utils::key_mode::{wire_entry_focus, wire_entry_focus_on_demand};
+use okshell_utils::key_mode::{wire_entry_focus};
 use okshell_utils::scroll_extensions::wire_vertical_to_horizontal;
 use crate::menus::menu_widgets::wallpaper::parallelogram::ParallelogramPaintable;
 
