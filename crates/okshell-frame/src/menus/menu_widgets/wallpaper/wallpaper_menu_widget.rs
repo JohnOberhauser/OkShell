@@ -11,7 +11,7 @@ use okshell_config::schema::config::{ConfigStoreFields, MatugenStoreFields, Them
 use okshell_config::schema::content_fit::ContentFit;
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes};
 use okshell_config::schema::wallpaper::ThemeFilterStrength;
-use okshell_utils::key_mode::wire_entry_focus;
+use okshell_utils::key_mode::{wire_entry_focus, wire_entry_focus_on_demand};
 use okshell_utils::scroll_extensions::wire_vertical_to_horizontal;
 use crate::menus::menu_widgets::wallpaper::parallelogram::ParallelogramPaintable;
 
@@ -31,6 +31,7 @@ pub(crate) struct WallpaperMenuWidgetModel {
     thumbnail_width: i32,
     thumbnail_height: i32,
     row_count: u32,
+    filter: gtk::CustomFilter,
 
     wallpaper_directory: String,
     content_fit: ContentFit,
@@ -388,6 +389,11 @@ impl Component for WallpaperMenuWidgetModel {
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
         let list_store = gio::ListStore::new::<gtk::StringObject>();
+        let filter = gtk::CustomFilter::new(|_| true);
+        let filter_model = gtk::FilterListModel::new(Some(list_store.clone()), Some(filter.clone()));
+        let selection = gtk::SingleSelection::new(Some(filter_model));
+        selection.set_autoselect(false);
+        selection.set_can_unselect(true);
 
         let factory = gtk::SignalListItemFactory::new();
 
@@ -486,10 +492,6 @@ impl Component for WallpaperMenuWidgetModel {
             unsafe { picture.set_data::<String>("loading-path", String::new()) };
         });
 
-        let selection = gtk::SingleSelection::new(Some(list_store.clone()));
-        selection.set_autoselect(false);
-        selection.set_can_unselect(true);
-
         let matugen_preferences = gtk::StringList::new(
             &MatugenPreference::all()
                 .iter()
@@ -578,6 +580,7 @@ impl Component for WallpaperMenuWidgetModel {
             thumbnail_width: params.thumbnail_width,
             thumbnail_height: params.thumbnail_height,
             row_count: params.row_count,
+            filter,
 
             wallpaper_directory: "".to_string(),
             content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
@@ -796,7 +799,19 @@ impl Component for WallpaperMenuWidgetModel {
 
             }
             WallpaperMenuWidgetInput::SearchFilterChanged(text) => {
-
+                let text_lower = text.to_lowercase();
+                self.filter.set_filter_func(move |obj| {
+                    if text_lower.is_empty() {
+                        return true;
+                    }
+                    let string_obj = obj.downcast_ref::<gtk::StringObject>().unwrap();
+                    let path = string_obj.string().to_lowercase();
+                    // Match on the filename only, not the full path
+                    std::path::Path::new(path.as_str())
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .is_some_and(|name| name.contains(text_lower.as_str()))
+                });
             }
             WallpaperMenuWidgetInput::ThemeEffect(theme) => {
                 if theme == Themes::Wallpaper {
