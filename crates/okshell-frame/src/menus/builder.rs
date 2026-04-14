@@ -197,7 +197,7 @@ pub fn build_widget(
                     .launch(WallpaperMenuWidgetInit {
                         thumbnail_width: 300,
                         thumbnail_height: 200,
-                        row_count: 3,
+                        row_count: 2,
                     })
                     .detach()
             )

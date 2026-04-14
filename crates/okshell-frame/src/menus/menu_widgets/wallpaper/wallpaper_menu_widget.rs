@@ -1,13 +1,17 @@
 use std::path::PathBuf;
-use reactive_graph::prelude::Get;
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt};
 use relm4::gtk::{gdk, gio, glib, gdk_pixbuf};
 use relm4::gtk::prelude::*;
 use tracing::info;
 use okshell_cache::wallpaper::set_wallpaper;
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, WallpaperStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, MatugenStoreFields, ThemeStoreFields, WallpaperStoreFields};
+use okshell_config::schema::content_fit::ContentFit;
+use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes};
+use okshell_config::schema::wallpaper::ThemeFilterStrength;
+use okshell_utils::key_mode::wire_entry_focus;
 use okshell_utils::scroll_extensions::wire_vertical_to_horizontal;
 use crate::menus::menu_widgets::wallpaper::parallelogram::ParallelogramPaintable;
 
@@ -27,16 +31,55 @@ pub(crate) struct WallpaperMenuWidgetModel {
     thumbnail_width: i32,
     thumbnail_height: i32,
     row_count: u32,
+
+    wallpaper_directory: String,
+    content_fit: ContentFit,
+
+    settings_visible_child: String,
+
+    apply_theme_filter: bool,
+    filter_strength: f64,
+
+    matugen_preferences: gtk::StringList,
+    active_matugen_preference: MatugenPreference,
+    matugen_types: gtk::StringList,
+    active_matugen_type: MatugenType,
+    matugen_modes: gtk::StringList,
+    active_matugen_mode: MatugenMode,
+    matugen_contrast: f64,
+
     _effects: EffectScope,
 }
 
 #[derive(Debug)]
 pub(crate) enum WallpaperMenuWidgetInput {
-    DirectoryChanged(String),
     FileAdded(PathBuf),
     FileRemoved(PathBuf),
     FilesUpdated,
     FileClicked(PathBuf),
+    SearchFilterChanged(String),
+    SearchFilterActivate,
+
+    ChangeWallpaperDirectoryClicked,
+    ContentFitChanged(ContentFit),
+    ThemeFilterChanged(bool),
+    FilterStrengthChanged(f64),
+
+    MatugenPreferenceSelected(MatugenPreference),
+    MatugenTypeSelected(MatugenType),
+    MatugenModeSelected(MatugenMode),
+    MatugenContrastSelected(f64),
+
+    DirectoryEffect(String),
+    ContentFitEffect(ContentFit),
+    ThemeFilterEffect(bool),
+    FilterStrengthEffect(f64),
+    ThemeEffect(Themes),
+
+    MatugenTypeEffect(MatugenType),
+    MatugenPreferenceEffect(MatugenPreference),
+    MatugenModeEffect(MatugenMode),
+    MatugenContrastEffect(f64),
 }
 
 #[derive(Debug)]
@@ -60,17 +103,248 @@ impl Component for WallpaperMenuWidgetModel {
 
     view! {
         #[root]
-        gtk::Overlay {
-            add_css_class: "wallpaper-menu-widget",
-
-            add_overlay = &gtk::Box {
-                add_css_class: "wallpaper-shadow",
-                set_hexpand: true,
-                set_vexpand: true,
-                set_can_target: false,
-            },
+        gtk::Box {
+            set_orientation: gtk::Orientation::Vertical,
 
             gtk::Box {
+                set_orientation: gtk::Orientation::Vertical,
+                set_margin_all: 26,
+                set_spacing: 20,
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Vertical,
+
+                    set_hexpand: false,
+                    set_halign: gtk::Align::Start,
+
+                    gtk::Label {
+                        add_css_class: "label-xl-bold",
+                        set_label: "Wallpaper",
+                        set_xalign: 0.0,
+                    },
+
+                    gtk::Label {
+                        add_css_class: "label-small",
+                        #[watch]
+                        set_label: model.wallpaper_directory.as_str(),
+                        set_halign: gtk::Align::Start,
+                        set_hexpand: true,
+                        set_xalign: 0.0,
+                        set_wrap: true,
+                        set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                    },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_hexpand: true,
+                    set_spacing: 20,
+
+                    gtk::Button {
+                        set_css_classes: &["ok-button-primary"],
+                        set_halign: gtk::Align::Start,
+                        set_hexpand: false,
+                        connect_clicked[sender] => move |_| {
+                            sender.input(WallpaperMenuWidgetInput::ChangeWallpaperDirectoryClicked);
+                        },
+
+                        gtk::Image {
+                            set_icon_name: Some("folder-symbolic"),
+                        }
+                    },
+
+                    #[name = "search_entry"]
+                    gtk::Entry {
+                        add_css_class: "ok-entry-with-border",
+                        set_placeholder_text: Some("Search"),
+                        set_hexpand: true,
+                        connect_changed[sender] => move |entry| {
+                            sender.input(WallpaperMenuWidgetInput::SearchFilterChanged(entry.text().to_string()));
+                        },
+                        connect_activate[sender] => move |_| {
+                            sender.input(WallpaperMenuWidgetInput::SearchFilterActivate);
+                        },
+                    },
+
+                    gtk::DropDown {
+                        set_width_request: 150,
+                        set_halign: gtk::Align::Start,
+                        set_model: Some(&gtk::StringList::new(&ContentFit::display_names())),
+                        #[watch]
+                        #[block_signal(handler)]
+                        set_selected: model.content_fit.to_index(),
+                        connect_selected_notify[sender] => move |dd| {
+                            sender.input(WallpaperMenuWidgetInput::ContentFitChanged(
+                                ContentFit::from_index(dd.selected())
+                            ));
+                        } @handler,
+                    },
+                },
+
+                gtk::Stack {
+                    #[watch]
+                    set_visible_child_name: model.settings_visible_child.as_str(),
+                    set_transition_type: gtk::StackTransitionType::Crossfade,
+
+                    add_named[Some("static")] = &gtk::Box {
+                        set_orientation: gtk::Orientation::Horizontal,
+                        set_hexpand: false,
+                        set_width_request: 200,
+                        set_halign: gtk::Align::Start,
+                        set_spacing: 20,
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 20,
+
+                            gtk::Label {
+                                add_css_class: "label-medium-bold",
+                                set_halign: gtk::Align::Start,
+                                set_label: "Theme filter",
+                                set_hexpand: true,
+                            },
+
+                            gtk::Switch {
+                                set_valign: gtk::Align::Center,
+                                #[watch]
+                                #[block_signal(apply_theme_filter_handler)]
+                                set_active: model.apply_theme_filter,
+                                connect_state_set[sender] => move |_, enabled| {
+                                    sender.input(WallpaperMenuWidgetInput::ThemeFilterChanged(enabled));
+                                    glib::Propagation::Proceed
+                                } @apply_theme_filter_handler,
+                            }
+                        },
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 20,
+
+                            gtk::Label {
+                                add_css_class: "label-medium-bold",
+                                set_halign: gtk::Align::Start,
+                                set_label: "Strength",
+                                set_hexpand: true,
+                            },
+
+                            gtk::SpinButton {
+                                set_valign: gtk::Align::Center,
+                                set_range: (0.0, 1.0),
+                                set_increments: (0.1, 0.1),
+                                set_digits: 2,
+                                #[watch]
+                                #[block_signal(filter_strength_handler)]
+                                set_value: model.filter_strength,
+                                connect_value_changed[sender] => move |s| {
+                                    sender.input(WallpaperMenuWidgetInput::FilterStrengthChanged(s.value()));
+                                } @filter_strength_handler,
+                            },
+                        },
+                    },
+
+                    add_named[Some("wallpaper")] = &gtk::Box {
+                        set_orientation: gtk::Orientation::Horizontal,
+                        set_hexpand: false,
+                        set_width_request: 200,
+                        set_halign: gtk::Align::Start,
+                        set_spacing: 20,
+
+                        #[name = "matugen_type_dropdown"]
+                        gtk::DropDown {
+                            set_width_request: 200,
+                            set_valign: gtk::Align::Center,
+                            set_model: Some(&model.matugen_types),
+                            #[watch]
+                            #[block_signal(type_handler)]
+                            set_selected: MatugenType::all()
+                                .iter()
+                                .position(|k| k == &model.active_matugen_type)
+                                .unwrap_or(0) as u32,
+                            connect_selected_notify[sender] => move |dd| {
+                                let idx = dd.selected() as usize;
+                                if let Some(kind) = MatugenType::all().get(idx) {
+                                    sender.input(WallpaperMenuWidgetInput::MatugenTypeSelected(*kind));
+                                }
+                            } @type_handler,
+                        },
+
+                        #[name = "matugen_preference_dropdown"]
+                        gtk::DropDown {
+                            set_width_request: 200,
+                            set_valign: gtk::Align::Center,
+                            set_model: Some(&model.matugen_preferences),
+                            #[watch]
+                            #[block_signal(preference_handler)]
+                            set_selected: MatugenPreference::all()
+                                .iter()
+                                .position(|k| k == &model.active_matugen_preference)
+                                .unwrap_or(0) as u32,
+                            connect_selected_notify[sender] => move |dd| {
+                                let idx = dd.selected() as usize;
+                                if let Some(kind) = MatugenPreference::all().get(idx) {
+                                    sender.input(WallpaperMenuWidgetInput::MatugenPreferenceSelected(*kind));
+                                }
+                            } @preference_handler,
+                        },
+
+                        #[name = "matugen_mode_dropdown"]
+                        gtk::DropDown {
+                            set_width_request: 200,
+                            set_valign: gtk::Align::Center,
+                            set_model: Some(&model.matugen_modes),
+                            #[watch]
+                            #[block_signal(mode_handler)]
+                            set_selected: MatugenMode::all()
+                                .iter()
+                                .position(|k| k == &model.active_matugen_mode)
+                                .unwrap_or(0) as u32,
+                            connect_selected_notify[sender] => move |dd| {
+                                let idx = dd.selected() as usize;
+                                if let Some(kind) = MatugenMode::all().get(idx) {
+                                    sender.input(WallpaperMenuWidgetInput::MatugenModeSelected(*kind));
+                                }
+                            } @mode_handler,
+                        },
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 20,
+
+                            gtk::Label {
+                                add_css_class: "label-medium-bold",
+                                set_halign: gtk::Align::Start,
+                                set_label: "Contrast",
+                                set_hexpand: true,
+                            },
+
+                            gtk::SpinButton {
+                                set_valign: gtk::Align::Center,
+                                set_range: (-1.0, 1.0),
+                                set_increments: (0.1, 0.1),
+                                set_digits: 2,
+                                #[watch]
+                                #[block_signal(matugen_contrast_handler)]
+                                set_value: model.matugen_contrast,
+                                connect_value_changed[sender] => move |s| {
+                                    sender.input(WallpaperMenuWidgetInput::MatugenContrastSelected(s.value()));
+                                } @matugen_contrast_handler,
+                            },
+                        },
+                    },
+
+                    add_named[Some("none")] = &gtk::Box {}
+                },
+            },
+
+            gtk::Overlay {
+                add_css_class: "wallpaper-menu-widget",
+
+                add_overlay = &gtk::Box {
+                    add_css_class: "wallpaper-shadow",
+                    set_hexpand: true,
+                    set_vexpand: true,
+                    set_can_target: false,
+                },
 
                 #[name = "scroll_window"]
                 gtk::ScrolledWindow {
@@ -216,12 +490,85 @@ impl Component for WallpaperMenuWidgetModel {
         selection.set_autoselect(false);
         selection.set_can_unselect(true);
 
+        let matugen_preferences = gtk::StringList::new(
+            &MatugenPreference::all()
+                .iter()
+                .map(|p| p.label())
+                .collect::<Vec<_>>()
+        );
+
+        let matugen_types = gtk::StringList::new(
+            &MatugenType::all()
+                .iter()
+                .map(|p| p.label())
+                .collect::<Vec<_>>()
+        );
+
+        let matugen_modes = gtk::StringList::new(
+            &MatugenMode::all()
+                .iter()
+                .map(|p| p.label())
+                .collect::<Vec<_>>()
+        );
+
         let mut effects = EffectScope::new();
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
             let wallpaper_dir = config.wallpaper().wallpaper_dir().get();
-            sender_clone.input(WallpaperMenuWidgetInput::DirectoryChanged(wallpaper_dir))
+            sender_clone.input(WallpaperMenuWidgetInput::DirectoryEffect(wallpaper_dir))
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().content_fit().get();
+            sender_clone.input(WallpaperMenuWidgetInput::ContentFitEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().apply_theme_filter().get();
+            sender_clone.input(WallpaperMenuWidgetInput::ThemeFilterEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().wallpaper().theme_filter_strength().get();
+            sender_clone.input(WallpaperMenuWidgetInput::FilterStrengthEffect(value.get()));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().theme().theme().get();
+            sender_clone.input(WallpaperMenuWidgetInput::ThemeEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().matugen().scheme_type().get();
+            sender_clone.input(WallpaperMenuWidgetInput::MatugenTypeEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().matugen().preference().get();
+            sender_clone.input(WallpaperMenuWidgetInput::MatugenPreferenceEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().matugen().mode().get();
+            sender_clone.input(WallpaperMenuWidgetInput::MatugenModeEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.theme().matugen().contrast().get();
+            sender_clone.input(WallpaperMenuWidgetInput::MatugenContrastEffect(value.get()));
         });
 
         let model = WallpaperMenuWidgetModel {
@@ -231,6 +578,22 @@ impl Component for WallpaperMenuWidgetModel {
             thumbnail_width: params.thumbnail_width,
             thumbnail_height: params.thumbnail_height,
             row_count: params.row_count,
+
+            wallpaper_directory: "".to_string(),
+            content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
+
+            settings_visible_child: "none".to_string(),
+            apply_theme_filter: config_manager().config().wallpaper().apply_theme_filter().get_untracked(),
+            filter_strength: config_manager().config().wallpaper().theme_filter_strength().get_untracked().get(),
+
+            matugen_preferences,
+            active_matugen_preference: config_manager().config().theme().matugen().preference().get_untracked(),
+            matugen_types,
+            active_matugen_type: config_manager().config().theme().matugen().scheme_type().get_untracked(),
+            matugen_modes,
+            active_matugen_mode: config_manager().config().theme().matugen().mode().get_untracked(),
+            matugen_contrast: config_manager().config().theme().matugen().contrast().get_untracked().get(),
+
             _effects: effects,
         };
 
@@ -255,6 +618,8 @@ impl Component for WallpaperMenuWidgetModel {
             64.0,
         );
 
+        wire_entry_focus(&widgets.search_entry);
+
         ComponentParts { model, widgets }
     }
 
@@ -266,7 +631,7 @@ impl Component for WallpaperMenuWidgetModel {
         _root: &Self::Root,
     ) {
         match message {
-            WallpaperMenuWidgetInput::DirectoryChanged(wallpaper_dir) => {
+            WallpaperMenuWidgetInput::DirectoryEffect(wallpaper_dir) => {
                 self.dir_monitor = None;
                 self.files.clear();
                 info!("dir changed: {}", wallpaper_dir);
@@ -312,6 +677,7 @@ impl Component for WallpaperMenuWidgetModel {
                 } else {
                     self.list_store.remove_all();
                 }
+                self.wallpaper_directory = wallpaper_dir;
             }
 
             WallpaperMenuWidgetInput::FileAdded(path) => {
@@ -360,6 +726,98 @@ impl Component for WallpaperMenuWidgetModel {
             }
             WallpaperMenuWidgetInput::FileClicked(path) => {
                 set_wallpaper(&path);
+            }
+            WallpaperMenuWidgetInput::ChangeWallpaperDirectoryClicked => {
+                let dialog = gtk::FileDialog::builder()
+                    .title("Choose Wallpaper Directory")
+                    .modal(true)
+                    .build();
+
+                dialog.select_folder(
+                    gtk::Window::NONE,
+                    gio::Cancellable::NONE,
+                    move |result| {
+                        if let Ok(file) = result {
+                            if let Some(path) = file.path() {
+                                config_manager().update_config(|config| {
+                                    config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
+                                });
+                            }
+                        }
+                    },
+                );
+            }
+            WallpaperMenuWidgetInput::ContentFitChanged(content_fit) => {
+                config_manager().update_config(|config| {
+                    config.wallpaper.content_fit = content_fit;
+                });
+            }
+            WallpaperMenuWidgetInput::ThemeFilterChanged(apply) => {
+                config_manager().update_config(|config| {
+                    config.wallpaper.apply_theme_filter = apply;
+                })
+            }
+            WallpaperMenuWidgetInput::FilterStrengthChanged(strength) => {
+                config_manager().update_config(|config| {
+                    config.wallpaper.theme_filter_strength = ThemeFilterStrength::new(strength)
+                })
+            }
+            WallpaperMenuWidgetInput::MatugenPreferenceSelected(preference) => {
+                config_manager().update_config(|config| {
+                    config.theme.matugen.preference = preference;
+                });
+            }
+            WallpaperMenuWidgetInput::MatugenTypeSelected(scheme_type) => {
+                config_manager().update_config(|config| {
+                    config.theme.matugen.scheme_type = scheme_type;
+                });
+            }
+            WallpaperMenuWidgetInput::MatugenModeSelected(mode) => {
+                config_manager().update_config(|config| {
+                    config.theme.matugen.mode = mode;
+                });
+            }
+            WallpaperMenuWidgetInput::MatugenContrastSelected(contrast) => {
+                config_manager().update_config(|config| {
+                    config.theme.matugen.contrast = MatugenContrast::new(contrast);
+                });
+            }
+
+            WallpaperMenuWidgetInput::ContentFitEffect(content_fit) => {
+                self.content_fit = content_fit;
+            }
+            WallpaperMenuWidgetInput::ThemeFilterEffect(filter) => {
+                self.apply_theme_filter = filter;
+            }
+            WallpaperMenuWidgetInput::FilterStrengthEffect(filter) => {
+                self.filter_strength = filter;
+            }
+            WallpaperMenuWidgetInput::SearchFilterActivate => {
+
+            }
+            WallpaperMenuWidgetInput::SearchFilterChanged(text) => {
+
+            }
+            WallpaperMenuWidgetInput::ThemeEffect(theme) => {
+                if theme == Themes::Wallpaper {
+                    self.settings_visible_child = "wallpaper".to_string();
+                } else if theme == Themes::Default {
+                    self.settings_visible_child = "none".to_string();
+                } else {
+                    self.settings_visible_child = "static".to_string();
+                }
+            }
+            WallpaperMenuWidgetInput::MatugenTypeEffect(matugen_type) => {
+                self.active_matugen_type = matugen_type;
+            }
+            WallpaperMenuWidgetInput::MatugenPreferenceEffect(preference) => {
+                self.active_matugen_preference = preference;
+            }
+            WallpaperMenuWidgetInput::MatugenModeEffect(matugen_mode) => {
+                self.active_matugen_mode = matugen_mode;
+            }
+            WallpaperMenuWidgetInput::MatugenContrastEffect(matugen_contrast) => {
+                self.matugen_contrast = matugen_contrast;
             }
         }
 
