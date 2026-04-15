@@ -24,7 +24,6 @@ pub enum MenuWidget {
     Spacer(SpacerConfig),
     ThemePicker,
     Wallpaper,
-    WallpaperDropdown,
     Weather,
 }
 
@@ -65,7 +64,6 @@ impl MenuWidget {
             MenuWidget::Spacer(_) => "Spacer",
             MenuWidget::ThemePicker => "Theme Picker",
             MenuWidget::Wallpaper => "Wallpaper",
-            MenuWidget::WallpaperDropdown => "Wallpaper Dropdown",
             MenuWidget::Weather => "Weather",
         }
     }
@@ -96,7 +94,6 @@ impl MenuWidget {
             MenuWidget::Spacer(SpacerConfig { size: 16 }),
             MenuWidget::ThemePicker,
             MenuWidget::Wallpaper,
-            MenuWidget::WallpaperDropdown,
             MenuWidget::Weather,
         ]
     }

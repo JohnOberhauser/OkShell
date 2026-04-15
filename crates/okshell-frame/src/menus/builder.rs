@@ -23,7 +23,6 @@ use crate::menus::menu_widgets::screenshot::screenshot_menu_widget::{ScreenshotM
 use crate::menus::menu_widgets::spacer::{SpacerInit, SpacerModel};
 use crate::menus::menu_widgets::theme_picker::theme_picker_menu_widget::{ThemePickerMenuWidgetInit, ThemePickerMenuWidgetModel};
 use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{WallpaperMenuWidgetInit, WallpaperMenuWidgetModel};
-use crate::menus::menu_widgets::wallpaper::wallpaper_dropdown_menu_widget::{WallpaperDropdownMenuWidgetInit, WallpaperDropdownMenuWidgetModel};
 use crate::menus::menu_widgets::weather::weather::{WeatherInit, WeatherModel};
 
 
@@ -207,13 +206,6 @@ pub fn build_widget(
                         thumbnail_height: 200,
                         row_count: 2,
                     })
-                    .detach()
-            )
-        }
-        MenuWidget::WallpaperDropdown => {
-            Box::new(
-                WallpaperDropdownMenuWidgetModel::builder()
-                    .launch(WallpaperDropdownMenuWidgetInit {})
                     .detach()
             )
         }
