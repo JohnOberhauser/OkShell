@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use gtk4_layer_shell::{KeyboardMode, LayerShell};
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt};
@@ -399,6 +401,7 @@ impl Component for WallpaperMenuWidgetModel {
         selection.set_can_unselect(true);
 
         let factory = gtk::SignalListItemFactory::new();
+        let texture_cache: Arc<Mutex<HashMap<String, gdk::MemoryTexture>>> = Arc::default();
 
         factory.connect_setup(move |_, list_item| {
             let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
@@ -409,6 +412,7 @@ impl Component for WallpaperMenuWidgetModel {
             list_item.set_child(Some(&picture));
         });
 
+        let cache = texture_cache.clone();
         factory.connect_bind(move |_, list_item| {
             let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
             let string_obj = list_item.item()
@@ -425,10 +429,21 @@ impl Component for WallpaperMenuWidgetModel {
             // Store the path we're loading so we can check for staleness
             unsafe { picture.set_data::<String>("loading-path", path_str.clone()) };
 
+            // Check cache first
+            {
+                let cache = cache.lock().unwrap();
+                if let Some(texture) = cache.get(&path_str) {
+                    let paintable = ParallelogramPaintable::new(
+                        params.thumbnail_width,
+                        params.thumbnail_height,
+                    );
+                    paintable.set_texture(Some(texture.upcast_ref::<gdk::Texture>()));
+                    picture.set_paintable(Some(&paintable));
+                    return;
+                }
+            }
+
             // Spawn thumbnail decode on a background thread.
-            // Pixbuf isn't Send, so we extract the raw bytes and dimensions
-            // on the background thread and send them back via a channel.
-            // The weak ref stays on the main thread side.
             let (tx, rx) = std::sync::mpsc::channel::<(String, Option<(glib::Bytes, i32, i32, i32, bool)>)>();
 
             std::thread::spawn(move || {
@@ -448,6 +463,7 @@ impl Component for WallpaperMenuWidgetModel {
             });
 
             // Poll the channel from the main loop
+            let cache_insert = cache.clone();
             glib::idle_add_local_once(move || {
                 let Ok((path_str, result)) = rx.recv() else { return };
 
@@ -471,6 +487,10 @@ impl Component for WallpaperMenuWidgetModel {
                             &bytes,
                             rowstride as usize,
                         );
+
+                        cache_insert.lock().unwrap()
+                            .insert(path_str, texture.clone());
+
                         let paintable = ParallelogramPaintable::new(
                             params.thumbnail_width,
                             params.thumbnail_height,
