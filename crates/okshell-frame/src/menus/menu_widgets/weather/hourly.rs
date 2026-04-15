@@ -51,7 +51,8 @@ impl Component for HourlyModel {
 
             #[name = "scroll_window"]
             gtk::ScrolledWindow {
-                set_hscrollbar_policy: gtk::PolicyType::Automatic,
+                set_vscrollbar_policy: gtk::PolicyType::Never,
+                set_hscrollbar_policy: gtk::PolicyType::External,
                 set_hexpand: true,
                 set_vexpand: true,
 

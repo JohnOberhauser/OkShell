@@ -366,7 +366,8 @@ impl Component for WallpaperMenuWidgetModel {
                 gtk::ScrolledWindow {
                     set_hexpand: true,
                     set_vexpand: false,
-                    set_vscrollbar_policy: gtk::PolicyType::Automatic,
+                    set_vscrollbar_policy: gtk::PolicyType::Never,
+                    set_hscrollbar_policy: gtk::PolicyType::External,
                     set_propagate_natural_height: true,
 
                     gtk::Box {
