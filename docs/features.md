@@ -80,8 +80,8 @@ Quick Action: Shutdown
 Screenshots  
 Screen Recording  
 Spacer  
+ThemePicker    
 Wallpaper  
-Wallpaper Dropdown  
 Weather  
 :::
 
