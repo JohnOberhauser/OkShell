@@ -111,6 +111,7 @@ pub fn apply_theme_filter(
     path: &Path,
     theme: &Themes,
     strength: f64,
+    contrast_adjustment: f32,
     cancel: &AtomicBool,
 ) -> Option<RemapResult> {
     let clut_bytes = embedded_clut(theme)?;
@@ -131,6 +132,8 @@ pub fn apply_theme_filter(
     };
 
     correct_image(&mut img, &hald_clut);
+
+    adjust_contrast(img.as_mut(), contrast_adjustment);
 
     if cancel.load(Ordering::Relaxed) {
         return None;
@@ -243,4 +246,16 @@ pub fn rgba_to_texture(buf: &[u8], width: u32, height: u32) -> Option<gtk::gdk::
         (width * 4) as usize,
     );
     Some(texture.upcast())
+}
+
+/// Adjust contrast of an RGBA buffer in-place.
+/// `factor` > 1.0 increases contrast, < 1.0 decreases it.
+/// 1.0 is no change.
+fn adjust_contrast(buf: &mut [u8], factor: f32) {
+    for chunk in buf.chunks_exact_mut(4) {
+        chunk[0] = ((((chunk[0] as f32 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        chunk[1] = ((((chunk[1] as f32 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        chunk[2] = ((((chunk[2] as f32 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        // leave alpha (chunk[3]) untouched
+    }
 }

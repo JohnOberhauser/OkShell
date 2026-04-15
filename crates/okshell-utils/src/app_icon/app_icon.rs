@@ -66,7 +66,7 @@ pub fn set_icon(
         if should_recolor {
             let result = gio::spawn_blocking(move || {
                 let cancel = AtomicBool::new(false);
-                apply_theme_filter(&path, &color_theme, 1.0, &cancel)
+                apply_theme_filter(&path, &color_theme, 0.9, 1.3, &cancel)
             })
                 .await;
 
