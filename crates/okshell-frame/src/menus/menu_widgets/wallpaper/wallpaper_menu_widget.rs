@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use gtk4_layer_shell::{KeyboardMode, LayerShell};
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt};
 use relm4::gtk::{gdk, gio, glib, gdk_pixbuf};
@@ -11,7 +12,6 @@ use okshell_config::schema::config::{ConfigStoreFields, MatugenStoreFields, Them
 use okshell_config::schema::content_fit::ContentFit;
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes};
 use okshell_config::schema::wallpaper::ThemeFilterStrength;
-use okshell_utils::key_mode::{wire_entry_focus};
 use okshell_utils::scroll_extensions::wire_vertical_to_horizontal;
 use crate::menus::menu_widgets::wallpaper::parallelogram::ParallelogramPaintable;
 
@@ -25,6 +25,7 @@ fn is_image_file(path: &std::path::Path) -> bool {
 
 #[derive(Debug, Clone)]
 pub(crate) struct WallpaperMenuWidgetModel {
+    is_revealed: bool,
     dir_monitor: Option<gio::FileMonitor>,
     files: Vec<PathBuf>,
     list_store: gio::ListStore,
@@ -54,6 +55,7 @@ pub(crate) struct WallpaperMenuWidgetModel {
 
 #[derive(Debug)]
 pub(crate) enum WallpaperMenuWidgetInput {
+    ParentRevealChanged(bool),
     FileAdded(PathBuf),
     FileRemoved(PathBuf),
     FilesUpdated,
@@ -104,6 +106,7 @@ impl Component for WallpaperMenuWidgetModel {
 
     view! {
         #[root]
+        #[name = "root"]
         gtk::Box {
             set_orientation: gtk::Orientation::Vertical,
 
@@ -574,6 +577,7 @@ impl Component for WallpaperMenuWidgetModel {
         });
 
         let model = WallpaperMenuWidgetModel {
+            is_revealed: false,
             dir_monitor: None,
             files: Vec::new(),
             list_store,
@@ -621,8 +625,6 @@ impl Component for WallpaperMenuWidgetModel {
             64.0,
         );
 
-        wire_entry_focus(&widgets.search_entry);
-
         ComponentParts { model, widgets }
     }
 
@@ -634,6 +636,28 @@ impl Component for WallpaperMenuWidgetModel {
         _root: &Self::Root,
     ) {
         match message {
+            WallpaperMenuWidgetInput::ParentRevealChanged(revealed) => {
+                // If state is changing from hidden to revealed
+                if revealed && !self.is_revealed {
+                    if let Some(window) = widgets.root.toplevel_window() {
+                        window.set_keyboard_mode(KeyboardMode::Exclusive);
+                    }
+                    widgets.search_entry.grab_focus();
+                // if state is change from revealed to hidden
+                } else if !revealed && self.is_revealed {
+                    if let Some(window) = widgets.root.toplevel_window() {
+                        window.set_keyboard_mode(KeyboardMode::None);
+                    }
+                    let entry_widget = widgets.search_entry.clone();
+                    glib::timeout_add_local_once(
+                        std::time::Duration::from_millis(200),
+                        move || {
+                            entry_widget.set_text("");
+                        }
+                    );
+                }
+                self.is_revealed = revealed;
+            }
             WallpaperMenuWidgetInput::DirectoryEffect(wallpaper_dir) => {
                 self.dir_monitor = None;
                 self.files.clear();

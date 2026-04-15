@@ -20,6 +20,7 @@ use crate::menus::menu_widgets::power_profile::power_profile_menu_widget::{Power
 use crate::menus::menu_widgets::screenshare::screenshare_menu_widget::{ScreenshareMenuWidgetInit, ScreenshareMenuWidgetInput, ScreenshareMenuWidgetModel, ScreenshareMenuWidgetOutput};
 use okshell_utils::clear_box::clear_box;
 use crate::menus::menu_widgets::wallpaper::wallpaper_dropdown_menu_widget::{WallpaperDropdownMenuWidgetInput, WallpaperDropdownMenuWidgetModel};
+use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{WallpaperMenuWidgetInput, WallpaperMenuWidgetModel};
 
 pub(crate) enum MenuType {
     Clipboard,
@@ -279,6 +280,9 @@ impl Component for MenuModel {
                     }
                     if let Some(controller) = controller.downcast_ref::<Controller<WallpaperDropdownMenuWidgetModel>>() {
                         controller.sender().send(WallpaperDropdownMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    }
+                    if let Some(controller) = controller.downcast_ref::<Controller<WallpaperMenuWidgetModel>>() {
+                        controller.sender().send(WallpaperMenuWidgetInput::ParentRevealChanged(visible)).ok();
                     }
                 }
             }
