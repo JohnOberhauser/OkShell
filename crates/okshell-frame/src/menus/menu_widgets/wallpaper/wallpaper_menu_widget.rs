@@ -110,6 +110,7 @@ impl Component for WallpaperMenuWidgetModel {
         #[root]
         #[name = "root"]
         gtk::Box {
+            add_css_class: "wallpaper-menu-widget",
             set_orientation: gtk::Orientation::Vertical,
 
             gtk::Box {
@@ -343,8 +344,6 @@ impl Component for WallpaperMenuWidgetModel {
             },
 
             gtk::Overlay {
-                add_css_class: "wallpaper-menu-widget",
-
                 add_overlay = &gtk::Box {
                     add_css_class: "wallpaper-shadow",
                     set_hexpand: true,

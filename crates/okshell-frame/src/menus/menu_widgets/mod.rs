@@ -18,3 +18,4 @@ pub(crate) mod weather;
 pub(crate) mod wallpaper;
 pub(crate) mod screenshare;
 pub(crate) mod container;
+pub(crate) mod theme_picker;

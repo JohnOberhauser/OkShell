@@ -22,6 +22,7 @@ okshell-services.workspace = true
 okshell-session.workspace = true
 okshell-settings.workspace = true
 okshell-sounds.workspace = true
+okshell-style.workspace = true
 okshell-utils.workspace = true
 reactive_graph.workspace = true
 reactive_stores.workspace = true

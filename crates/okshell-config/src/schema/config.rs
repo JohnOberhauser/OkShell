@@ -293,7 +293,7 @@ impl Default for Menus {
             },
             wallpaper_menu: Menu {
                 position: Position::Bottom,
-                widgets: vec![MenuWidget::Wallpaper],
+                widgets: vec![MenuWidget::ThemePicker, MenuWidget::Wallpaper],
                 minimum_width: 1200,
             },
             screenshare_menu: ScreenshareMenu {
