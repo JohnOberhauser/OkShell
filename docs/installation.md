@@ -14,12 +14,7 @@ yay -Syu okshell
 
 ```
 pacman -Syu \
-alsa-lib \
 bluez \
-cairo \
-gdk-pixbuf2 \
-glib2 \
-graphene \
 gtk4 \
 gtk4-layer-shell \
 hyprland \
@@ -30,12 +25,9 @@ libpulse \
 matugen \
 networkmanager \
 pam \
-pango \
 power-profiles-daemon \
-systemd-libs \
 upower \
-wf-recorder \
-wireplumber
+wf-recorder
 ```
 
 #### Install Make Dependencies
