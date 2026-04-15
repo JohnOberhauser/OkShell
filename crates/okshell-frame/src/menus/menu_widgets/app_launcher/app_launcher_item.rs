@@ -9,7 +9,7 @@ use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::Themes;
 use crate::menus::menu_widgets::app_launcher::app_launcher_item::AppLauncherItemOutput::CloseMenu;
-use okshell_utils::app_icon::set_icon;
+use okshell_utils::app_icon::app_icon::{set_icon};
 use okshell_utils::launch::launch_detached;
 
 #[derive(Debug, Clone)]

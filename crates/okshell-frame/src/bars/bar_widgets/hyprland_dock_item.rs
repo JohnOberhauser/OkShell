@@ -15,7 +15,7 @@ use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeS
 use okshell_config::schema::themes::Themes;
 use okshell_services::hyprland_service;
 use crate::bars::bar::BarType;
-use okshell_utils::app_icon::set_icon;
+use okshell_utils::app_icon::app_icon::set_icon;
 use okshell_utils::app_info::find_app_info;
 use okshell_utils::launch::launch_detached;
 use okshell_utils::strings::truncate_string;

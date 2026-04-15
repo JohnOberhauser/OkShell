@@ -10,7 +10,7 @@ use relm4::{
     ComponentSender,
     Controller
 };
-use relm4::gtk::{Orientation, RevealerTransitionType};
+use relm4::gtk::{glib, Orientation, RevealerTransitionType};
 use okshell_common::watch;
 use wayle_hyprland::{Address, Client, HyprlandEvent};
 use okshell_cache::pinned_apps::{pinned_apps_store, PinnedAppsStateStoreFields};
@@ -188,18 +188,23 @@ impl Component for HyprlandDockModel {
     ) {
         match message {
             HyprlandDockInput::ThemeChanged => {
+                let theme = config_manager().config().theme().icons().app_icon_theme().get_untracked();
+                let apply_theme = config_manager().config().theme().icons().apply_theme_filter().get_untracked();
+                let color_theme = config_manager().config().theme().theme().get_untracked();
+
                 self.dynamic_box.model().for_each_entry(|_, entry| {
                     if let Some(ctrl) = entry
                         .controller
                         .as_ref()
                         .downcast_ref::<Controller<HyprlandDockItemModel>>()
                     {
-                        let theme = config_manager().config().theme().icons().app_icon_theme().get_untracked();
-                        let apply_theme = config_manager().config().theme().icons().apply_theme_filter().get_untracked();
-                        let color_theme = config_manager().config().theme().theme().get_untracked();
-                        let _ = ctrl
-                            .sender()
-                            .send(HyprlandDockItemInput::ThemeChanged(theme, color_theme, apply_theme));
+                        let sender = ctrl.sender().clone();
+                        let theme = theme.clone();
+                        let color_theme = color_theme.clone();
+
+                        let _ = sender.send(HyprlandDockItemInput::ThemeChanged(
+                            theme, color_theme, apply_theme,
+                        ));
                     }
                 });
             }
