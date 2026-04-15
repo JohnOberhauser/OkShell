@@ -240,7 +240,23 @@ impl Component for Shell {
                 self.window_groups.insert(name, window_group);
             }
             ShellInput::RemoveWindowGroup(name) => {
-                self.window_groups.remove(&name);
+                if let Some(group) = self.window_groups.remove(&name) {
+                    if let Some(frame) = &group.frame {
+                        frame.widget().close();
+                    }
+                    if let Some(wallpaper) = &group._wallpaper {
+                        wallpaper.widget().close();
+                    }
+                    if let Some(popup) = &group._popup_notifications {
+                        popup.widget().close();
+                    }
+                    if let Some(vol) = &group._volume_osd {
+                        vol.widget().close();
+                    }
+                    if let Some(bright) = &group._brightness_osd {
+                        bright.widget().close();
+                    }
+                }
             }
             ShellInput::Quit => {
                 main_application().quit();

@@ -49,15 +49,6 @@ pub(crate) fn sync_monitors(
         .collect();
 
     for connector in stale_connectors {
-        if let Some(group) = window_groups.get(&connector) {
-            info!(
-                connector = connector,
-                "Closing stale window group",
-            );
-            if let Some(frame) = &group.frame {
-                frame.widget().close();
-            }
-        }
         sender.input(ShellInput::RemoveWindowGroup(connector));
     }
 
