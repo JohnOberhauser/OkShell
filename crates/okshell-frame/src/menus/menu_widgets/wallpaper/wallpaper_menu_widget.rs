@@ -360,6 +360,7 @@ impl Component for WallpaperMenuWidgetModel {
 
                     gtk::Box {
                         set_orientation: gtk::Orientation::Vertical,
+                        set_height_request: (model.thumbnail_height * 2) + 10,
 
                         gtk::Label {
                             #[watch]
@@ -659,7 +660,7 @@ impl Component for WallpaperMenuWidgetModel {
                 // If state is changing from hidden to revealed
                 if revealed && !self.is_revealed {
                     if let Some(window) = widgets.root.toplevel_window() {
-                        window.set_keyboard_mode(KeyboardMode::Exclusive);
+                        window.set_keyboard_mode(KeyboardMode::OnDemand);
                     }
                     widgets.search_entry.grab_focus();
                 // if state is change from revealed to hidden
