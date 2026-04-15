@@ -99,22 +99,31 @@ impl Component for ClipboardModel {
 
         let service = clipboard_service();
         let history = service.history().clone();
-        let mut rx = service.subscribe();
 
         let event_sender = sender.clone();
-        glib::spawn_future_local(async move {
+        sender.command(move |_out, shutdown| async move {
+            let service = clipboard_service();
+            let mut rx = service.subscribe();
+            let shutdown_fut = shutdown.wait();
+            tokio::pin!(shutdown_fut);
+
             loop {
-                match rx.recv().await {
-                    Ok(_) => {
-                        event_sender.input(ClipboardInput::Refresh);
-                    }
-                    Err(broadcast::error::RecvError::Lagged(n)) => {
-                        warn!("Clipboard panel missed {n} events, refreshing");
-                        event_sender.input(ClipboardInput::Refresh);
-                    }
-                    Err(broadcast::error::RecvError::Closed) => {
-                        error!("Clipboard broadcast channel closed");
-                        break;
+                tokio::select! {
+                    () = &mut shutdown_fut => break,
+                    result = rx.recv() => {
+                        match result {
+                            Ok(_) => {
+                                event_sender.input(ClipboardInput::Refresh);
+                            }
+                            Err(broadcast::error::RecvError::Lagged(n)) => {
+                                warn!("Clipboard panel missed {n} events, refreshing");
+                                event_sender.input(ClipboardInput::Refresh);
+                            }
+                            Err(broadcast::error::RecvError::Closed) => {
+                                error!("Clipboard broadcast channel closed");
+                                break;
+                            }
+                        }
                     }
                 }
             }
