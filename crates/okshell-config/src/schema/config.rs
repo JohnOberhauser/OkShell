@@ -59,8 +59,7 @@ impl Default for General {
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
 pub struct Theme {
-    pub shell_icon_theme: String,
-    pub app_icon_theme: String,
+    pub icons: Icons,
     pub theme: Themes,
     pub matugen: Matugen,
     pub css_file: String,
@@ -70,12 +69,29 @@ pub struct Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self {
-            shell_icon_theme: "OkMaterial".to_string(),
-            app_icon_theme: "OkMaterial".to_string(),
+            icons: Icons::default(),
             theme: Themes::Default,
             matugen: Matugen::default(),
             css_file: String::new(),
             attributes: ThemeAttributes::default(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
+#[serde(default)]
+pub struct Icons {
+    pub shell_icon_theme: String,
+    pub app_icon_theme: String,
+    pub apply_theme_filter: bool,
+}
+
+impl Default for Icons {
+    fn default() -> Self {
+        Self {
+            shell_icon_theme: "OkMaterial".to_string(),
+            app_icon_theme: "OkMaterial".to_string(),
+            apply_theme_filter: false,
         }
     }
 }

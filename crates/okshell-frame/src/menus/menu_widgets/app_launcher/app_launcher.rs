@@ -14,7 +14,7 @@ use okshell_common::dynamic_box::generic_widget_controller::{
     GenericWidgetControllerExtSafe,
 };
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
 use crate::menus::menu_widgets::app_launcher::app_launcher_item::{AppLauncherItemInit, AppLauncherItemInput, AppLauncherItemModel, AppLauncherItemOutput};
 use okshell_utils::launch::launch_detached;
 
@@ -47,7 +47,7 @@ pub(crate) enum AppLauncherInput {
     UnhideApp(String),
     CloseMenu,
     ShowHiddenAppsChanged,
-    ThemeChanged(String),
+    ThemeChanged,
 }
 
 #[derive(Debug)]
@@ -217,8 +217,10 @@ impl Component for AppLauncherModel {
 
         let sender_clone = sender.clone();
         effect_scope.push(move |_| {
-            let icon_theme = config_manager().config().theme().app_icon_theme().get();
-            sender_clone.input(AppLauncherInput::ThemeChanged(icon_theme));
+            let _ = config_manager().config().theme().icons().app_icon_theme().get();
+            let _ = config_manager().config().theme().icons().apply_theme_filter().get();
+            let _ = config_manager().config().theme().theme().get();
+            sender_clone.input(AppLauncherInput::ThemeChanged);
         });
 
         let model = AppLauncherModel {
@@ -386,17 +388,19 @@ impl Component for AppLauncherModel {
                 self.show_hidden_apps = !self.show_hidden_apps;
                 sender.input(AppLauncherInput::FilterChanged(self.filter.clone()));
             }
-            AppLauncherInput::ThemeChanged(theme) => {
+            AppLauncherInput::ThemeChanged => {
                 self.dynamic_box.model().for_each_entry(|_, entry| {
                     if let Some(ctrl) = entry
                         .controller
                         .as_ref()
                         .downcast_ref::<Controller<AppLauncherItemModel>>()
                     {
-                        let theme = theme.clone();
+                        let theme = config_manager().config().theme().icons().app_icon_theme().get_untracked();
+                        let apply_theme = config_manager().config().theme().icons().apply_theme_filter().get_untracked();
+                        let color_theme = config_manager().config().theme().theme().get_untracked();
                         let _ = ctrl
                             .sender()
-                            .send(AppLauncherItemInput::ThemeChanged(theme));
+                            .send(AppLauncherItemInput::ThemeChanged(theme, color_theme, apply_theme));
                     }
                 });
             }

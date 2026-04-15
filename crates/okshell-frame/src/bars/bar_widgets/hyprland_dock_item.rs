@@ -11,7 +11,8 @@ use tracing::{error};
 use wayle_hyprland::{Address, Client};
 use okshell_cache::pinned_apps::{pin_app, unpin_app, PinnedApp};
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
+use okshell_config::schema::themes::Themes;
 use okshell_services::hyprland_service;
 use crate::bars::bar::BarType;
 use okshell_utils::app_icon::set_icon;
@@ -38,7 +39,7 @@ pub(crate) struct HyprlandDockItemModel {
 pub(crate) enum HyprlandDockItemInput {
     LeftClicked,
     RightClicked,
-    ThemeChanged(String),
+    ThemeChanged(String, Themes, bool),
     ClientCountChanged(i16),
     Selected(Address),
     Unselected,
@@ -252,7 +253,9 @@ impl Component for HyprlandDockItemModel {
             &model.app_info,
             &Some(model_clone.class),
             &widgets.image,
-            base_config.theme().app_icon_theme().get_untracked(),
+            base_config.theme().icons().app_icon_theme().get_untracked(),
+            &config_manager().config().theme().theme().get_untracked(),
+            config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
         );
 
         model.check_selected(&sender);
@@ -427,13 +430,15 @@ impl Component for HyprlandDockItemModel {
 
                 self.popover = Some(popover);
             }
-            HyprlandDockItemInput::ThemeChanged(theme) => {
+            HyprlandDockItemInput::ThemeChanged(theme, color_theme, apply_theme) => {
                 let class = self.class.clone();
                 set_icon(
                     &self.app_info,
                     &Some(class),
                     &widgets.image,
                     theme,
+                    &color_theme,
+                    apply_theme,
                 );
             }
             HyprlandDockItemInput::ClientCountChanged(count) => {

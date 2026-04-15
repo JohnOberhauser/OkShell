@@ -4,6 +4,9 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use relm4::gtk::gdk_pixbuf::Pixbuf;
 use image::{ImageBuffer, Rgb, RgbaImage};
 use lutgen::identity::correct_image;
+use relm4::gtk;
+use relm4::gtk::graphene;
+use relm4::gtk::prelude::{Cast, DisplayExt, GskRendererExt, ListModelExt, SnapshotExt, TextureExt, TextureExtManual};
 use okshell_config::schema::themes::Themes;
 
 const CLUT_BLOOD_RUST: &[u8] = include_bytes!("../cluts/blood_rust.bin");
@@ -190,4 +193,54 @@ fn blend_buffers(dst: &mut [u8], src: &[u8], t: f32) {
     for (d, s) in dst.iter_mut().zip(src.iter()) {
         *d = lerp_u8(*s, *d, t);
     }
+}
+
+/// Render a paintable to pixels via snapshot, apply the CLUT, return a new texture.
+pub fn snapshot_and_recolor(
+    paintable: &gtk::IconPaintable,
+    color_theme: &Themes,
+) -> Option<gtk::gdk::Texture> {
+    use gtk::prelude::PaintableExt;
+    use gtk::graphene;
+
+    let w = paintable.intrinsic_width().max(48) as f64;
+    let h = paintable.intrinsic_height().max(48) as f64;
+
+    let snapshot = gtk::Snapshot::new();
+    paintable.snapshot(snapshot.upcast_ref::<gtk::gdk::Snapshot>(), w, h);
+    let node = snapshot.to_node()?;
+
+    // Simpler approach: use CairoRenderer which doesn't need a surface
+    let renderer = gtk::gsk::CairoRenderer::new();
+    renderer.realize(None::<&gtk::gdk::Surface>).ok()?;
+
+    let rect = graphene::Rect::new(0.0, 0.0, w as f32, h as f32);
+    let texture = renderer.render_texture(&node, Some(&rect));
+    renderer.unrealize();
+
+    let width = texture.width() as u32;
+    let height = texture.height() as u32;
+    let stride = width * 4;
+    let mut pixels = vec![0u8; (stride * height) as usize];
+    texture.download(&mut pixels, stride as usize);
+
+    // Build an RgbaImage from the downloaded pixels and apply the CLUT
+    let mut img = RgbaImage::from_raw(width, height, pixels)?;
+    let clut_bytes = embedded_clut(color_theme)?;
+    let hald_clut = ImageBuffer::from_raw(512, 512, clut_bytes.to_vec())?;
+    correct_image(&mut img, &hald_clut);
+
+    rgba_to_texture(img.as_raw(), width, height)
+}
+
+pub fn rgba_to_texture(buf: &[u8], width: u32, height: u32) -> Option<gtk::gdk::Texture> {
+    let bytes = gtk::glib::Bytes::from(buf);
+    let texture = gtk::gdk::MemoryTexture::new(
+        width as i32,
+        height as i32,
+        gtk::gdk::MemoryFormat::R8g8b8a8,
+        &bytes,
+        (width * 4) as usize,
+    );
+    Some(texture.upcast())
 }

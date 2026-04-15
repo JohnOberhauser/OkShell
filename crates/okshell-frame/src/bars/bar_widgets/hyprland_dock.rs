@@ -24,7 +24,7 @@ use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetControllerExtSafe;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
 
 #[derive(Clone, Debug)]
 pub struct DockItem {
@@ -43,7 +43,7 @@ pub(crate) struct HyprlandDockModel {
 
 #[derive(Debug)]
 pub(crate) enum HyprlandDockInput {
-    ThemeChanged(String),
+    ThemeChanged,
     OnReordered(Vec<String>),
 }
 
@@ -161,8 +161,10 @@ impl Component for HyprlandDockModel {
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let icon_theme = config_manager().config().theme().app_icon_theme().get();
-            sender_clone.input(HyprlandDockInput::ThemeChanged(icon_theme));
+            let _ = config_manager().config().theme().icons().app_icon_theme().get();
+            let _ = config_manager().config().theme().icons().apply_theme_filter().get();
+            let _ = config_manager().config().theme().theme().get();
+            sender_clone.input(HyprlandDockInput::ThemeChanged);
         });
 
         let model = HyprlandDockModel {
@@ -185,17 +187,19 @@ impl Component for HyprlandDockModel {
         _root: &Self::Root
     ) {
         match message {
-            HyprlandDockInput::ThemeChanged(theme) => {
+            HyprlandDockInput::ThemeChanged => {
                 self.dynamic_box.model().for_each_entry(|_, entry| {
                     if let Some(ctrl) = entry
                         .controller
                         .as_ref()
                         .downcast_ref::<Controller<HyprlandDockItemModel>>()
                     {
-                        let theme = theme.clone();
+                        let theme = config_manager().config().theme().icons().app_icon_theme().get_untracked();
+                        let apply_theme = config_manager().config().theme().icons().apply_theme_filter().get_untracked();
+                        let color_theme = config_manager().config().theme().theme().get_untracked();
                         let _ = ctrl
                             .sender()
-                            .send(HyprlandDockItemInput::ThemeChanged(theme));
+                            .send(HyprlandDockItemInput::ThemeChanged(theme, color_theme, apply_theme));
                     }
                 });
             }

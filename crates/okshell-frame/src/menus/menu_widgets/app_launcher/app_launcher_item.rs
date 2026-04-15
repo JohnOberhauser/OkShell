@@ -5,7 +5,9 @@ use relm4::gtk::gio::DesktopAppInfo;
 use relm4::gtk::{gio, pango};
 use relm4::gtk::glib::GString;
 use relm4::gtk::prelude::{ActionMapExt, AppInfoExt, ButtonExt, OrientableExt, PopoverExt, WidgetExt};
-use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
+use okshell_config::config_manager::config_manager;
+use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
+use okshell_config::schema::themes::Themes;
 use crate::menus::menu_widgets::app_launcher::app_launcher_item::AppLauncherItemOutput::CloseMenu;
 use okshell_utils::app_icon::set_icon;
 use okshell_utils::launch::launch_detached;
@@ -24,7 +26,7 @@ pub(crate) enum AppLauncherItemInput {
     RightClicked,
     HiddenChanged(bool),
     NewSelectedId(Option<GString>),
-    ThemeChanged(String),
+    ThemeChanged(String, Themes, bool),
 }
 
 #[derive(Debug)]
@@ -112,7 +114,9 @@ impl Component for AppLauncherItemModel {
             &Some(app_info),
             &None,
             &widgets.image,
-            base_config.theme().app_icon_theme().get_untracked(),
+            base_config.theme().icons().app_icon_theme().get_untracked(),
+            &config_manager().config().theme().theme().get_untracked(),
+            config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
         );
 
         ComponentParts { model, widgets }
@@ -183,13 +187,15 @@ impl Component for AppLauncherItemModel {
             AppLauncherItemInput::NewSelectedId(selected_id) => {
                 self.is_selected = self.app_info.id() == selected_id;
             }
-            AppLauncherItemInput::ThemeChanged(theme) => {
+            AppLauncherItemInput::ThemeChanged(theme, color_theme, apply_theme) => {
                 let app_info = self.app_info.clone();
                 set_icon(
                     &Some(app_info),
                     &None,
                     &widgets.image,
                     theme,
+                    &color_theme,
+                    apply_theme,
                 );
             }
         }

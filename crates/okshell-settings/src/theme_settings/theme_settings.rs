@@ -6,7 +6,7 @@ use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, WidgetE
 use relm4::prelude::FactoryVecDeque;
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, MatugenStoreFields, SizingStoreFields, ThemeAttributesStoreFields, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, IconsStoreFields, MatugenStoreFields, SizingStoreFields, ThemeAttributesStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
 use okshell_style::user_css::style_utils::list_available_styles;
 use crate::theme_settings::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
@@ -17,6 +17,7 @@ pub(crate) struct ThemeSettingsModel {
     active_shell_theme: String,
     available_app_icon_themes: gtk::StringList,
     active_apps_theme: String,
+    apply_theme_filter: bool,
     available_fonts: gtk::StringList,
     active_primary_font: String,
     active_secondary_font: String,
@@ -43,6 +44,7 @@ pub(crate) struct ThemeSettingsModel {
 pub(crate) enum ThemeSettingsInput {
     ShellIconThemeSelected(Option<String>),
     AppIconThemeSelected(Option<String>),
+    ThemeFilterChanged(bool),
     MatugenPreferenceSelected(MatugenPreference),
     MatugenTypeSelected(MatugenType),
     MatugenModeSelected(MatugenMode),
@@ -59,6 +61,7 @@ pub(crate) enum ThemeSettingsInput {
 
     ShellIconEffect(String),
     AppIconEffect(String),
+    ThemeFilterEffect(bool),
     CssFileEffect(String),
     WindowOpacityEffect(f64),
     MatugenTypeEffect(MatugenType),
@@ -197,6 +200,43 @@ impl Component for ThemeSettingsModel {
                             sender.input(ThemeSettingsInput::AppIconThemeSelected(selected));
                         } @app_handler,
                     },
+                },
+                
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Theme filter",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Apply a filter to app icons when a static theme is selected.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        #[watch]
+                        #[block_signal(apply_theme_filter_handler)]
+                        set_active: model.apply_theme_filter,
+                        connect_state_set[sender] => move |_, enabled| {
+                            sender.input(ThemeSettingsInput::ThemeFilterChanged(enabled));
+                            glib::Propagation::Proceed
+                        } @apply_theme_filter_handler,
+                    }
                 },
 
                 gtk::Separator {},
@@ -816,15 +856,21 @@ impl Component for ThemeSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
-            let theme = config.theme().shell_icon_theme().get();
+            let theme = config.theme().icons().shell_icon_theme().get();
             sender_clone.input(ThemeSettingsInput::ShellIconEffect(theme));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
-            let theme = config.theme().app_icon_theme().get();
+            let theme = config.theme().icons().app_icon_theme().get();
             sender_clone.input(ThemeSettingsInput::AppIconEffect(theme));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().theme().icons().apply_theme_filter().get();
+            sender_clone.input(ThemeSettingsInput::ThemeFilterEffect(value));
         });
 
         let sender_clone = sender.clone();
@@ -920,9 +966,10 @@ impl Component for ThemeSettingsModel {
 
         let mut model = ThemeSettingsModel {
             available_shell_icon_themes,
-            active_shell_theme: config_manager().config().theme().shell_icon_theme().get_untracked(),
+            active_shell_theme: config_manager().config().theme().icons().shell_icon_theme().get_untracked(),
             available_app_icon_themes,
-            active_apps_theme: config_manager().config().theme().app_icon_theme().get_untracked(),
+            active_apps_theme: config_manager().config().theme().icons().app_icon_theme().get_untracked(),
+            apply_theme_filter: config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
             available_fonts,
             active_primary_font: config_manager().config().theme().attributes().font().primary().get_untracked(),
             active_secondary_font: config_manager().config().theme().attributes().font().secondary().get_untracked(),
@@ -979,16 +1026,21 @@ impl Component for ThemeSettingsModel {
             ThemeSettingsInput::ShellIconThemeSelected(theme) => {
                 if let Some(theme) = theme {
                     config_manager().update_config(|config| {
-                        config.theme.shell_icon_theme = theme;
+                        config.theme.icons.shell_icon_theme = theme;
                     });
                 }
             }
             ThemeSettingsInput::AppIconThemeSelected(theme) => {
                 if let Some(theme) = theme {
                     config_manager().update_config(|config| {
-                        config.theme.app_icon_theme = theme;
+                        config.theme.icons.app_icon_theme = theme;
                     });
                 }
+            }
+            ThemeSettingsInput::ThemeFilterChanged(apply) => {
+                config_manager().update_config(|config| {
+                    config.theme.icons.apply_theme_filter = apply;
+                })
             }
             ThemeSettingsInput::MatugenPreferenceSelected(preference) => {
                 config_manager().update_config(|config| {
@@ -1086,6 +1138,9 @@ impl Component for ThemeSettingsModel {
             }
             ThemeSettingsInput::AppIconEffect(theme) => {
                 self.active_apps_theme = theme;
+            }
+            ThemeSettingsInput::ThemeFilterEffect(filter) => {
+                self.apply_theme_filter = filter;
             }
             ThemeSettingsInput::CssFileEffect(file) => {
                 self.active_css = file;

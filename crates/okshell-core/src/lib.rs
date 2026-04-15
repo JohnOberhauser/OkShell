@@ -13,7 +13,7 @@ use tokio::runtime::Runtime;
 use tracing;
 use tracing::info;
 use wayle_weather::{LocationQuery, TemperatureUnit};
-use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields, ThemeStoreFields};
+use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields, IconsStoreFields, ThemeStoreFields};
 use okshell_services::weather_service;
 use crate::relm_app::{Shell, ShellInit};
 
@@ -50,7 +50,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     })?;
     
     Effect::new(move |_| {
-        let theme = config_manager.config().theme().shell_icon_theme().get();
+        let theme = config_manager.config().theme().icons().shell_icon_theme().get();
         gtk::Settings::default()
             .unwrap()
             .set_gtk_icon_theme_name(Some(theme.as_str()));
