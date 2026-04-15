@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use relm4::gtk;
 use relm4::gtk::{gio, glib};
@@ -33,9 +32,9 @@ pub fn set_icon(
         }
     };
 
-    let icon_name = resolve_icon_name(&icon, hyprland_class);
     let image = image.clone();
     let color_theme = color_theme.clone();
+    let hyprland_class = hyprland_class.clone();
 
     // Also grab the direct file path if it's a FileIcon
     let file_icon_path = icon.downcast_ref::<gio::FileIcon>()
@@ -44,10 +43,15 @@ pub fn set_icon(
     glib::spawn_future_local(async move {
         // Build/fetch the index off-thread (cached after first call)
         let theme_clone = theme.clone();
-        let icon_name_clone = icon_name.clone();
+        let candidates = resolve_icon_candidates(&icon, &hyprland_class);
         let path = gio::spawn_blocking(move || {
             let index = IconIndex::get_or_build(&theme_clone);
-            icon_name_clone.and_then(|name| index.lookup(&name).cloned())
+            for name in &candidates {
+                if let Some(path) = index.lookup(name) {
+                    return Some(path.clone());
+                }
+            }
+            None
         })
             .await
             .ok()
@@ -88,47 +92,39 @@ pub fn set_icon(
     });
 }
 
-fn resolve_icon_name(icon: &gio::Icon, hyprland_class: &Option<String>) -> Option<String> {
+fn resolve_icon_candidates(
+    icon: &gio::Icon,
+    hyprland_class: &Option<String>,
+) -> Vec<String> {
+    let mut candidates = Vec::new();
+
+    // ThemedIcon names (first is primary, rest are fallbacks)
     if let Some(themed) = icon.downcast_ref::<gio::ThemedIcon>() {
-        return themed.names().first().map(|n| n.to_string());
+        for name in themed.names() {
+            candidates.push(name.to_string());
+        }
     }
-    if let Some(class) = hyprland_class {
-        return Some(class.to_lowercase());
-    }
-    None
-}
 
-fn spawn_load_and_recolor(image: &gtk::Image, path: PathBuf, color_theme: Themes) {
-    let image = image.clone();
-    glib::spawn_future_local(async move {
-        let result = gio::spawn_blocking(move || {
-            let cancel = AtomicBool::new(false);
-            apply_theme_filter(&path, &color_theme, 1.0, &cancel)
-        })
-            .await;
-
-        if let Ok(Some(r)) = result {
-            if let Some(texture) = rgba_to_texture(&r.buf, r.width, r.height) {
-                image.set_paintable(Some(&texture));
-                return;
+    // FileIcon path walk — derive names from parent directories
+    if let Some(file_icon) = icon.downcast_ref::<gio::FileIcon>() {
+        if let Some(path) = file_icon.file().path() {
+            let mut dir = path.as_path();
+            for _ in 0..4 {
+                if let Some(stem) = dir.file_stem().and_then(|s| s.to_str()) {
+                    candidates.push(stem.to_string());
+                }
+                match dir.parent() {
+                    Some(p) => dir = p,
+                    None => break,
+                }
             }
         }
-        image.set_icon_name(Some("application-x-executable"));
-    });
-}
+    }
 
-fn spawn_load(image: &gtk::Image, path: PathBuf) {
-    let image = image.clone();
-    glib::spawn_future_local(async move {
-        let result = gio::spawn_blocking(move || {
-            gtk::gdk::Texture::from_filename(&path).ok()
-        })
-            .await;
+    // Hyprland class
+    if let Some(class) = hyprland_class {
+        candidates.push(class.to_lowercase());
+    }
 
-        if let Ok(Some(texture)) = result {
-            image.set_paintable(Some(&texture));
-        } else {
-            image.set_icon_name(Some("application-x-executable"));
-        }
-    });
+    candidates
 }
