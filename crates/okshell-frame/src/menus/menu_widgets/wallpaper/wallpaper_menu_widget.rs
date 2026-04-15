@@ -396,7 +396,7 @@ impl Component for WallpaperMenuWidgetModel {
         let list_store = gio::ListStore::new::<gtk::StringObject>();
         let filter = gtk::CustomFilter::new(|_| true);
         let filter_model = gtk::FilterListModel::new(Some(list_store.clone()), Some(filter.clone()));
-        let selection = gtk::SingleSelection::new(Some(filter_model));
+        let selection = gtk::SingleSelection::new(Some(filter_model.clone()));
         selection.set_autoselect(false);
         selection.set_can_unselect(true);
 
@@ -629,11 +629,11 @@ impl Component for WallpaperMenuWidgetModel {
         widgets.grid_view.set_model(Some(&selection));
         widgets.grid_view.set_factory(Some(&factory));
 
-        let list_store_clone = model.list_store.clone();
+        let filter_model_clone = filter_model.clone();
         let sender_clone = sender.clone();
         widgets.grid_view.set_single_click_activate(true);
         widgets.grid_view.connect_activate(move |_, position| {
-            if let Some(item) = list_store_clone.item(position) {
+            if let Some(item) = filter_model_clone.item(position) {
                 let string_obj = item.downcast_ref::<gtk::StringObject>().unwrap();
                 let path = PathBuf::from(string_obj.string().as_str());
                 sender_clone.input(WallpaperMenuWidgetInput::FileClicked(path));

@@ -25,7 +25,6 @@ use crate::menus::menu_widgets::theme_picker::theme_picker_menu_widget::{ThemePi
 use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{WallpaperMenuWidgetInit, WallpaperMenuWidgetModel};
 use crate::menus::menu_widgets::weather::weather::{WeatherInit, WeatherModel};
 
-
 pub fn build_widget(
     menu_widget: &MenuWidget,
     orientation: gtk::Orientation,
