@@ -64,6 +64,7 @@ pub(crate) enum WallpaperMenuWidgetInput {
     FileClicked(PathBuf),
     SearchFilterChanged(String),
     SearchFilterActivate,
+    ClearSearch,
 
     ChangeWallpaperDirectoryClicked,
     ContentFitChanged(ContentFit),
@@ -170,6 +171,16 @@ impl Component for WallpaperMenuWidgetModel {
                         },
                         connect_activate[sender] => move |_| {
                             sender.input(WallpaperMenuWidgetInput::SearchFilterActivate);
+                        },
+                        set_icon_from_icon_name: (
+                            gtk::EntryIconPosition::Secondary,
+                            Some("close-symbolic")
+                        ),
+                        set_icon_activatable: (gtk::EntryIconPosition::Secondary, true),
+                        connect_icon_press[sender] => move |_, pos| {
+                            if pos == gtk::EntryIconPosition::Secondary {
+                                sender.input(WallpaperMenuWidgetInput::ClearSearch);
+                            }
                         },
                     },
 
@@ -793,6 +804,9 @@ impl Component for WallpaperMenuWidgetModel {
                         }
                     },
                 );
+            }
+            WallpaperMenuWidgetInput::ClearSearch => {
+                widgets.search_entry.set_text("");
             }
             WallpaperMenuWidgetInput::ContentFitChanged(content_fit) => {
                 config_manager().update_config(|config| {
