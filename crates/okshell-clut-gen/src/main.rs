@@ -97,6 +97,7 @@ fn static_themes() -> Vec<(&'static str, Themes)> {
         ("catppuccin_latte", Themes::CatppuccinLatte),
         ("catppuccin_macchiato", Themes::CatppuccinMacchiato),
         ("catppuccin_mocha", Themes::CatppuccinMocha),
+        ("cyberpunk", Themes::Cyberpunk),
         ("desert_power", Themes::DesertPower),
         ("dracula", Themes::Dracula),
         ("everforest_dark_hard", Themes::EverforestDarkHard),

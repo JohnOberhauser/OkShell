@@ -14,6 +14,7 @@ const CLUT_CATPPUCCIN_FRAPPE: &[u8] = include_bytes!("../cluts/catppuccin_frappe
 const CLUT_CATPPUCCIN_LATTE: &[u8] = include_bytes!("../cluts/catppuccin_latte.bin");
 const CLUT_CATPPUCCIN_MACCHIATO: &[u8] = include_bytes!("../cluts/catppuccin_macchiato.bin");
 const CLUT_CATPPUCCIN_MOCHA: &[u8] = include_bytes!("../cluts/catppuccin_mocha.bin");
+const CLUT_CYBERPUNK: &[u8] = include_bytes!("../cluts/cyberpunk.bin");
 const CLUT_DESERT_POWER: &[u8] = include_bytes!("../cluts/desert_power.bin");
 const CLUT_DRACULA: &[u8] = include_bytes!("../cluts/dracula.bin");
 const CLUT_EVERFOREST_DARK_HARD: &[u8] = include_bytes!("../cluts/everforest_dark_hard.bin");
@@ -57,6 +58,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
         Themes::CatppuccinLatte => Some(CLUT_CATPPUCCIN_LATTE),
         Themes::CatppuccinMacchiato => Some(CLUT_CATPPUCCIN_MACCHIATO),
         Themes::CatppuccinMocha => Some(CLUT_CATPPUCCIN_MOCHA),
+        Themes::Cyberpunk => Some(CLUT_CYBERPUNK),
         Themes::DesertPower => Some(CLUT_DESERT_POWER),
         Themes::Dracula => Some(CLUT_DRACULA),
         Themes::EverforestDarkHard => Some(CLUT_EVERFOREST_DARK_HARD),

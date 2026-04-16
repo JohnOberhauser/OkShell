@@ -5,6 +5,7 @@ use crate::static_themes::catppuccin_frappe::catppuccin_frappe;
 use crate::static_themes::catppuccin_latte::catppuccin_latte;
 use crate::static_themes::catppuccin_macchiato::catppuccin_macchiato;
 use crate::static_themes::catppuccin_mocha::catppuccin_mocha;
+use crate::static_themes::cyberpunk::cyberpunk;
 use crate::static_themes::desert_power::desert_power;
 use crate::static_themes::dracula::dracula;
 use crate::static_themes::everforest_dark_hard::everforest_dark_hard;
@@ -50,6 +51,7 @@ pub fn static_theme(
         Themes::CatppuccinLatte => Some(catppuccin_latte(okshell)),
         Themes::CatppuccinMacchiato => Some(catppuccin_macchiato(okshell)),
         Themes::CatppuccinMocha => Some(catppuccin_mocha(okshell)),
+        Themes::Cyberpunk => Some(cyberpunk(okshell)),
         Themes::DesertPower => Some(desert_power(okshell)),
         Themes::Dracula => Some(dracula(okshell)),
         Themes::EverforestDarkHard => Some(everforest_dark_hard(okshell)),
