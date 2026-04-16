@@ -31,6 +31,7 @@ use crate::static_themes::rose_pine_dawn::rose_pine_dawn;
 use crate::static_themes::rose_pine_moon::rose_pine_moon;
 use crate::static_themes::solarized_dark::solarized_dark;
 use crate::static_themes::solarized_light::solarized_light;
+use crate::static_themes::synthwave_84::synthwave84;
 use crate::static_themes::tokyo_night::tokyo_night;
 use crate::static_themes::tokyo_night_light::tokyo_night_light;
 use crate::static_themes::tokyo_night_storm::tokyo_night_storm;
@@ -74,6 +75,7 @@ pub fn static_theme(
         Themes::RosePineMoon => Some(rose_pine_moon(okshell)),
         Themes::SolarizedDark => Some(solarized_dark(okshell)),
         Themes::SolarizedLight => Some(solarized_light(okshell)),
+        Themes::Synthwave84 => Some(synthwave84(okshell)),
         Themes::TokyoNight => Some(tokyo_night(okshell)),
         Themes::TokyoNightStorm => Some(tokyo_night_storm(okshell)),
         Themes::TokyoNightLight => Some(tokyo_night_light(okshell)),

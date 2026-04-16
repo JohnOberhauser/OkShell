@@ -40,6 +40,7 @@ const CLUT_ROSE_PINE_DAWN: &[u8] = include_bytes!("../cluts/rose_pine_dawn.bin")
 const CLUT_ROSE_PINE_MOON: &[u8] = include_bytes!("../cluts/rose_pine_moon.bin");
 const CLUT_SOLARIZED_DARK: &[u8] = include_bytes!("../cluts/solarized_dark.bin");
 const CLUT_SOLARIZED_LIGHT: &[u8] = include_bytes!("../cluts/solarized_light.bin");
+const CLUT_SYNTHWAVE_84: &[u8] = include_bytes!("../cluts/synthwave_84.bin");
 const CLUT_TOKYO_NIGHT: &[u8] = include_bytes!("../cluts/tokyo_night.bin");
 const CLUT_TOKYO_NIGHT_STORM: &[u8] = include_bytes!("../cluts/tokyo_night_storm.bin");
 const CLUT_TOKYO_NIGHT_LIGHT: &[u8] = include_bytes!("../cluts/tokyo_night_light.bin");
@@ -81,6 +82,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
         Themes::RosePineMoon => Some(CLUT_ROSE_PINE_MOON),
         Themes::SolarizedDark => Some(CLUT_SOLARIZED_DARK),
         Themes::SolarizedLight => Some(CLUT_SOLARIZED_LIGHT),
+        Themes::Synthwave84 => Some(CLUT_SYNTHWAVE_84),
         Themes::TokyoNight => Some(CLUT_TOKYO_NIGHT),
         Themes::TokyoNightStorm => Some(CLUT_TOKYO_NIGHT_STORM),
         Themes::TokyoNightLight => Some(CLUT_TOKYO_NIGHT_LIGHT),
