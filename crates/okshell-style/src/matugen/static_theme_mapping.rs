@@ -24,6 +24,7 @@ use crate::static_themes::kanagawa_lotus::kanagawa_lotus;
 use crate::static_themes::kanagawa_wave::kanagawa_wave;
 use crate::static_themes::nord_dark::nord_dark;
 use crate::static_themes::nord_light::nord_light;
+use crate::static_themes::oceanic_next::oceanic_next;
 use crate::static_themes::one_dark::one_dark;
 use crate::static_themes::poimandres::poimandres;
 use crate::static_themes::rose_pine::rose_pine;
@@ -68,6 +69,7 @@ pub fn static_theme(
         Themes::KanagawaWave => Some(kanagawa_wave(okshell)),
         Themes::NordDark => Some(nord_dark(okshell)),
         Themes::NordLight => Some(nord_light(okshell)),
+        Themes::OceanicNext => Some(oceanic_next(okshell)),
         Themes::OneDark => Some(one_dark(okshell)),
         Themes::Poimandres => Some(poimandres(okshell)),
         Themes::RosePine => Some(rose_pine(okshell)),

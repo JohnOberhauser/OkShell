@@ -34,3 +34,4 @@ pub mod tokyo_night_light;
 pub mod tokyo_night_storm;
 pub mod varda;
 pub mod synthwave_84;
+pub mod oceanic_next;
