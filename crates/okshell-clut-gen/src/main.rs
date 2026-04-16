@@ -123,6 +123,7 @@ fn static_themes() -> Vec<(&'static str, Themes)> {
         ("rose_pine", Themes::RosePine),
         ("rose_pine_dawn", Themes::RosePineDawn),
         ("rose_pine_moon", Themes::RosePineMoon),
+        ("seoul", Themes::Seoul),
         ("solarized_dark", Themes::SolarizedDark),
         ("solarized_light", Themes::SolarizedLight),
         ("synthwave_84", Themes::Synthwave84),

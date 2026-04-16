@@ -40,6 +40,7 @@ const CLUT_POIMANDRES: &[u8] = include_bytes!("../cluts/poimandres.bin");
 const CLUT_ROSE_PINE: &[u8] = include_bytes!("../cluts/rose_pine.bin");
 const CLUT_ROSE_PINE_DAWN: &[u8] = include_bytes!("../cluts/rose_pine_dawn.bin");
 const CLUT_ROSE_PINE_MOON: &[u8] = include_bytes!("../cluts/rose_pine_moon.bin");
+const CLUT_SEOUL: &[u8] = include_bytes!("../cluts/seoul.bin");
 const CLUT_SOLARIZED_DARK: &[u8] = include_bytes!("../cluts/solarized_dark.bin");
 const CLUT_SOLARIZED_LIGHT: &[u8] = include_bytes!("../cluts/solarized_light.bin");
 const CLUT_SYNTHWAVE_84: &[u8] = include_bytes!("../cluts/synthwave_84.bin");
@@ -84,6 +85,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
         Themes::RosePine => Some(CLUT_ROSE_PINE),
         Themes::RosePineDawn => Some(CLUT_ROSE_PINE_DAWN),
         Themes::RosePineMoon => Some(CLUT_ROSE_PINE_MOON),
+        Themes::Seoul => Some(CLUT_SEOUL),
         Themes::SolarizedDark => Some(CLUT_SOLARIZED_DARK),
         Themes::SolarizedLight => Some(CLUT_SOLARIZED_LIGHT),
         Themes::Synthwave84 => Some(CLUT_SYNTHWAVE_84),

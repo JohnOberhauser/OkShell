@@ -36,3 +36,4 @@ pub mod varda;
 pub mod synthwave_84;
 pub mod oceanic_next;
 pub mod cyberpunk;
+pub mod seoul;
