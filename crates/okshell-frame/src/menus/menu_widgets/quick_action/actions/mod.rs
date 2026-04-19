@@ -7,3 +7,4 @@ pub(crate) mod do_not_disturb;
 pub(crate) mod night_light;
 pub(crate) mod hypr_picker;
 pub(crate) mod settings;
+pub(crate) mod idle_inhibitor;

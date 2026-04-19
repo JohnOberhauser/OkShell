@@ -71,12 +71,13 @@ PowerProfiles
 Quick Action: Airplane Mode  
 Quick Action: Do Not Disturb  
 Quick Action: HyprPicker  
+Quick Action: Idle Inhibitor  
 Quick Action: Lock  
 Quick Action: Logout  
 Quick Action: Nightlight  
 Quick Action: Reboot  
 Quick Action: Settings  
-Quick Action: Shutdown
+Quick Action: Shutdown  
 Screenshots  
 Screen Recording  
 Spacer  

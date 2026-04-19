@@ -5,6 +5,7 @@ use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetControl
 use crate::menus::menu_widgets::quick_action::actions::airplane_mode::{AirplaneModeInit, AirplaneModeModel};
 use crate::menus::menu_widgets::quick_action::actions::do_not_disturb::{DoNotDisturbInit, DoNotDisturbModel};
 use crate::menus::menu_widgets::quick_action::actions::hypr_picker::{HyprPickerInit, HyprPickerModel, HyprPickerOutput};
+use crate::menus::menu_widgets::quick_action::actions::idle_inhibitor::{IdleInhibitorInit, IdleInhibitorModel};
 use crate::menus::menu_widgets::quick_action::actions::lock::{LockInit, LockModel, LockOutput};
 use crate::menus::menu_widgets::quick_action::actions::logout::{LogoutInit, LogoutModel};
 use crate::menus::menu_widgets::quick_action::actions::night_light::{NightLightInit, NightLightModel};
@@ -101,6 +102,13 @@ impl QuickActionsModel {
                                 QuickActionsOutput::CloseMenu
                             } }
                         })
+                )
+            }
+            QuickActionWidget::IdleInhibitor => {
+                Box::new(
+                    IdleInhibitorModel::builder()
+                        .launch(IdleInhibitorInit{})
+                        .detach()
                 )
             }
             QuickActionWidget::Lock => {

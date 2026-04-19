@@ -11,6 +11,7 @@ members = [
     "crates/okshell-core",
     "crates/okshell-frame",
     "crates/okshell-gamma",
+    "crates/okshell-idle",
     "crates/okshell-image",
     "crates/okshell-lockscreen",
     "crates/okshell-logging",
@@ -67,6 +68,7 @@ okshell-config = { path = "crates/okshell-config" }
 okshell-core = { path = "crates/okshell-core" }
 okshell-frame = { path = "crates/okshell-frame" }
 okshell-gamma = { path = "crates/okshell-gamma" }
+okshell-idle = { path = "crates/okshell-idle" }
 okshell-image = { path = "crates/okshell-image" }
 okshell-lockscreen = { path = "crates/okshell-lockscreen" }
 okshell-logging = { path = "crates/okshell-logging" }
@@ -95,6 +97,7 @@ serde_yaml = "0.9.33"
 thiserror = "2.0.18"
 time = {  version = "0.3.47", features = ["local-offset", "formatting"] }
 tokio = { version = "1.49.0", features = ["full"] }
+tokio-stream = "0.1.18"
 tokio-util = "0.7.18"
 tracing = "0.1.44"
 tracing-appender = "0.2.4"

@@ -17,6 +17,7 @@ okshell-clipboard.workspace = true
 okshell-common.workspace = true
 okshell-config.workspace = true
 okshell-gamma.workspace = true
+okshell-idle.workspace = true
 okshell-screenshot.workspace = true
 okshell-services.workspace = true
 okshell-session.workspace = true

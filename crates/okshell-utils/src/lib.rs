@@ -21,3 +21,4 @@ pub mod shutdown;
 pub mod strings;
 pub mod weather;
 pub mod brightness;
+pub mod idle;
