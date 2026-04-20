@@ -304,7 +304,7 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
     let mut left_top_expander_consumed = false;
     let mut left_bottom_expander_consumed = false;
     let mut right_top_expander_consumed = false;
-    let mut right_bottom_expander_consumed = false;
+    let right_bottom_expander_consumed = false;
 
     // === TOP-LEFT CORNER (hole_x, hole_y) ===
 
@@ -460,7 +460,6 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
         if right_expander_width > 0.0 && right_bottom_expander_height > 0.0 {
             if bottom_right_revealer_height >= right_bottom_expander_height {
                 // Case C: joined L-shape — expander consumed
-                right_bottom_expander_consumed = true;
                 vertices.push((hole_right + right_expander_width, hole_bottom));
                 vertices.push((hole_right + right_expander_width, hole_bottom - right_bottom_expander_height));
                 vertices.push((hole_right, hole_bottom - right_bottom_expander_height));

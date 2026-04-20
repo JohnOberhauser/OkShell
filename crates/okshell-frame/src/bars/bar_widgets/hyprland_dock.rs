@@ -10,7 +10,7 @@ use relm4::{
     ComponentSender,
     Controller
 };
-use relm4::gtk::{glib, Orientation, RevealerTransitionType};
+use relm4::gtk::{Orientation, RevealerTransitionType};
 use okshell_common::watch;
 use wayle_hyprland::{Address, Client, HyprlandEvent};
 use okshell_cache::pinned_apps::{pinned_apps_store, PinnedAppsStateStoreFields};

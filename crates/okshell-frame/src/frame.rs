@@ -507,7 +507,7 @@ impl Component for Frame {
         root.set_decorated(false);
         root.set_visible(true);
 
-        let base_config = okshell_config::config_manager::config_manager().config();
+        let base_config = config_manager().config();
         let untracked_config = base_config.clone().get_untracked();
 
         let left_menu_expansion_type = untracked_config.menus.left_menu_expansion_type;
@@ -995,7 +995,7 @@ impl Frame {
             false,
             move |values| {
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.top_thickness = (height) as f64);
+                frame_widget.update_style(|s| s.top_thickness = height as f64);
                 let _ = top_sender.send(FrameSpacerInput::HeightUpdated(height));
                 None
             },
@@ -1008,7 +1008,7 @@ impl Frame {
             false,
             move |values| {
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.bottom_thickness = (height ) as f64);
+                frame_widget.update_style(|s| s.bottom_thickness = height as f64);
                 let _ = bottom_sender.send(FrameSpacerInput::HeightUpdated(height));
                 None
             },

@@ -5,8 +5,7 @@ use relm4::gtk::gdk_pixbuf::Pixbuf;
 use image::{ImageBuffer, Rgb, RgbaImage};
 use lutgen::identity::correct_image;
 use relm4::gtk;
-use relm4::gtk::graphene;
-use relm4::gtk::prelude::{Cast, DisplayExt, GskRendererExt, ListModelExt, SnapshotExt, TextureExt, TextureExtManual};
+use relm4::gtk::prelude::{Cast, GskRendererExt, SnapshotExt, TextureExt, TextureExtManual};
 use okshell_config::schema::themes::Themes;
 
 const CLUT_BLOOD_RUST: &[u8] = include_bytes!("../cluts/blood_rust.bin");

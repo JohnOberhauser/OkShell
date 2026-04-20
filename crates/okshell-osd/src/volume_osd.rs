@@ -3,7 +3,6 @@ use gtk4::{gdk};
 use gtk4::prelude::{BoxExt, GtkWindowExt, OrientableExt, RangeExt, WidgetExt};
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use tracing::info;
 use wayle_audio::core::device::output::OutputDevice;
 use okshell_common::WatcherToken;
 use okshell_services::audio_service;

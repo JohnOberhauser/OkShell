@@ -1,4 +1,3 @@
-use std::fmt;
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -12,12 +11,6 @@ impl ThemeFilterStrength {
     }
     pub fn get(&self) -> f64 {
         self.0
-    }
-}
-
-impl ThemeFilterStrength {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:.2}", self.0)
     }
 }
 

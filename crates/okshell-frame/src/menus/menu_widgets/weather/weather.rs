@@ -267,7 +267,7 @@ impl Component for WeatherModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        root: &Self::Root
+        _root: &Self::Root
     ) {
         match message {
             WeatherCommandOutput::WeatherChanged => {

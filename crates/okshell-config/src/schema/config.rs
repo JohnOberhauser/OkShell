@@ -1,7 +1,6 @@
 use reactive_stores::{KeyMap, Patch, PatchField, Store, StorePath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use tracing::span::Attributes;
 use crate::schema::bar_widgets::BarWidget;
 use crate::schema::content_fit::ContentFit;
 use crate::schema::location_query::{LocationQueryConfig, OrdF64};

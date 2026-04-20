@@ -1,7 +1,6 @@
 use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller, ComponentController};
 use relm4::gtk::prelude::*;
 use relm4::gtk::RevealerTransitionType;
-use relm4::gtk::glib;
 use tokio::sync::broadcast;
 use tracing::{error, warn};
 use okshell_clipboard::{clipboard_service, ClipboardEntry, ClipboardHistory};

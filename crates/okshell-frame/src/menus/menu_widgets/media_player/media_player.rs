@@ -20,7 +20,6 @@ enum ScrollState {
 
 pub(crate) struct MediaPlayerModel {
     pub player: Arc<Player>,
-    watcher_token: WatcherToken,
     track_name: String,
     track_name_scroll_source: Option<glib::SourceId>,
     artist_name: String,
@@ -30,7 +29,6 @@ pub(crate) struct MediaPlayerModel {
     scale_value_changed_signal: Option<glib::SignalHandlerId>,
     position: Duration,
     pending_seek: Option<(Duration, Instant)>, // (target, when_we_sent_it)
-    is_seeking: bool, // true when dragging the scale
     can_loop: bool,
     can_shuffle: bool,
     can_go_next: bool,
@@ -307,7 +305,6 @@ impl Component for MediaPlayerModel {
 
         let mut model = MediaPlayerModel {
             player: params.player,
-            watcher_token,
             track_name: "".to_string(),
             track_name_scroll_source: None,
             artist_name: "".to_string(),
@@ -317,7 +314,6 @@ impl Component for MediaPlayerModel {
             scale_value_changed_signal: None,
             position,
             pending_seek: None,
-            is_seeking: false,
             can_shuffle,
             can_loop,
             can_go_next,

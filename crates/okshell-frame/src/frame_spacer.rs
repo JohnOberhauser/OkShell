@@ -3,7 +3,6 @@ use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::gdk::Monitor;
 use relm4::gtk::Orientation;
 use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
-use tracing::info;
 use crate::bars::bar::BarType;
 
 #[derive(Debug, Clone)]

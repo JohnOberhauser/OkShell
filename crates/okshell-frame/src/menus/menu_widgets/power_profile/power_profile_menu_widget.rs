@@ -1,6 +1,5 @@
 use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
 use relm4::gtk::prelude::WidgetExt;
-use okshell_common::WatcherToken;
 use wayle_power_profiles::types::profile::{PowerProfile};
 use okshell_services::{power_profile_service};
 use crate::common_widgets::revealer_row::revealer_row::{RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput};
@@ -10,7 +9,6 @@ use okshell_utils::power_profile::{get_power_profile_icon, get_power_profile_lab
 
 pub(crate) struct PowerProfileMenuWidgetModel {
     revealer_row: Controller<RevealerRowModel<RevealerRowLabelModel, PowerProfileRevealedContentModel>>,
-    active_device_watcher_token: WatcherToken,
 }
 
 #[derive(Debug)]
@@ -93,7 +91,6 @@ impl Component for PowerProfileMenuWidgetModel {
 
         let model = PowerProfileMenuWidgetModel {
             revealer_row,
-            active_device_watcher_token: WatcherToken::new(),
         };
 
         let widgets = view_output!();

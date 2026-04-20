@@ -12,7 +12,6 @@ pub struct RevealerButtonIconLabelModel {
 
 #[derive(Debug)]
 pub enum RevealerButtonIconLabelInput {
-    SetLabel(String),
     SetPrimaryIconName(String),
     SetSecondaryIconName(String),
 }
@@ -81,9 +80,6 @@ impl SimpleComponent for RevealerButtonIconLabelModel {
         _sender: ComponentSender<Self>
     ) {
         match msg {
-            RevealerButtonIconLabelInput::SetLabel(label) => {
-                self.label = label;
-            },
             RevealerButtonIconLabelInput::SetPrimaryIconName(icon_name) => {
                 self.icon_name = icon_name;
             }

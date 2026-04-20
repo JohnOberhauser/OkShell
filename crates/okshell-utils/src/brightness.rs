@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use relm4::{Component, ComponentSender};
 use okshell_common::watch;
 use okshell_services::brightness_service;

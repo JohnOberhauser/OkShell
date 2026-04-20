@@ -1,5 +1,5 @@
 use std::cell::RefCell;
-use relm4::{gtk, Component, ComponentController};
+use relm4::{Component, ComponentController};
 use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
 use crate::settings::{SettingsWindowInit, SettingsWindowModel};
 

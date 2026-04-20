@@ -1,6 +1,6 @@
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::prelude::{AdjustmentExt, BoxExt, OrientableExt, WidgetExt};
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, MenuStoreFields, MenusStoreFields, ScreenshareMenuStoreFields, VerticalMenuExpansion};
