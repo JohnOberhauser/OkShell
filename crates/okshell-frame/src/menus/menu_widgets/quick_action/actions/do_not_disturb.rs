@@ -35,7 +35,12 @@ impl Component for DoNotDisturbModel {
         gtk::Box {
             #[name = "button"]
             gtk::Button {
-                set_css_classes: &["ok-button-surface", "ok-button-medium"],
+                #[watch]
+                set_css_classes: if model.enabled {
+                    &["ok-button-surface", "ok-button-medium", "selected"]
+                } else {
+                    &["ok-button-surface", "ok-button-medium"]
+                },
                 set_hexpand: false,
                 set_vexpand: false,
                 connect_clicked[sender] => move |_| {
