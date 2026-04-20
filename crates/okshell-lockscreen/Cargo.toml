@@ -15,6 +15,7 @@ okshell-auth.workspace = true
 okshell-cache.workspace = true
 okshell-common.workspace = true
 okshell-config.workspace = true
+okshell-idle.workspace = true
 okshell-session.workspace = true
 pam.workspace = true
 reactive_graph.workspace = true

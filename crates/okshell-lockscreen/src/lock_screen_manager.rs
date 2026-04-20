@@ -6,6 +6,7 @@ use gtk4_layer_shell::{Layer, LayerShell};
 use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
 use tracing::info;
 use okshell_auth::fingerprint::{FingerprintAuth, FingerprintEvent};
+use okshell_idle::inhibitor::IdleInhibitor;
 use okshell_session::session_lock::session_lock;
 use crate::lock_screen::{LockScreenInit, LockScreenInput, LockScreenModel, LockScreenOutput, LOCK_SCREEN_REVEALER_TRANSITION_DURATION};
 use crate::utils::username::current_username;
@@ -14,6 +15,7 @@ pub struct LockScreenManagerModel {
     lock_screens: Vec<Controller<LockScreenModel>>,
     fingerprint_active: bool,
     fingerprint_cancel: Option<tokio::sync::oneshot::Sender<()>>,
+    enable_idle_inhibitor_on_unlock: bool,
     _monitor_added_lock_signal_handler_id: SignalHandlerId,
     _lock_signal_handler_id: SignalHandlerId,
     _unlock_signal_handler_id: SignalHandlerId,
@@ -96,6 +98,7 @@ impl Component for LockScreenManagerModel {
             lock_screens: Vec::new(),
             fingerprint_active: false,
             fingerprint_cancel: None,
+            enable_idle_inhibitor_on_unlock: false,
             _monitor_added_lock_signal_handler_id: monitor_added_lock_signal_handler_id,
             _lock_signal_handler_id: lock_signal_handler_id,
             _unlock_signal_handler_id: unlock_signal_handler_id,
@@ -120,6 +123,11 @@ impl Component for LockScreenManagerModel {
                 self.lock_screens.push(controller);
             }
             LockScreenManagerInput::SessionLocked => {
+                let inhibitor = IdleInhibitor::global();
+                self.enable_idle_inhibitor_on_unlock = inhibitor.get();
+                tokio::spawn(async move {
+                    let _ = inhibitor.disable().await;
+                });
                 self.fingerprint_active = true;
                 self.start_fingerprint_auth(&sender);
             }
@@ -130,6 +138,12 @@ impl Component for LockScreenManagerModel {
                     let _ = cancel.send(());
                 }
                 self.lock_screens.clear();
+                if self.enable_idle_inhibitor_on_unlock {
+                    tokio::spawn(async move {
+                        let inhibitor = IdleInhibitor::global();
+                        let _ = inhibitor.enable().await;
+                    });
+                }
             }
             LockScreenManagerInput::CancelFingerprint => {
                 self.fingerprint_active = false;
