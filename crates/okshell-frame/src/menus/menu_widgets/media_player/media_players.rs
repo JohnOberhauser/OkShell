@@ -41,6 +41,7 @@ impl Component for MediaPlayersModel {
         #[root]
         gtk::Box {
             set_orientation: gtk::Orientation::Vertical,
+            #[watch]
             set_visible: model.players_visible,
 
             gtk::Box {
