@@ -8,6 +8,7 @@ use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, IconsStoreFields, MatugenStoreFields, SizingStoreFields, ThemeAttributesStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
+use okshell_config::schema::wallpaper::{ContrastFilterStrength, ThemeFilterStrength};
 use okshell_style::user_css::style_utils::list_available_styles;
 use crate::theme_settings::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
 
@@ -18,6 +19,9 @@ pub(crate) struct ThemeSettingsModel {
     available_app_icon_themes: gtk::StringList,
     active_apps_theme: String,
     apply_theme_filter: bool,
+    filter_strength: f64,
+    contrast_strength: f64,
+    monochrome_strength: f64,
     available_fonts: gtk::StringList,
     active_primary_font: String,
     active_secondary_font: String,
@@ -45,6 +49,9 @@ pub(crate) enum ThemeSettingsInput {
     ShellIconThemeSelected(Option<String>),
     AppIconThemeSelected(Option<String>),
     ThemeFilterChanged(bool),
+    FilterStrengthChanged(f64),
+    ContrastStrengthChanged(f64),
+    MonochromeStrengthChanged(f64),
     MatugenPreferenceSelected(MatugenPreference),
     MatugenTypeSelected(MatugenType),
     MatugenModeSelected(MatugenMode),
@@ -62,6 +69,9 @@ pub(crate) enum ThemeSettingsInput {
     ShellIconEffect(String),
     AppIconEffect(String),
     ThemeFilterEffect(bool),
+    FilterStrengthEffect(f64),
+    ContrastStrengthEffect(f64),
+    MonochromeStrengthEffect(f64),
     CssFileEffect(String),
     WindowOpacityEffect(f64),
     MatugenTypeEffect(MatugenType),
@@ -237,6 +247,123 @@ impl Component for ThemeSettingsModel {
                             glib::Propagation::Proceed
                         } @apply_theme_filter_handler,
                     }
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Theme filter strength",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "A higher value will more aggressively apply theme colors.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::SpinButton {
+                        set_valign: gtk::Align::Center,
+                        set_range: (0.0, 1.0),
+                        set_increments: (0.1, 0.1),
+                        set_digits: 2,
+                        #[watch]
+                        #[block_signal(filter_strength_handler)]
+                        set_value: model.filter_strength,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(ThemeSettingsInput::FilterStrengthChanged(s.value()));
+                        } @filter_strength_handler,
+                    },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Monochrome filter strength",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "A higher value will more aggressively apply a monochrome filter.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::SpinButton {
+                        set_valign: gtk::Align::Center,
+                        set_range: (0.0, 1.0),
+                        set_increments: (0.1, 0.1),
+                        set_digits: 2,
+                        #[watch]
+                        #[block_signal(monochrome_strength_handler)]
+                        set_value: model.monochrome_strength,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(ThemeSettingsInput::MonochromeStrengthChanged(s.value()));
+                        } @monochrome_strength_handler,
+                    },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Contrast adjustment",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "A value > 1 will add more contrast. A value < 1 will reduce contrast.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::SpinButton {
+                        set_valign: gtk::Align::Center,
+                        set_range: (0.0, 2.0),
+                        set_increments: (0.1, 0.1),
+                        set_digits: 2,
+                        #[watch]
+                        #[block_signal(contrast_strength_handler)]
+                        set_value: model.contrast_strength,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(ThemeSettingsInput::ContrastStrengthChanged(s.value()));
+                        } @contrast_strength_handler,
+                    },
                 },
 
                 gtk::Separator {},
@@ -875,6 +1002,24 @@ impl Component for ThemeSettingsModel {
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
+            let value = config_manager().config().theme().icons().filter_strength().get().get();
+            sender_clone.input(ThemeSettingsInput::FilterStrengthEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().theme().icons().monochrome_strength().get().get();
+            sender_clone.input(ThemeSettingsInput::MonochromeStrengthEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager().config().theme().icons().contrast_strength().get().get();
+            sender_clone.input(ThemeSettingsInput::ContrastStrengthEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
             let config = config_manager().config();
             let value = config.theme().css_file().get();
             sender_clone.input(ThemeSettingsInput::CssFileEffect(value));
@@ -970,6 +1115,9 @@ impl Component for ThemeSettingsModel {
             available_app_icon_themes,
             active_apps_theme: config_manager().config().theme().icons().app_icon_theme().get_untracked(),
             apply_theme_filter: config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
+            filter_strength: config_manager().config().theme().icons().filter_strength().get_untracked().get(),
+            contrast_strength: config_manager().config().theme().icons().contrast_strength().get_untracked().get(),
+            monochrome_strength: config_manager().config().theme().icons().monochrome_strength().get_untracked().get(),
             available_fonts,
             active_primary_font: config_manager().config().theme().attributes().font().primary().get_untracked(),
             active_secondary_font: config_manager().config().theme().attributes().font().secondary().get_untracked(),
@@ -1040,6 +1188,21 @@ impl Component for ThemeSettingsModel {
             ThemeSettingsInput::ThemeFilterChanged(apply) => {
                 config_manager().update_config(|config| {
                     config.theme.icons.apply_theme_filter = apply;
+                })
+            }
+            ThemeSettingsInput::FilterStrengthChanged(value) => {
+                config_manager().update_config(|config| {
+                    config.theme.icons.filter_strength = ThemeFilterStrength::new(value);
+                })
+            }
+            ThemeSettingsInput::MonochromeStrengthChanged(value) => {
+                config_manager().update_config(|config| {
+                    config.theme.icons.monochrome_strength = ThemeFilterStrength::new(value);
+                })
+            }
+            ThemeSettingsInput::ContrastStrengthChanged(value) => {
+                config_manager().update_config(|config| {
+                    config.theme.icons.contrast_strength = ContrastFilterStrength::new(value);
                 })
             }
             ThemeSettingsInput::MatugenPreferenceSelected(preference) => {
@@ -1141,6 +1304,15 @@ impl Component for ThemeSettingsModel {
             }
             ThemeSettingsInput::ThemeFilterEffect(filter) => {
                 self.apply_theme_filter = filter;
+            }
+            ThemeSettingsInput::FilterStrengthEffect(value) => {
+                self.filter_strength = value;
+            }
+            ThemeSettingsInput::ContrastStrengthEffect(value) => {
+                self.contrast_strength = value;
+            }
+            ThemeSettingsInput::MonochromeStrengthEffect(value) => {
+                self.monochrome_strength = value;
             }
             ThemeSettingsInput::CssFileEffect(file) => {
                 self.active_css = file;

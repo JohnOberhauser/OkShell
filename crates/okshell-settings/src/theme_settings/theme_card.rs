@@ -6,7 +6,7 @@ use relm4::prelude::FactoryComponent;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::Themes;
-use okshell_style::matugen::static_theme_mapping::static_theme;
+use okshell_matugen::static_theme_mapping::static_theme;
 
 #[derive(Debug)]
 pub(crate) struct ThemeCardModel {

@@ -4,9 +4,9 @@ use std::path::PathBuf;
 use image::RgbImage;
 use lutgen::GenerateLut;
 use lutgen::interpolation::GaussianRemapper;
-use okshell_style::matugen::json_struct::MatugenTheme;
-use okshell_style::matugen::static_theme_mapping::static_theme;
 use okshell_config::schema::themes::Themes;
+use okshell_matugen::json_struct::MatugenTheme;
+use okshell_matugen::static_theme_mapping::static_theme;
 
 const HALD_LEVEL: u8 = 8;
 const GAUSSIAN_SHAPE: f64 = 96.0;

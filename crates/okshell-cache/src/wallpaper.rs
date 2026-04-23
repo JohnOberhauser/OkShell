@@ -165,7 +165,7 @@ fn refilter() {
 
         std::thread::spawn(move || {
             let result = if should_filter {
-                apply_theme_filter(&source, &theme, strength, 1.0, &cancel_token)
+                apply_theme_filter(&source, &theme, strength, 1.0, 0.0, &cancel_token)
                     .map(|remap| WallpaperImage {
                         buf: Arc::new(remap.buf),
                         width: remap.width,

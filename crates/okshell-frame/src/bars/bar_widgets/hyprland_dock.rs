@@ -164,6 +164,9 @@ impl Component for HyprlandDockModel {
             let _ = config_manager().config().theme().icons().app_icon_theme().get();
             let _ = config_manager().config().theme().icons().apply_theme_filter().get();
             let _ = config_manager().config().theme().theme().get();
+            let _ = config_manager().config().theme().icons().filter_strength().get();
+            let _ = config_manager().config().theme().icons().monochrome_strength().get();
+            let _ = config_manager().config().theme().icons().contrast_strength().get();
             sender_clone.input(HyprlandDockInput::ThemeChanged);
         });
 
@@ -191,6 +194,9 @@ impl Component for HyprlandDockModel {
                 let theme = config_manager().config().theme().icons().app_icon_theme().get_untracked();
                 let apply_theme = config_manager().config().theme().icons().apply_theme_filter().get_untracked();
                 let color_theme = config_manager().config().theme().theme().get_untracked();
+                let filter_strength = config_manager().config().theme().icons().filter_strength().get_untracked().get();
+                let monochrome_strength = config_manager().config().theme().icons().monochrome_strength().get_untracked().get();
+                let contrast_strength = config_manager().config().theme().icons().contrast_strength().get_untracked().get();
 
                 self.dynamic_box.model().for_each_entry(|_, entry| {
                     if let Some(ctrl) = entry
@@ -203,7 +209,12 @@ impl Component for HyprlandDockModel {
                         let color_theme = color_theme.clone();
 
                         let _ = sender.send(HyprlandDockItemInput::ThemeChanged(
-                            theme, color_theme, apply_theme,
+                            theme, 
+                            color_theme, 
+                            apply_theme, 
+                            filter_strength, 
+                            monochrome_strength, 
+                            contrast_strength,
                         ));
                     }
                 });

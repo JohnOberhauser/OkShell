@@ -39,7 +39,7 @@ pub(crate) struct HyprlandDockItemModel {
 pub(crate) enum HyprlandDockItemInput {
     LeftClicked,
     RightClicked,
-    ThemeChanged(String, Themes, bool),
+    ThemeChanged(String, Themes, bool, f64, f64, f64),
     ClientCountChanged(i16),
     Selected(Address),
     Unselected,
@@ -256,6 +256,9 @@ impl Component for HyprlandDockItemModel {
             base_config.theme().icons().app_icon_theme().get_untracked(),
             &config_manager().config().theme().theme().get_untracked(),
             config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
+            config_manager().config().theme().icons().filter_strength().get_untracked().get(),
+            config_manager().config().theme().icons().monochrome_strength().get_untracked().get(),
+            config_manager().config().theme().icons().contrast_strength().get_untracked().get(),
         );
 
         model.check_selected(&sender);
@@ -430,7 +433,14 @@ impl Component for HyprlandDockItemModel {
 
                 self.popover = Some(popover);
             }
-            HyprlandDockItemInput::ThemeChanged(theme, color_theme, apply_theme) => {
+            HyprlandDockItemInput::ThemeChanged(
+                theme,
+                color_theme,
+                apply_theme,
+                filter_strength,
+                monochrome_strength,
+                contrast_strength,
+            ) => {
                 let class = self.class.clone();
                 set_icon(
                     &self.app_info,
@@ -439,6 +449,9 @@ impl Component for HyprlandDockItemModel {
                     theme,
                     &color_theme,
                     apply_theme,
+                    filter_strength,
+                    monochrome_strength,
+                    contrast_strength,
                 );
             }
             HyprlandDockItemInput::ClientCountChanged(count) => {

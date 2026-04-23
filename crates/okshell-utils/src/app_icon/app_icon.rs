@@ -14,6 +14,9 @@ pub fn set_icon(
     theme: String,
     color_theme: &Themes,
     apply_filter: bool,
+    filter_strength: f64,
+    monochrome_strength: f64,
+    contrast_strength: f64,
 ) {
     let should_recolor = apply_filter && embedded_clut(color_theme).is_some();
 
@@ -66,7 +69,7 @@ pub fn set_icon(
         if should_recolor {
             let result = gio::spawn_blocking(move || {
                 let cancel = AtomicBool::new(false);
-                apply_theme_filter(&path, &color_theme, 0.9, 1.3, &cancel)
+                apply_theme_filter(&path, &color_theme, filter_strength, contrast_strength, monochrome_strength, &cancel)
             })
                 .await;
 

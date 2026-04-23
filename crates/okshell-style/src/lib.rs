@@ -1,5 +1,3 @@
-pub mod matugen;
-pub mod static_themes;
 pub mod style_manager;
 pub mod user_css;
 

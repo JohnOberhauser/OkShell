@@ -7,6 +7,7 @@ use lutgen::identity::correct_image;
 use relm4::gtk;
 use relm4::gtk::prelude::{Cast, GskRendererExt, SnapshotExt, TextureExt, TextureExtManual};
 use okshell_config::schema::themes::Themes;
+use okshell_matugen::static_theme_mapping::static_theme;
 
 const CLUT_BLOOD_RUST: &[u8] = include_bytes!("../cluts/blood_rust.bin");
 const CLUT_CATPPUCCIN_FRAPPE: &[u8] = include_bytes!("../cluts/catppuccin_frappe.bin");
@@ -118,7 +119,8 @@ pub fn apply_theme_filter(
     path: &Path,
     theme: &Themes,
     strength: f64,
-    contrast_adjustment: f32,
+    contrast_adjustment: f64,
+    monochrome: f64,
     cancel: &AtomicBool,
 ) -> Option<RemapResult> {
     let clut_bytes = embedded_clut(theme)?;
@@ -131,6 +133,16 @@ pub fn apply_theme_filter(
 
     let mut img = decode_pixbuf_rgba(path)?;
     let (width, height) = img.dimensions();
+
+    if monochrome > 0.0 {
+        let tint = static_theme(theme, None)
+            .map(|t| {
+                let rgb = t.colors.on_surface.default.as_rgb();
+                [rgb.0, rgb.1, rgb.2]
+            })
+            .unwrap_or([255, 255, 255]);
+        apply_monochrome(img.as_mut(), tint, monochrome);
+    }
 
     let original = if strength < 1.0 {
         Some(img.clone())
@@ -147,7 +159,7 @@ pub fn apply_theme_filter(
     }
 
     if let Some(original) = original {
-        blend_buffers(img.as_mut(), original.as_raw(), strength as f32);
+        blend_buffers(img.as_mut(), original.as_raw(), strength);
     }
 
     Some(RemapResult {
@@ -195,11 +207,11 @@ fn load_embedded_clut(bytes: &[u8]) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         .expect("embedded CLUT data is invalid")
 }
 
-fn lerp_u8(a: u8, b: u8, t: f32) -> u8 {
-    (a as f32 + (b as f32 - a as f32) * t).clamp(0.0, 255.0) as u8
+fn lerp_u8(a: u8, b: u8, t: f64) -> u8 {
+    (a as f64 + (b as f64 - a as f64) * t).clamp(0.0, 255.0) as u8
 }
 
-fn blend_buffers(dst: &mut [u8], src: &[u8], t: f32) {
+fn blend_buffers(dst: &mut [u8], src: &[u8], t: f64) {
     for (d, s) in dst.iter_mut().zip(src.iter()) {
         *d = lerp_u8(*s, *d, t);
     }
@@ -258,11 +270,33 @@ pub fn rgba_to_texture(buf: &[u8], width: u32, height: u32) -> Option<gtk::gdk::
 /// Adjust contrast of an RGBA buffer in-place.
 /// `factor` > 1.0 increases contrast, < 1.0 decreases it.
 /// 1.0 is no change.
-fn adjust_contrast(buf: &mut [u8], factor: f32) {
+fn adjust_contrast(buf: &mut [u8], factor: f64) {
     for chunk in buf.chunks_exact_mut(4) {
-        chunk[0] = ((((chunk[0] as f32 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
-        chunk[1] = ((((chunk[1] as f32 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
-        chunk[2] = ((((chunk[2] as f32 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        chunk[0] = ((((chunk[0] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        chunk[1] = ((((chunk[1] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        chunk[2] = ((((chunk[2] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
         // leave alpha (chunk[3]) untouched
+    }
+}
+
+/// Desaturate toward a tint color.
+/// `factor` 0.0 = no change, 1.0 = fully desaturated and tinted.
+fn apply_monochrome(buf: &mut [u8], tint: [u8; 3], factor: f64) {
+    for chunk in buf.chunks_exact_mut(4) {
+        // Rec. 709 luminance
+        let luma = (chunk[0] as f32 * 0.2126
+            + chunk[1] as f32 * 0.7152
+            + chunk[2] as f32 * 0.0722)
+            .clamp(0.0, 255.0);
+
+        // Blend tint color by luma (preserves light/dark variation)
+        let tinted_r = tint[0] as f32 * (luma / 255.0);
+        let tinted_g = tint[1] as f32 * (luma / 255.0);
+        let tinted_b = tint[2] as f32 * (luma / 255.0);
+
+        chunk[0] = lerp_u8(chunk[0], tinted_r as u8, factor);
+        chunk[1] = lerp_u8(chunk[1], tinted_g as u8, factor);
+        chunk[2] = lerp_u8(chunk[2], tinted_b as u8, factor);
+        // alpha untouched
     }
 }

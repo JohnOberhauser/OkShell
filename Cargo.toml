@@ -15,6 +15,7 @@ members = [
     "crates/okshell-image",
     "crates/okshell-lockscreen",
     "crates/okshell-logging",
+    "crates/okshell-matugen",
     "crates/okshell-notification-popups",
     "crates/okshell-osd",
     "crates/okshell-polkit",
@@ -72,6 +73,7 @@ okshell-idle = { path = "crates/okshell-idle" }
 okshell-image = { path = "crates/okshell-image" }
 okshell-lockscreen = { path = "crates/okshell-lockscreen" }
 okshell-logging = { path = "crates/okshell-logging" }
+okshell-matugen = { path = "crates/okshell-matugen" }
 okshell-notification-popups = { path = "crates/okshell-notification-popups" }
 okshell-osd = { path = "crates/okshell-osd" }
 okshell-polkit = { path = "crates/okshell-polkit" }

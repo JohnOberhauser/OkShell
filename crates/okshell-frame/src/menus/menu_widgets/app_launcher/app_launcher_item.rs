@@ -26,7 +26,7 @@ pub(crate) enum AppLauncherItemInput {
     RightClicked,
     HiddenChanged(bool),
     NewSelectedId(Option<GString>),
-    ThemeChanged(String, Themes, bool),
+    ThemeChanged(String, Themes, bool, f64, f64, f64),
 }
 
 #[derive(Debug)]
@@ -98,7 +98,7 @@ impl Component for AppLauncherItemModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let base_config = okshell_config::config_manager::config_manager().config();
+        let base_config = config_manager().config();
 
         let model = AppLauncherItemModel {
             app_info: params.app_info,
@@ -117,6 +117,9 @@ impl Component for AppLauncherItemModel {
             base_config.theme().icons().app_icon_theme().get_untracked(),
             &config_manager().config().theme().theme().get_untracked(),
             config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
+            config_manager().config().theme().icons().filter_strength().get_untracked().get(),
+            config_manager().config().theme().icons().monochrome_strength().get_untracked().get(),
+            config_manager().config().theme().icons().contrast_strength().get_untracked().get(),
         );
 
         ComponentParts { model, widgets }
@@ -187,7 +190,14 @@ impl Component for AppLauncherItemModel {
             AppLauncherItemInput::NewSelectedId(selected_id) => {
                 self.is_selected = self.app_info.id() == selected_id;
             }
-            AppLauncherItemInput::ThemeChanged(theme, color_theme, apply_theme) => {
+            AppLauncherItemInput::ThemeChanged(
+                theme,
+                color_theme,
+                apply_theme,
+                filter_strength,
+                monochrome_strength,
+                contrast_strength,
+            ) => {
                 let app_info = self.app_info.clone();
                 set_icon(
                     &Some(app_info),
@@ -196,6 +206,9 @@ impl Component for AppLauncherItemModel {
                     theme,
                     &color_theme,
                     apply_theme,
+                    filter_strength,
+                    monochrome_strength,
+                    contrast_strength,
                 );
             }
         }

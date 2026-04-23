@@ -16,6 +16,7 @@ anyhow.workspace = true
 gtk4.workspace = true
 okshell-cache.workspace = true
 okshell-config.workspace = true
+okshell-matugen.workspace = true
 notify.workspace = true
 reactive_graph.workspace = true
 reactive_stores.workspace = true

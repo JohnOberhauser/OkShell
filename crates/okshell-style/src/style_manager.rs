@@ -7,10 +7,10 @@ use okshell_cache::wallpaper::{source_path, wallpaper_store, WallpaperStateStore
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, Matugen, SizingStoreFields, ThemeAttributes, ThemeAttributesStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::{Themes};
+use okshell_matugen::json_struct::{Font, MatugenTheme, MatugenThemeCustomOnly, OkShell, Sizing};
+use okshell_matugen::matugen::{apply_matugen_from_image_queued, apply_matugen_from_theme_queued};
+use okshell_matugen::static_theme_mapping::static_theme;
 use crate::compiled_css;
-use crate::matugen::matugen::{apply_matugen_from_image_queued, apply_matugen_from_theme_queued};
-use crate::matugen::json_struct::{MatugenTheme, MatugenThemeCustomOnly, OkShell};
-use crate::matugen::static_theme_mapping::static_theme;
 use crate::style_manager::StyleManagerInput::*;
 use crate::style_manager::StyleManagerOutput::QueueFrameRedraw;
 use crate::user_css::style::StyleStoreFields;
@@ -243,12 +243,12 @@ impl Component for StyleManagerModel {
 
 fn build_okshell_matugen() -> OkShell {
     OkShell {
-        font: crate::matugen::json_struct::Font {
+        font: Font {
             primary: config_manager().config().theme().attributes().font().primary().get_untracked(),
             secondary: config_manager().config().theme().attributes().font().primary().get_untracked(),
             tertiary: config_manager().config().theme().attributes().font().primary().get_untracked(),
         },
-        sizing: crate::matugen::json_struct::Sizing {
+        sizing: Sizing {
             radius_widget: config_manager().config().theme().attributes().sizing().radius_widget().get_untracked(),
             radius_window: config_manager().config().theme().attributes().sizing().radius_window().get_untracked(),
             border_width: config_manager().config().theme().attributes().sizing().border_width().get_untracked(),

@@ -8,7 +8,7 @@ use crate::schema::menu_widgets::{MenuWidget, QuickActionWidget, QuickActionsCon
 use crate::schema::position::{NotificationPosition, Position};
 use crate::schema::temperature::TemperatureUnitConfig;
 use crate::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
-use crate::schema::wallpaper::ThemeFilterStrength;
+use crate::schema::wallpaper::{ContrastFilterStrength, ThemeFilterStrength};
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
@@ -83,6 +83,9 @@ pub struct Icons {
     pub shell_icon_theme: String,
     pub app_icon_theme: String,
     pub apply_theme_filter: bool,
+    pub filter_strength: ThemeFilterStrength,
+    pub monochrome_strength: ThemeFilterStrength,
+    pub contrast_strength: ContrastFilterStrength,
 }
 
 impl Default for Icons {
@@ -91,6 +94,9 @@ impl Default for Icons {
             shell_icon_theme: "OkMaterial".to_string(),
             app_icon_theme: "OkMaterial".to_string(),
             apply_theme_filter: false,
+            filter_strength: ThemeFilterStrength::new(1.0),
+            monochrome_strength: ThemeFilterStrength::new(0.0),
+            contrast_strength: ContrastFilterStrength::new(1.0),
         }
     }
 }

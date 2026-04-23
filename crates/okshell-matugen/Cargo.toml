@@ -1,16 +1,17 @@
 [package]
-name = "okshell-image"
+name = "okshell-matugen"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
-description = "OkShell image manipulation."
+description = "OkShell matugen."
 repository.workspace = true
 license.workspace = true
 
 [dependencies]
-relm4.workspace = true
-image.workspace = true
-lutgen.workspace = true
+anyhow.workspace = true
+gtk4.workspace = true
 okshell-config.workspace = true
-okshell-matugen.workspace = true
+relm4.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 tracing.workspace = true
