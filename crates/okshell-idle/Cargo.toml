@@ -10,4 +10,5 @@ license.workspace = true
 [dependencies]
 tokio.workspace = true
 tokio-stream.workspace = true
+tracing.workspace = true
 zbus.workspace = true

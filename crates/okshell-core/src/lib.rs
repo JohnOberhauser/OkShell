@@ -14,6 +14,7 @@ use tracing;
 use tracing::info;
 use wayle_weather::{LocationQuery, TemperatureUnit};
 use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields, IconsStoreFields, ThemeStoreFields};
+use okshell_idle::inhibitor::IdleInhibitor;
 use okshell_services::weather_service;
 use crate::relm_app::{Shell, ShellInit};
 
@@ -48,6 +49,10 @@ pub fn run() -> Result<(), Box<dyn Error>> {
             temperature_units,
         ).await
     })?;
+
+    tokio_rt().spawn(async move {
+        let _ = IdleInhibitor::global().init().await;
+    });
     
     Effect::new(move |_| {
         let theme = config_manager.config().theme().icons().shell_icon_theme().get();

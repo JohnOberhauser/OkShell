@@ -16,6 +16,7 @@ okshell-cache.workspace = true
 okshell-common.workspace = true
 okshell-config.workspace = true
 okshell-frame.workspace = true
+okshell-idle.workspace = true
 okshell-lockscreen.workspace = true
 okshell-notification-popups.workspace = true
 okshell-osd.workspace = true
