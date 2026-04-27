@@ -25,6 +25,7 @@ libpulse \
 matugen \
 networkmanager \
 pam \
+pipewire-alsa \
 power-profiles-daemon \
 upower \
 wf-recorder
@@ -36,6 +37,12 @@ wf-recorder
 pacman -Syu \
 clang \
 rust \
+```
+
+#### Install Script Dependencies
+
+```
+pacman -Syu rsync
 ```
 
 #### Clone the repo and install
