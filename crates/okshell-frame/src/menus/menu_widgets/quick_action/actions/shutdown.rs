@@ -72,9 +72,9 @@ impl SimpleComponent for ShutdownModel {
             ShutdownInput::Clicked => {
                 let dialog = ConfirmationDialogModel::builder()
                     .launch(ConfirmationDialogInit {
-                        message: "Are you sure you want to log out?".to_string(),
+                        message: "Are you sure you want to shutdown?".to_string(),
                         negative_label: "Cancel".to_string(),
-                        positive_label: "Logout".to_string(),
+                        positive_label: "Shutdown".to_string(),
                     })
                     .forward(sender.input_sender(), |msg| {
                         match msg {
