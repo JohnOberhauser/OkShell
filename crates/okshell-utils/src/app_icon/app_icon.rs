@@ -104,7 +104,13 @@ fn resolve_icon_candidates(
     // ThemedIcon names (first is primary, rest are fallbacks)
     if let Some(themed) = icon.downcast_ref::<gio::ThemedIcon>() {
         for name in themed.names() {
-            candidates.push(name.to_string());
+            let name_string = name.to_string();
+            // Some apps like jetbrains IDEs add uuid suffixes to their icons.  Try removing the
+            // suffix if it's there.
+            if let Some(stripped) = strip_uuid_suffix(&name_string) {
+                candidates.push(stripped);
+            }
+            candidates.push(name_string);
         }
     }
 
@@ -130,4 +136,15 @@ fn resolve_icon_candidates(
     }
 
     candidates
+}
+
+fn strip_uuid_suffix(name: &str) -> Option<String> {
+    // Match trailing -xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    let re = regex::Regex::new(r"-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$").unwrap();
+    let stripped = re.replace(name, "");
+    if stripped != name {
+        Some(stripped.into_owned())
+    } else {
+        None
+    }
 }

@@ -89,6 +89,7 @@ pam = "0.8.0"
 rayon = "1.11.0"
 reactive_graph = { version = "0.2.12", features = ["effects"] }
 reactive_stores = "0.4.2"
+regex = "1.12.3"
 relm4 = { version = "0.10.1" }
 rodio = { version = "0.22.1", default-features = false, features = ["vorbis", "playback"] }
 rustix = { version = "1.1.4", features = ["shm", "fs"] }
