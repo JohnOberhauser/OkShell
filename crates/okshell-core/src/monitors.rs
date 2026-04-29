@@ -1,30 +1,41 @@
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::rc::Rc;
 use relm4::{
     gtk::prelude::*,
     gtk::prelude::DisplayExt,
     gtk::gdk,
     prelude::*,
 };
+use relm4::gtk::glib::SignalHandlerId;
 use tracing::info;
 use okshell_utils::gtk as utils;
 use crate::relm_app::{Shell, ShellInput, WindowGroup};
 
-pub(crate) fn setup_monitor_watcher(
-    sender: &ComponentSender<Shell>
-) {
+pub(crate) fn setup_monitor_watcher(sender: &ComponentSender<Shell>) {
     let display = gdk::Display::default().expect("No display");
     let monitors = display.monitors();
+    let sender_clone = sender.clone();
 
-    let sender = sender.clone();
+    monitors.connect_items_changed(move |model, position, _removed, added| {
+        for i in position..position + added {
+            if let Some(monitor) = utils::monitor_at_position(model, i) {
+                let sender_inner = sender_clone.clone();
+                let handler_id: Rc<RefCell<Option<SignalHandlerId>>> = Rc::new(RefCell::new(None));
+                let handler_id_clone = handler_id.clone();
 
-    monitors.connect_items_changed(move |model, position, removed, added| {
-        if let Some(monitor) = utils::monitor_at_position(model, position) {
-            monitor.model();
-            monitor.connector();
-        };
-
-        info!(position, removed, added, "Monitor changed");
-        sender.input(ShellInput::SyncMonitors);
+                let id = monitor.connect_notify_local(Some("connector"), move |m, _| {
+                    if m.connector().is_some() {
+                        sender_inner.input(ShellInput::SyncMonitors);
+                        if let Some(id) = handler_id_clone.borrow_mut().take() {
+                            m.disconnect(id);
+                        }
+                    }
+                });
+                *handler_id.borrow_mut() = Some(id);
+            }
+        }
+        sender_clone.input(ShellInput::SyncMonitors);
     });
 }
 
