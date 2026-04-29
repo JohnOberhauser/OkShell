@@ -45,6 +45,18 @@ rust \
 pacman -Syu rsync
 ```
 
+### Set up the rust
+
+```
+rustup stable default
+```
+
+### Add ~/.cargo/bin to your PATH
+
+```
+echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.profile
+```
+
 #### Clone the repo and install
 
 ```
