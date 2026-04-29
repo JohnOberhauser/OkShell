@@ -7,7 +7,7 @@ use relm4::{gtk, once_cell, Component, ComponentParts, ComponentSender};
 use relm4::gtk::pango;
 use relm4::gtk::prelude::*;
 use time::format_description::parse;
-use time::OffsetDateTime;
+use time::{OffsetDateTime, UtcOffset};
 use wayle_notification::core::notification::Notification;
 use crate::scoped_effects::EffectScope;
 use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
@@ -138,10 +138,14 @@ impl Component for NotificationModel {
 
         let timestamp = params.notification.timestamp.get();
 
+        let local_offset = UtcOffset::current_local_offset()
+            .unwrap_or(UtcOffset::UTC);
+
         let odt = OffsetDateTime::from_unix_timestamp(timestamp.timestamp())
             .unwrap()
             .replace_nanosecond(timestamp.timestamp_subsec_nanos())
-            .unwrap();
+            .unwrap()
+            .to_offset(local_offset);
 
         if format_24_h {
             time = odt.format(&TIME_FORMAT_24).unwrap();
@@ -207,10 +211,14 @@ impl Component for NotificationModel {
             NotificationInput::ChangeTimeFormat(format_24_h) => {
                 let timestamp = self.notification.timestamp.get();
 
+                let local_offset = UtcOffset::current_local_offset()
+                    .unwrap_or(UtcOffset::UTC);
+
                 let odt = OffsetDateTime::from_unix_timestamp(timestamp.timestamp())
                     .unwrap()
                     .replace_nanosecond(timestamp.timestamp_subsec_nanos())
-                    .unwrap();
+                    .unwrap()
+                    .to_offset(local_offset);
 
                 if format_24_h {
                     self.time = odt.format(&TIME_FORMAT_24).unwrap();
