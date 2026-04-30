@@ -27,6 +27,7 @@ pub fn find_app_info(class: &str) -> Option<DesktopAppInfo> {
 
     // Search through all apps
     let all_apps = gio::AppInfo::all();
+    let mut name_match: Option<DesktopAppInfo> = None;
 
     for app in &all_apps {
         let Some(desktop) = app.downcast_ref::<DesktopAppInfo>() else {
@@ -49,9 +50,14 @@ pub fn find_app_info(class: &str) -> Option<DesktopAppInfo> {
             }
         }
 
-        // 4. Substring match against Name (weakest, last resort)
-        if desktop.name().to_lowercase().contains(&class_lower) {
+        // 4. Exact name match
+        if desktop.name().eq_ignore_ascii_case(class) {
             return Some(desktop.clone());
+        }
+
+        // 5. Fuzzy substring name match (last resort)
+        if name_match.is_none() && desktop.name().to_lowercase().contains(&class_lower) {
+            name_match = Some(desktop.clone());
         }
     }
 
