@@ -5,6 +5,7 @@ use clap::{
 
 use okshell_cli_style;
 use crate::subcommands::audio::AudioCommands;
+use crate::subcommands::bar::BarCommands;
 use crate::subcommands::brightness::BrightnessCommands;
 use crate::subcommands::lock::LockCommands;
 use crate::subcommands::menu::MenuCommands;
@@ -33,6 +34,11 @@ pub enum Commands {
     Menu {
         #[command(subcommand)]
         command: MenuCommands,
+    },
+    /// Commands for hiding and revealing bars
+    Bar {
+        #[command(subcommand)]
+        command: BarCommands,
     },
     /// Commands for changing audio
     Audio {

@@ -61,6 +61,13 @@ pub(crate) enum ShellInput {
         String,
     ),
     QueueFrameRedraw,
+    BarToggleTop(Option<String>),
+    BarToggleBottom(Option<String>),
+    BarToggleLeft(Option<String>),
+    BarToggleRight(Option<String>),
+    BarToggleAll(Option<String>),
+    BarRevealAll(Option<String>),
+    BarHideAll(Option<String>),
 }
 
 #[derive(Debug)]
@@ -90,7 +97,7 @@ impl Component for Shell {
 
         let icon_theme = gtk::IconTheme::for_display(&gtk::gdk::Display::default().unwrap());
         icon_theme.add_search_path(dirs::home_dir().unwrap().join(".config/okshell/icons"));
-        
+
         root.init_layer_shell();
         root.set_layer(Layer::Background);
         root.set_default_size(1, 1);
@@ -211,7 +218,7 @@ impl Component for Shell {
                         })
                         .detach()
                 );
-                
+
                 let volume_osd = Some(
                     VolumeOsdModel::builder()
                         .launch(VolumeOsdInit {
@@ -314,6 +321,41 @@ impl Component for Shell {
                         frame.emit(FrameInput::QueueFrameRedraw);
                     }
                 });
+            }
+            ShellInput::BarToggleTop(monitor_name) => {
+                if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
+                    frame.emit(FrameInput::BarToggleTop);
+                }
+            }
+            ShellInput::BarToggleBottom(monitor_name) => {
+                if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
+                    frame.emit(FrameInput::BarToggleBottom);
+                }
+            }
+            ShellInput::BarToggleLeft(monitor_name) => {
+                if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
+                    frame.emit(FrameInput::BarToggleLeft);
+                }
+            }
+            ShellInput::BarToggleRight(monitor_name) => {
+                if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
+                    frame.emit(FrameInput::BarToggleRight);
+                }
+            }
+            ShellInput::BarToggleAll(monitor_name) => {
+                if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
+                    frame.emit(FrameInput::BarToggleAll);
+                }
+            }
+            ShellInput::BarRevealAll(monitor_name) => {
+                if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
+                    frame.emit(FrameInput::BarRevealAll);
+                }
+            }
+            ShellInput::BarHideAll(monitor_name) => {
+                if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
+                    frame.emit(FrameInput::BarHideAll);
+                }
             }
         }
     }

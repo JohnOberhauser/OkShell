@@ -11,7 +11,7 @@ use okshell_config::{
 };
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::position::Position;
-use crate::bars::bar::{BarInit, BarModel, BarOutput, BarType};
+use crate::bars::bar::{BarInit, BarInput, BarModel, BarOutput, BarType};
 
 use crate::frame_draw_widget::FrameDrawWidget;
 use crate::frame_spacer::{FrameSpacerInit, FrameSpacerInput, FrameSpacerModel};
@@ -73,6 +73,13 @@ pub enum FrameInput {
     ToggleWallpaperMenu,
     CloseMenus,
     ToggleScreenshareMenu(tokio::sync::oneshot::Sender<String>, String),
+    BarToggleTop,
+    BarToggleBottom,
+    BarToggleLeft,
+    BarToggleRight,
+    BarToggleAll,
+    BarRevealAll,
+    BarHideAll,
 }
 
 #[derive(Debug)]
@@ -804,6 +811,36 @@ impl Component for Frame {
                     .send(MenuInput::RevealChanged(false))
                     .unwrap_or_default();
             }
+            FrameInput::BarToggleTop => {
+                self.top_bar.sender().emit(BarInput::ToggleRevealed);
+            }
+            FrameInput::BarToggleBottom => {
+                self.bottom_bar.sender().emit(BarInput::ToggleRevealed);
+            }
+            FrameInput::BarToggleLeft => {
+                self.left_bar.sender().emit(BarInput::ToggleRevealed);
+            }
+            FrameInput::BarToggleRight => {
+                self.right_bar.sender().emit(BarInput::ToggleRevealed);
+            }
+            FrameInput::BarToggleAll => {
+                self.top_bar.sender().emit(BarInput::ToggleRevealed);
+                self.bottom_bar.sender().emit(BarInput::ToggleRevealed);
+                self.left_bar.sender().emit(BarInput::ToggleRevealed);
+                self.right_bar.sender().emit(BarInput::ToggleRevealed);
+            }
+            FrameInput::BarRevealAll => {
+                self.top_bar.sender().emit(BarInput::SetRevealed(true));
+                self.bottom_bar.sender().emit(BarInput::SetRevealed(true));
+                self.left_bar.sender().emit(BarInput::SetRevealed(true));
+                self.right_bar.sender().emit(BarInput::SetRevealed(true));
+            }
+            FrameInput::BarHideAll => {
+                self.top_bar.sender().emit(BarInput::SetRevealed(false));
+                self.bottom_bar.sender().emit(BarInput::SetRevealed(false));
+                self.left_bar.sender().emit(BarInput::SetRevealed(false));
+                self.right_bar.sender().emit(BarInput::SetRevealed(false));
+            }
         }
         self.update_view(widgets, sender);
     }
@@ -1311,7 +1348,7 @@ impl Frame {
                 menu_type,
             })
             .forward(sender.input_sender(), |msg| {
-                match msg { 
+                match msg {
                     MenuOutput::CloseMenu => {
                         FrameInput::CloseMenus
                     }

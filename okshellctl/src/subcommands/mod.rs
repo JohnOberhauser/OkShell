@@ -3,3 +3,4 @@ pub mod audio;
 pub mod lock;
 pub mod settings;
 pub mod brightness;
+pub mod bar;

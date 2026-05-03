@@ -71,6 +71,7 @@ pub(crate) enum BarInput {
     SetMinWidth(i32),
     SetMinHeight(i32),
     SetRevealed(bool),
+    ToggleRevealed,
 }
 
 #[derive(Debug)]
@@ -388,6 +389,9 @@ impl Component for BarModel {
             }
             BarInput::SetRevealed(revealed) => {
                 self.revealed = revealed;
+            }
+            BarInput::ToggleRevealed => {
+                self.revealed = !self.revealed;
             }
         }
         self.update_view(widgets, sender);

@@ -141,13 +141,13 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                 IPCCommand::Screenshare(reply, payload) => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
                         app_sender.emit(ShellInput::ToggleScreenshareMenu(
-                            Some(active_workspace.monitor.get()), 
+                            Some(active_workspace.monitor.get()),
                             reply,
                             payload,
                         ));
                     } else {
                         app_sender.emit(ShellInput::ToggleScreenshareMenu(
-                            None, 
+                            None,
                             reply,
                             payload,
                         ));
@@ -161,6 +161,55 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                 }
                 IPCCommand::Inspect => {
                     gtk::Window::set_interactive_debugging(true);
+                }
+                IPCCommand::BarToggleTop => {
+                    if let Some(active_workspace) = hyprland_service().active_workspace().await {
+                        app_sender.emit(ShellInput::BarToggleTop(Some(active_workspace.monitor.get())));
+                    } else {
+                        app_sender.emit(ShellInput::BarToggleTop(None));
+                    }
+                }
+                IPCCommand::BarToggleBottom => {
+                    if let Some(active_workspace) = hyprland_service().active_workspace().await {
+                        app_sender.emit(ShellInput::BarToggleBottom(Some(active_workspace.monitor.get())));
+                    } else {
+                        app_sender.emit(ShellInput::BarToggleBottom(None));
+                    }
+                }
+                IPCCommand::BarToggleLeft => {
+                    if let Some(active_workspace) = hyprland_service().active_workspace().await {
+                        app_sender.emit(ShellInput::BarToggleLeft(Some(active_workspace.monitor.get())));
+                    } else {
+                        app_sender.emit(ShellInput::BarToggleLeft(None));
+                    }
+                }
+                IPCCommand::BarToggleRight => {
+                    if let Some(active_workspace) = hyprland_service().active_workspace().await {
+                        app_sender.emit(ShellInput::BarToggleRight(Some(active_workspace.monitor.get())));
+                    } else {
+                        app_sender.emit(ShellInput::BarToggleRight(None));
+                    }
+                }
+                IPCCommand::BarToggleAll => {
+                    if let Some(active_workspace) = hyprland_service().active_workspace().await {
+                        app_sender.emit(ShellInput::BarToggleAll(Some(active_workspace.monitor.get())));
+                    } else {
+                        app_sender.emit(ShellInput::BarToggleAll(None));
+                    }
+                }
+                IPCCommand::BarRevealAll => {
+                    if let Some(active_workspace) = hyprland_service().active_workspace().await {
+                        app_sender.emit(ShellInput::BarRevealAll(Some(active_workspace.monitor.get())));
+                    } else {
+                        app_sender.emit(ShellInput::BarRevealAll(None));
+                    }
+                }
+                IPCCommand::BarHideAll => {
+                    if let Some(active_workspace) = hyprland_service().active_workspace().await {
+                        app_sender.emit(ShellInput::BarHideAll(Some(active_workspace.monitor.get())));
+                    } else {
+                        app_sender.emit(ShellInput::BarHideAll(None));
+                    }
                 }
             }
         }
@@ -189,6 +238,13 @@ enum IPCCommand {
     OpenSettings,
     CloseSettings,
     Inspect,
+    BarToggleTop,
+    BarToggleBottom,
+    BarToggleLeft,
+    BarToggleRight,
+    BarToggleAll,
+    BarRevealAll,
+    BarHideAll,
 }
 
 struct IPCService {
@@ -267,6 +323,27 @@ impl IPCService {
     }
     async fn inspect(&self) {
         let _ = self.tx.send(IPCCommand::Inspect);
+    }
+    async fn bar_toggle_top(&self) {
+        let _ = self.tx.send(IPCCommand::BarToggleTop);
+    }
+    async fn bar_toggle_bottom(&self) {
+        let _ = self.tx.send(IPCCommand::BarToggleBottom);
+    }
+    async fn bar_toggle_left(&self) {
+        let _ = self.tx.send(IPCCommand::BarToggleLeft);
+    }
+    async fn bar_toggle_right(&self) {
+        let _ = self.tx.send(IPCCommand::BarToggleRight);
+    }
+    async fn bar_toggle_all(&self) {
+        let _ = self.tx.send(IPCCommand::BarToggleAll);
+    }
+    async fn bar_reveal_all(&self) {
+        let _ = self.tx.send(IPCCommand::BarRevealAll);
+    }
+    async fn bar_hide_all(&self) {
+        let _ = self.tx.send(IPCCommand::BarHideAll);
     }
 }
 
