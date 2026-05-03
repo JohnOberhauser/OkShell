@@ -1,18 +1,19 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, time::Duration};
 use relm4::{
     gtk::{
         self,
         prelude::*,
         Orientation,
     },
-    Component, 
-    ComponentParts, 
+    Component,
+    ComponentParts,
     ComponentSender
 };
 use reactive_graph::traits::*;
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::schema::bar_widgets::BarWidget;
 use okshell_config::schema::config::{BarsStoreFields, ConfigStoreFields, HorizontalBarStoreFields, VerticalBarStoreFields};
+use tokio::time::sleep;
 use crate::bars::bar_widgets::audio_input::{AudioInputInit, AudioInputModel};
 use crate::bars::bar_widgets::audio_output::{AudioOutputInit, AudioOutputModel};
 use crate::bars::bar_widgets::battery::{BatteryInit, BatteryModel};
@@ -58,6 +59,7 @@ pub(crate) struct BarModel {
     min_height: i32,
     min_width: i32,
     css_class: String,
+    revealed: bool,
     _effects: EffectScope,
 }
 
@@ -68,6 +70,7 @@ pub(crate) enum BarInput {
     SetCenteredWidgets(Vec<BarWidget>),
     SetMinWidth(i32),
     SetMinHeight(i32),
+    SetRevealed(bool),
 }
 
 #[derive(Debug)]
@@ -95,36 +98,42 @@ impl Component for BarModel {
 
     view! {
         #[root]
-        gtk::CenterBox {
-            set_css_classes: &["bar", model.css_class.as_str()],
+        gtk::Revealer {
             #[watch]
-            set_hexpand: model.h_expand,
-            set_vexpand: model.v_expand,
-            set_orientation: model.orientation,
-            #[watch]
-            set_width_request: model.min_width,
-            #[watch]
-            set_height_request: model.min_height,
+            set_reveal_child: model.revealed,
+            set_transition_type: transition_type,
 
-            #[wrap(Some)]
-            #[name = "start_container"]
-            set_start_widget = &gtk::Box {
-                set_css_classes: &["bar-widget-container", "start-container"],
+            gtk::CenterBox {
+                set_css_classes: &["bar", model.css_class.as_str()],
+                #[watch]
+                set_hexpand: model.h_expand,
+                set_vexpand: model.v_expand,
                 set_orientation: model.orientation,
-            },
+                #[watch]
+                set_width_request: model.min_width,
+                #[watch]
+                set_height_request: model.min_height,
 
-            #[wrap(Some)]
-            #[name = "center_container"]
-            set_center_widget = &gtk::Box {
-                set_css_classes: &["bar-widget-container", "center-container"],
-                set_orientation: model.orientation,
-            },
+                #[wrap(Some)]
+                #[name = "start_container"]
+                set_start_widget = &gtk::Box {
+                    set_css_classes: &["bar-widget-container", "start-container"],
+                    set_orientation: model.orientation,
+                },
 
-            #[wrap(Some)]
-            #[name = "end_container"]
-            set_end_widget = &gtk::Box {
-                set_css_classes: &["bar-widget-container", "end-container"],
-                set_orientation: model.orientation,
+                #[wrap(Some)]
+                #[name = "center_container"]
+                set_center_widget = &gtk::Box {
+                    set_css_classes: &["bar-widget-container", "center-container"],
+                    set_orientation: model.orientation,
+                },
+
+                #[wrap(Some)]
+                #[name = "end_container"]
+                set_end_widget = &gtk::Box {
+                    set_css_classes: &["bar-widget-container", "end-container"],
+                    set_orientation: model.orientation,
+                },
             },
         },
     }
@@ -142,6 +151,7 @@ impl Component for BarModel {
         let h_expand: bool;
         let v_expand: bool;
         let css_class: String;
+        let transition_type: gtk::RevealerTransitionType;
         let mut effects= EffectScope::new();
 
         match params.bar_type {
@@ -150,6 +160,7 @@ impl Component for BarModel {
                 h_expand = true;
                 v_expand = false;
                 css_class = "bar-top".to_string();
+                transition_type = gtk::RevealerTransitionType::SlideDown;
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -186,6 +197,7 @@ impl Component for BarModel {
                 h_expand = true;
                 v_expand = false;
                 css_class = "bar-bottom".to_string();
+                transition_type = gtk::RevealerTransitionType::SlideUp;
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -222,6 +234,7 @@ impl Component for BarModel {
                 v_expand = true;
                 h_expand = false;
                 css_class = "bar-left".to_string();
+                transition_type = gtk::RevealerTransitionType::SlideRight;
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -258,6 +271,7 @@ impl Component for BarModel {
                 v_expand = true;
                 h_expand = false;
                 css_class = "bar-right".to_string();
+                transition_type = gtk::RevealerTransitionType::SlideLeft;
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -302,10 +316,16 @@ impl Component for BarModel {
             min_width: 0,
             min_height: 0,
             css_class,
+            revealed: false,
             _effects: effects,
         };
 
         let widgets = view_output!();
+
+        tokio::spawn(async move {
+            sleep(Duration::from_secs(1)).await;
+            sender.input(BarInput::SetRevealed(true));
+        });
 
         ComponentParts { model, widgets }
     }
@@ -361,10 +381,13 @@ impl Component for BarModel {
                 }
             }
             BarInput::SetMinWidth(min) => {
-                self.min_width = min
+                self.min_width = min;
             }
             BarInput::SetMinHeight(min) => {
-                self.min_height = min
+                self.min_height = min;
+            }
+            BarInput::SetRevealed(revealed) => {
+                self.revealed = revealed;
             }
         }
         self.update_view(widgets, sender);
