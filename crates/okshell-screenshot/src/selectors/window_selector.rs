@@ -1,12 +1,12 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
+use crate::common::*;
+use crate::utils::find_gdk_monitor;
 use gtk4::prelude::*;
 use gtk4::{cairo, gdk, glib};
 use gtk4_layer_shell::LayerShell;
 use okshell_services::hyprland_service;
-use crate::utils::find_gdk_monitor;
-use crate::common::*;
 
 #[derive(Debug, Clone)]
 struct WindowRect {
@@ -65,11 +65,7 @@ impl SharedState {
     /// Find which window rect contains the given output-local point.
     fn hit_test(&self, output: &str, x: f64, y: f64) -> Option<&WindowRect> {
         self.window_rects.iter().find(|r| {
-            r.output == output
-                && x >= r.x
-                && x <= r.x + r.width
-                && y >= r.y
-                && y <= r.y + r.height
+            r.output == output && x >= r.x && x <= r.x + r.width && y >= r.y && y <= r.y + r.height
         })
     }
 
@@ -126,9 +122,7 @@ where
     for output in outputs {
         let gdk_monitor = find_gdk_monitor(&monitors, output);
         let window = create_window_overlay(output, gdk_monitor.as_ref(), &state);
-        state.overlays.borrow_mut().push(OverlayInfo {
-            window,
-        });
+        state.overlays.borrow_mut().push(OverlayInfo { window });
     }
 
     for info in state.overlays.borrow().iter() {
@@ -168,10 +162,7 @@ fn build_window_rects() -> Vec<WindowRect> {
         let at = client.at.get();
         let monitor_id = client.monitor.get();
 
-        let monitor = monitors
-            .iter()
-            .find(|m| m.id.get() == monitor_id)
-            .cloned();
+        let monitor = monitors.iter().find(|m| m.id.get() == monitor_id).cloned();
 
         if let Some(monitor) = monitor {
             let mon_name = monitor.name.get();
@@ -372,4 +363,3 @@ fn draw_window_overlay(
         }
     }
 }
-

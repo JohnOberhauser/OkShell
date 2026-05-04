@@ -1,24 +1,23 @@
-use reactive_graph::traits::{GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender, Sender, WidgetTemplate};
-use relm4::gtk::{gio, Orientation};
-use relm4::gtk::gio::{DesktopAppInfo};
-use relm4::gtk::glib::{
-    self,
-    variant::ToVariant,
-};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt, AppInfoExt, OrientableExt, PopoverExt, ActionMapExt};
-use tracing::{error};
-use wayle_hyprland::{Address, Client};
-use okshell_cache::pinned_apps::{pin_app, unpin_app, PinnedApp};
+use crate::bars::bar::BarType;
+use okshell_cache::pinned_apps::{PinnedApp, pin_app, unpin_app};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::Themes;
 use okshell_services::hyprland_service;
-use crate::bars::bar::BarType;
 use okshell_utils::app_icon::app_icon::set_icon;
 use okshell_utils::app_info::find_app_info;
 use okshell_utils::launch::launch_detached;
 use okshell_utils::strings::truncate_string;
+use reactive_graph::traits::GetUntracked;
+use relm4::gtk::gio::DesktopAppInfo;
+use relm4::gtk::glib::{self, variant::ToVariant};
+use relm4::gtk::prelude::{
+    ActionMapExt, AppInfoExt, ButtonExt, OrientableExt, PopoverExt, WidgetExt,
+};
+use relm4::gtk::{Orientation, gio};
+use relm4::{Component, ComponentParts, ComponentSender, Sender, WidgetTemplate, gtk};
+use tracing::error;
+use wayle_hyprland::{Address, Client};
 
 const MAX_MENU_ITEM_LENGTH: usize = 25;
 
@@ -233,7 +232,7 @@ impl Component for HyprlandDockItemModel {
         let app_info = find_app_info(class.as_str());
 
         let base_config = config_manager().config();
-        
+
         let model = HyprlandDockItemModel {
             class,
             app_info,
@@ -255,10 +254,33 @@ impl Component for HyprlandDockItemModel {
             &widgets.image,
             base_config.theme().icons().app_icon_theme().get_untracked(),
             &config_manager().config().theme().theme().get_untracked(),
-            config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
-            config_manager().config().theme().icons().filter_strength().get_untracked().get(),
-            config_manager().config().theme().icons().monochrome_strength().get_untracked().get(),
-            config_manager().config().theme().icons().contrast_strength().get_untracked().get(),
+            config_manager()
+                .config()
+                .theme()
+                .icons()
+                .apply_theme_filter()
+                .get_untracked(),
+            config_manager()
+                .config()
+                .theme()
+                .icons()
+                .filter_strength()
+                .get_untracked()
+                .get(),
+            config_manager()
+                .config()
+                .theme()
+                .icons()
+                .monochrome_strength()
+                .get_untracked()
+                .get(),
+            config_manager()
+                .config()
+                .theme()
+                .icons()
+                .contrast_strength()
+                .get_untracked()
+                .get(),
         );
 
         model.check_selected(&sender);
@@ -286,34 +308,35 @@ impl Component for HyprlandDockItemModel {
                 // Launch the app if it's not already running
                 if matching.is_empty() {
                     if let Some(app) = &self.app_info {
-                        launch_detached(&app);
+                        launch_detached(app);
                     }
                     return;
                 }
 
                 // If the app is already focused, select the next client if there is one
-                if self.is_selected {
-                    if let Some(last_selected_address) = &self.last_selected_address {
-                        let current_idx = matching.iter()
-                            .position(|c| c.address.get() == *last_selected_address);
-                        if let Some(idx) = current_idx {
-                            let next_idx = (idx + 1) % matching.len();
-                            let client_to_focus = matching[next_idx];
-                            let client_workspace = client_to_focus.workspace.get();
-                            let client_address = client_to_focus.address.get();
+                if self.is_selected
+                    && let Some(last_selected_address) = &self.last_selected_address
+                {
+                    let current_idx = matching
+                        .iter()
+                        .position(|c| c.address.get() == *last_selected_address);
+                    if let Some(idx) = current_idx {
+                        let next_idx = (idx + 1) % matching.len();
+                        let client_to_focus = matching[next_idx];
+                        let client_workspace = client_to_focus.workspace.get();
+                        let client_address = client_to_focus.address.get();
 
-                            tokio::spawn(async move {
-                                let command = format!("workspace {}", client_workspace.id);
-                                if let Err(e) = hyprland.dispatch(&command).await {
-                                    error!(error = %e, workspace = client_workspace.id, "Failed to switch workspace");
-                                }
-                                let command = format!("focuswindow address:0x{}", client_address);
-                                if let Err(e) = hyprland.dispatch(&command).await {
-                                    error!(error = %e, "Failed to focus client");
-                                }
-                            });
-                            return;
-                        }
+                        tokio::spawn(async move {
+                            let command = format!("workspace {}", client_workspace.id);
+                            if let Err(e) = hyprland.dispatch(&command).await {
+                                error!(error = %e, workspace = client_workspace.id, "Failed to switch workspace");
+                            }
+                            let command = format!("focuswindow address:0x{}", client_address);
+                            if let Err(e) = hyprland.dispatch(&command).await {
+                                error!(error = %e, "Failed to focus client");
+                            }
+                        });
+                        return;
                     }
                 }
 
@@ -360,9 +383,10 @@ impl Component for HyprlandDockItemModel {
                 let action_group = gio::SimpleActionGroup::new();
                 let menu = gio::Menu::new();
 
-                let menu_title: Option<String> = self.app_info.as_ref().map(|app| {
-                    truncate_string(&app.name(), MAX_MENU_ITEM_LENGTH)
-                });
+                let menu_title: Option<String> = self
+                    .app_info
+                    .as_ref()
+                    .map(|app| truncate_string(&app.name(), MAX_MENU_ITEM_LENGTH));
 
                 if matching.is_empty() {
                     let mut general_section_title = None;
@@ -397,7 +421,11 @@ impl Component for HyprlandDockItemModel {
                             .find(|c| c.address.get() == *last_selected_address);
                         if let Some(focused) = focused_client {
                             let focused_section = gio::Menu::new();
-                            add_move_focused_client_to_menu(&focused_section, &action_group, focused);
+                            add_move_focused_client_to_menu(
+                                &focused_section,
+                                &action_group,
+                                focused,
+                            );
                             add_close_focused_to_menu(&focused_section, &action_group, focused);
                             menu.append_section(None, &focused_section);
                         }
@@ -473,11 +501,7 @@ impl Component for HyprlandDockItemModel {
         self.update_view(widgets, sender);
     }
 
-    fn shutdown(
-        &mut self,
-        _widgets: &mut Self::Widgets,
-        _output: Sender<Self::Output>
-    ) {
+    fn shutdown(&mut self, _widgets: &mut Self::Widgets, _output: Sender<Self::Output>) {
         if let Some(popover) = self.popover.take() {
             popover.unparent();
         }
@@ -514,12 +538,10 @@ impl HyprlandDockItemModel {
         let app = app.clone();
         let class = self.class.clone();
         action.connect_activate(move |_, _| {
-            pin_app(
-                PinnedApp {
-                    desktop_id: app.id().map(|id| id.to_string()).unwrap_or_default(),
-                    hyprland_class: class.clone()
-                }
-            );
+            pin_app(PinnedApp {
+                desktop_id: app.id().map(|id| id.to_string()).unwrap_or_default(),
+                hyprland_class: class.clone(),
+            });
         });
         action_group.add_action(&action);
         menu.append(Some("Pin to dock"), Some("main.pin"));
@@ -535,7 +557,10 @@ impl HyprlandDockItemModel {
         let app = app.clone();
         action.connect_activate(move |_, _| {
             unpin_app(
-                app.id().map(|id| id.to_string()).unwrap_or_default().as_str(),
+                app.id()
+                    .map(|id| id.to_string())
+                    .unwrap_or_default()
+                    .as_str(),
             );
         });
         action_group.add_action(&action);
@@ -566,7 +591,7 @@ fn add_app_actions_to_menu(
     for (index, action_id) in actions.iter().enumerate() {
         let action_name = format!("action{}", index);
         let action = gio::SimpleAction::new(&action_name, None);
-        let label = app.action_name(&action_id).to_string();
+        let label = app.action_name(action_id).to_string();
 
         let app = app.clone();
         let action_id = action_id.clone();
@@ -596,7 +621,10 @@ fn add_move_focused_client_to_menu(
         if let Some(param) = param {
             let target_workspace_id = param.get::<i32>().unwrap() as i64;
             let workspaces = hyprland_clone.workspaces.get();
-            if let Some(workspace) = workspaces.iter().find(|ws| ws.id.get() == target_workspace_id) {
+            if let Some(workspace) = workspaces
+                .iter()
+                .find(|ws| ws.id.get() == target_workspace_id)
+            {
                 let workspace_id = workspace.id.get();
                 let hyprland_clone = hyprland.clone();
                 tokio::spawn(async move {
@@ -611,10 +639,7 @@ fn add_move_focused_client_to_menu(
     action_group.add_action(&action);
 
     let current_ws_id = focused_client.workspace.get().id;
-    let mut workspace_ids: Vec<_> = workspaces
-        .iter()
-        .map(|ws| ws.id.get())
-        .collect();
+    let mut workspace_ids: Vec<_> = workspaces.iter().map(|ws| ws.id.get()).collect();
     workspace_ids.sort();
 
     let submenu = gio::Menu::new();
@@ -656,11 +681,7 @@ fn add_close_focused_to_menu(
     menu.append(Some("Close Focused"), Some("main.close-focused"));
 }
 
-fn add_quit_to_menu(
-    menu: &gio::Menu,
-    action_group: &gio::SimpleActionGroup,
-    class: &str,
-) {
+fn add_quit_to_menu(menu: &gio::Menu, action_group: &gio::SimpleActionGroup, class: &str) {
     let action = gio::SimpleAction::new("quit", None);
     let class = class.to_string();
     action.connect_activate(move |_, _| {
@@ -674,7 +695,10 @@ fn add_quit_to_menu(
             let address = client.address.get().clone();
             tokio::spawn(async move {
                 let hyprland = hyprland_service();
-                if let Err(e) = hyprland.dispatch( &format!("closewindow address:0x{}", address)).await {
+                if let Err(e) = hyprland
+                    .dispatch(&format!("closewindow address:0x{}", address))
+                    .await
+                {
                     error!(error = %e, "Failed to close window");
                 }
             });
@@ -704,7 +728,10 @@ fn add_window_details_to_menu(
             let address = address.clone();
             tokio::spawn(async move {
                 let hyprland = hyprland_service();
-                if let Err(e) = hyprland.dispatch(&format!("focuswindow address:0x{}", address)).await {
+                if let Err(e) = hyprland
+                    .dispatch(&format!("focuswindow address:0x{}", address))
+                    .await
+                {
                     error!(error = %e, "Failed to focus client");
                 }
             });

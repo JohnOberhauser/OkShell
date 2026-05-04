@@ -1,7 +1,9 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
+use okshell_common::WatcherToken;
+use okshell_utils::network::{
+    set_network_icon, spawn_network_watcher, spawn_wifi_watcher, spawn_wired_watcher,
+};
 use relm4::gtk::prelude::WidgetExt;
-use okshell_common::{WatcherToken};
-use okshell_utils::network::{set_network_icon, spawn_network_watcher, spawn_wifi_watcher, spawn_wired_watcher};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug)]
 pub(crate) struct NetworkModel {
@@ -93,24 +95,14 @@ impl Component for NetworkModel {
         _root: &Self::Root,
     ) {
         match message {
-            NetworkCommandOutput::StateChanged => {
-                sender.input(NetworkInput::UpdateState)
-            }
+            NetworkCommandOutput::StateChanged => sender.input(NetworkInput::UpdateState),
             NetworkCommandOutput::WifiChanged => {
                 let token = self.wifi_watcher_token.reset();
-                spawn_wifi_watcher(
-                    &sender,
-                    token,
-                    || NetworkCommandOutput::StateChanged
-                );
+                spawn_wifi_watcher(&sender, token, || NetworkCommandOutput::StateChanged);
             }
             NetworkCommandOutput::WiredChanged => {
                 let token = self.wired_watcher_token.reset();
-                spawn_wired_watcher(
-                    &sender,
-                    token,
-                    || NetworkCommandOutput::StateChanged
-                );
+                spawn_wired_watcher(&sender, token, || NetworkCommandOutput::StateChanged);
             }
         }
     }

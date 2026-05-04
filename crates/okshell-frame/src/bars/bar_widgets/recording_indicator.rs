@@ -1,10 +1,12 @@
-use reactive_graph::traits::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::Orientation;
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use crate::menus::menu_widgets::screen_record::recording_service::{
+    RecordingStateStoreFields, recording_state,
+};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_screenshot::record::RecordHandle;
-use crate::menus::menu_widgets::screen_record::recording_service::{recording_state, RecordingStateStoreFields};
+use reactive_graph::traits::{Get, GetUntracked};
+use relm4::gtk::Orientation;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct RecordingIndicatorModel {
@@ -72,7 +74,6 @@ impl Component for RecordingIndicatorModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut effects = EffectScope::new();
 
         let recording_state = recording_state();

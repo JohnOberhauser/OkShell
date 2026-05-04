@@ -1,10 +1,10 @@
-use gtk4::glib;
-use gtk4_layer_shell::{KeyboardMode, Layer, LayerShell};
-use gtk::prelude::*;
-use relm4::prelude::*;
-use tracing::info;
 use crate::agent::PasswordAction;
 use crate::register_polkit_agent;
+use gtk::prelude::*;
+use gtk4::glib;
+use gtk4_layer_shell::{KeyboardMode, Layer, LayerShell};
+use relm4::prelude::*;
+use tracing::info;
 
 pub struct PolkitPromptModel {
     visible: bool,
@@ -198,12 +198,7 @@ impl Component for PolkitPromptModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        input: Self::Input,
-        _sender: ComponentSender<Self>,
-        _root: &Self::Root,
-    ) {
+    fn update(&mut self, input: Self::Input, _sender: ComponentSender<Self>, _root: &Self::Root) {
         match input {
             PolkitPromptInput::Show {
                 message,

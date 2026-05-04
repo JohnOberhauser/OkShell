@@ -1,2 +1,2 @@
-pub(crate) mod quick_actions;
 mod actions;
+pub(crate) mod quick_actions;

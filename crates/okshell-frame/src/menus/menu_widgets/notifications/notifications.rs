@@ -1,13 +1,15 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
-use relm4::gtk::RevealerTransitionType;
-use wayle_notification::core::notification::Notification;
-use okshell_services::notification_service;
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
+};
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
 use okshell_common::notification::{NotificationInit, NotificationModel, NotificationOutput};
+use okshell_services::notification_service;
 use okshell_utils::notifications::{spawn_dnd_watcher, spawn_notifications_watcher};
+use relm4::gtk::RevealerTransitionType;
+use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_notification::core::notification::Notification;
 
 pub(crate) struct NotificationsModel {
     dynamic_box_controller: Controller<DynamicBoxModel<Arc<Notification>, u32>>,
@@ -117,16 +119,9 @@ impl Component for NotificationsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
+        spawn_notifications_watcher(&sender, || NotificationsCommandOutput::NotificationsChanged);
 
-        spawn_notifications_watcher(
-            &sender,
-            ||NotificationsCommandOutput::NotificationsChanged,
-        );
-
-        spawn_dnd_watcher(
-            &sender,
-            ||NotificationsCommandOutput::DndChanged,
-        );
+        spawn_dnd_watcher(&sender, || NotificationsCommandOutput::DndChanged);
 
         let sender_clone = sender.clone();
         let notifications_dynamic_box_factory = DynamicBoxFactory::<Arc<Notification>, u32> {
@@ -134,15 +129,9 @@ impl Component for NotificationsModel {
             create: Box::new(move |item| {
                 let notification = item.clone();
                 let notifications_controller = NotificationModel::builder()
-                    .launch(NotificationInit {
-                        notification,
-                    })
-                    .forward(sender_clone.output_sender(), |msg| {
-                        match msg { 
-                            NotificationOutput::ActionActivated => {
-                                NotificationsOutput::CloseMenu
-                            } 
-                        }
+                    .launch(NotificationInit { notification })
+                    .forward(sender_clone.output_sender(), |msg| match msg {
+                        NotificationOutput::ActionActivated => NotificationsOutput::CloseMenu,
                     });
 
                 Box::new(notifications_controller) as Box<dyn GenericWidgetController>
@@ -150,19 +139,20 @@ impl Component for NotificationsModel {
             update: None,
         };
 
-        let notifications_dynamic_box_controller: Controller<DynamicBoxModel<Arc<Notification>, u32>> =
-            DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
-                    factory: notifications_dynamic_box_factory,
-                    orientation: gtk::Orientation::Vertical,
-                    spacing: 10,
-                    transition_type: RevealerTransitionType::SlideDown,
-                    transition_duration_ms: 200,
-                    reverse: false,
-                    retain_entries: false,
-                    allow_drag_and_drop: false,
-                })
-                .detach();
+        let notifications_dynamic_box_controller: Controller<
+            DynamicBoxModel<Arc<Notification>, u32>,
+        > = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory: notifications_dynamic_box_factory,
+                orientation: gtk::Orientation::Vertical,
+                spacing: 10,
+                transition_type: RevealerTransitionType::SlideDown,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: false,
+            })
+            .detach();
 
         let model = NotificationsModel {
             dynamic_box_controller: notifications_dynamic_box_controller,
@@ -205,13 +195,14 @@ impl Component for NotificationsModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             NotificationsCommandOutput::NotificationsChanged => {
                 let notifications = notification_service().notifications.get();
                 self.empty_label_visible = notifications.is_empty();
-                self.dynamic_box_controller.emit(DynamicBoxInput::SetItems(notifications));
+                self.dynamic_box_controller
+                    .emit(DynamicBoxInput::SetItems(notifications));
             }
             NotificationsCommandOutput::DndChanged => {
                 let service = notification_service();

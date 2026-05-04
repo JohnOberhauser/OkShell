@@ -1,7 +1,7 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use okshell_idle::inhibitor::IdleInhibitor;
 use okshell_utils::idle::spawn_idle_inhibitor_watcher;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct IdleInhibitorModel {
@@ -64,11 +64,9 @@ impl Component for IdleInhibitorModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
-        spawn_idle_inhibitor_watcher(
-            &sender,
-            || IdleInhibitorCommandOutput::InhibitorStateChanged
-        );
+        spawn_idle_inhibitor_watcher(&sender, || {
+            IdleInhibitorCommandOutput::InhibitorStateChanged
+        });
 
         let inhibitor = IdleInhibitor::global();
 

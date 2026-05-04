@@ -1,12 +1,15 @@
-use reactive_graph::traits::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmRemoveAllExt, RelmWidgetExt};
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
-use wayle_weather::{HourlyForecast, TemperatureUnit};
+use crate::menus::menu_widgets::weather::hourly_item::{HourlyItemInit, HourlyItemModel};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
-use crate::menus::menu_widgets::weather::hourly_item::{HourlyItemInit, HourlyItemModel};
 use okshell_utils::scroll_extensions::wire_vertical_to_horizontal;
+use reactive_graph::traits::{Get, GetUntracked};
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::{
+    Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmRemoveAllExt,
+    RelmWidgetExt, gtk,
+};
+use wayle_weather::{HourlyForecast, TemperatureUnit};
 
 pub(crate) struct HourlyModel {
     controllers: Vec<Controller<HourlyItemModel>>,
@@ -71,7 +74,6 @@ impl Component for HourlyModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let base_config = config_manager().config();
 
         let mut effects = EffectScope::new();
@@ -81,12 +83,16 @@ impl Component for HourlyModel {
         effects.push(move |_| {
             let config = config.clone();
             let temperature_unit = config.general().temperature_unit().get();
-            sender_clone.input(HourlyInput::UpdateTemperatureUnit(TemperatureUnit::from(temperature_unit)));
+            sender_clone.input(HourlyInput::UpdateTemperatureUnit(TemperatureUnit::from(
+                temperature_unit,
+            )));
         });
 
         let mut model = HourlyModel {
             controllers: Vec::new(),
-            temperature_unit: TemperatureUnit::from(base_config.general().temperature_unit().get_untracked()),
+            temperature_unit: TemperatureUnit::from(
+                base_config.general().temperature_unit().get_untracked(),
+            ),
             _effects: effects,
         };
 
@@ -97,7 +103,7 @@ impl Component for HourlyModel {
 
         params.hourly.iter().for_each(|forecast| {
             let controller = HourlyItemModel::builder()
-                .launch(HourlyItemInit{
+                .launch(HourlyItemInit {
                     hourly: forecast.clone(),
                 })
                 .detach();
@@ -108,10 +114,7 @@ impl Component for HourlyModel {
 
         model.controllers = controllers;
 
-        wire_vertical_to_horizontal(
-            &widgets.scroll_window,
-            32.0,
-        );
+        wire_vertical_to_horizontal(&widgets.scroll_window, 32.0);
 
         ComponentParts { model, widgets }
     }
@@ -131,7 +134,7 @@ impl Component for HourlyModel {
 
                 hourly.iter().for_each(|forecast| {
                     let controller = HourlyItemModel::builder()
-                        .launch(HourlyItemInit{
+                        .launch(HourlyItemInit {
                             hourly: forecast.clone(),
                         })
                         .detach();

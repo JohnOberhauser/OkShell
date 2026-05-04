@@ -1,13 +1,12 @@
-use relm4::{gtk::{
-    self,
-    glib::{
-        self,
-        SourceId
+use relm4::{
+    Component, ComponentParts, ComponentSender,
+    gtk::{
+        self, Align, Justification,
+        glib::{self, SourceId},
+        prelude::*,
     },
-    prelude::*,
-    Align,
-    Justification,
-}, ComponentParts, ComponentSender, once_cell, Component};
+    once_cell,
+};
 use time::format_description::parse;
 use time::{Date, OffsetDateTime};
 
@@ -70,18 +69,13 @@ impl Component for CalendarModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let sender_clone = sender.clone();
-        let id = glib::timeout_add_local(
-            std::time::Duration::from_secs(1),
-            move || {
-                sender_clone.input(CalendarInput::UpdateTime);
-                glib::ControlFlow::Continue
-            },
-        );
+        let id = glib::timeout_add_local(std::time::Duration::from_secs(1), move || {
+            sender_clone.input(CalendarInput::UpdateTime);
+            glib::ControlFlow::Continue
+        });
 
-        let now = OffsetDateTime::now_local()
-            .unwrap_or_else(|_| OffsetDateTime::now_utc());
+        let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
 
         let formatted = now.format(&DATE_FORMAT).unwrap();
 
@@ -101,12 +95,11 @@ impl Component for CalendarModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             CalendarInput::UpdateTime => {
-                let now = OffsetDateTime::now_local()
-                    .unwrap_or_else(|_| OffsetDateTime::now_utc());
+                let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
 
                 let formatted = now.format(&DATE_FORMAT).unwrap();
 

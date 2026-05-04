@@ -1,14 +1,12 @@
-use std::sync::Arc;
-use relm4::{ComponentSender, Component, gtk};
-use relm4::gtk::gdk;
-use tokio_util::sync::CancellationToken;
-use wayle_bluetooth::core::device::Device;
 use okshell_common::{watch, watch_cancellable};
 use okshell_services::bluetooth_service;
+use relm4::gtk::gdk;
+use relm4::{Component, ComponentSender, gtk};
+use std::sync::Arc;
+use tokio_util::sync::CancellationToken;
+use wayle_bluetooth::core::device::Device;
 
-pub fn set_bluetooth_icon(
-    image: &gtk::Image,
-) {
+pub fn set_bluetooth_icon(image: &gtk::Image) {
     let bluetooth = bluetooth_service();
     let available = bluetooth.available.get();
     let enabled = bluetooth.enabled.get();
@@ -22,9 +20,7 @@ pub fn set_bluetooth_icon(
     }
 }
 
-pub fn set_bluetooth_label(
-    label: &gtk::Label,
-) {
+pub fn set_bluetooth_label(label: &gtk::Label) {
     let bluetooth = bluetooth_service();
     let available = bluetooth.available.get();
     let enabled = bluetooth.enabled.get();
@@ -41,7 +37,9 @@ pub fn set_bluetooth_label(
 pub fn get_bluetooth_device_icon(device: Arc<Device>) -> String {
     let icon_theme = gtk::IconTheme::for_display(&gdk::Display::default().unwrap());
 
-    device.icon.get()
+    device
+        .icon
+        .get()
         .map(|i| format!("{}-symbolic", i))
         .filter(|i| icon_theme.has_icon(i))
         .unwrap_or_else(|| "bluetooth-active-symbolic".to_string())
@@ -50,28 +48,22 @@ pub fn get_bluetooth_device_icon(device: Arc<Device>) -> String {
 pub fn spawn_bluetooth_devices_watcher<C>(
     sender: &ComponentSender<C>,
     map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
     let bluetooth = bluetooth_service();
     let devices = bluetooth.devices.clone();
 
-    watch!(
-        sender,
-        [devices.watch()],
-        |out| {
-            let _ = out.send(map_state());
-        }
-    );
+    watch!(sender, [devices.watch()], |out| {
+        let _ = out.send(map_state());
+    });
 }
 
 pub fn spawn_bluetooth_enabled_watcher<C>(
     sender: &ComponentSender<C>,
     map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
@@ -79,13 +71,9 @@ where
     let available = bluetooth.available.clone();
     let enabled = bluetooth.enabled.clone();
 
-    watch!(
-        sender,
-        [available.watch(), enabled.watch()],
-        |out| {
-            let _ = out.send(map_state());
-        }
-    );
+    watch!(sender, [available.watch(), enabled.watch()], |out| {
+        let _ = out.send(map_state());
+    });
 }
 
 pub fn spawn_bluetooth_device_watcher<C>(
@@ -93,8 +81,7 @@ pub fn spawn_bluetooth_device_watcher<C>(
     cancellation_token: CancellationToken,
     sender: &ComponentSender<C>,
     map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
@@ -105,11 +92,7 @@ where
     watch_cancellable!(
         sender,
         cancellation_token,
-        [
-            paired.watch(),
-            connected.watch(),
-            trusted.watch(),
-        ],
+        [paired.watch(), connected.watch(), trusted.watch(),],
         |out| {
             let _ = out.send(map_state());
         }
@@ -121,21 +104,13 @@ pub fn spawn_bluetooth_device_battery_watcher<C>(
     cancellation_token: CancellationToken,
     sender: &ComponentSender<C>,
     map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
     let battery = device.battery_percentage.clone();
 
-    watch_cancellable!(
-        sender,
-        cancellation_token,
-        [
-            battery.watch(),
-        ],
-        |out| {
-            let _ = out.send(map_state());
-        }
-    );
+    watch_cancellable!(sender, cancellation_token, [battery.watch(),], |out| {
+        let _ = out.send(map_state());
+    });
 }

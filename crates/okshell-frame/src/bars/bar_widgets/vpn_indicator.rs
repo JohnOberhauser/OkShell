@@ -1,5 +1,5 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use relm4::gtk::prelude::WidgetExt;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct VpnIndicatorModel {}

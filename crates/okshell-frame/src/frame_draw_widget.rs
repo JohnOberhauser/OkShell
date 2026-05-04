@@ -1,14 +1,9 @@
 use relm4::gtk::{
     self,
-    glib::{
-        self,
-        object_subclass,
-    },
+    cairo::{Context, LineCap, LineJoin, Operator, RectangleInt, Region},
+    glib::{self, object_subclass},
     prelude::*,
     subclass::prelude::*,
-    cairo::{
-        Context, Operator, LineJoin, LineCap, Region, RectangleInt
-    }
 };
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
@@ -75,12 +70,12 @@ fn collect_css_vars(css: &str) -> HashMap<String, String> {
     let mut vars = HashMap::new();
     for line in css.lines() {
         let trimmed = line.trim();
-        if let Some(rest) = trimmed.strip_prefix("--") {
-            if let Some((name, value)) = rest.split_once(':') {
-                let name = format!("--{}", name.trim());
-                let value = value.trim().trim_end_matches(';').trim().to_string();
-                vars.insert(name, value);
-            }
+        if let Some(rest) = trimmed.strip_prefix("--")
+            && let Some((name, value)) = rest.split_once(':')
+        {
+            let name = format!("--{}", name.trim());
+            let value = value.trim().trim_end_matches(';').trim().to_string();
+            vars.insert(name, value);
         }
     }
     vars
@@ -88,7 +83,10 @@ fn collect_css_vars(css: &str) -> HashMap<String, String> {
 
 fn resolve_var<'a>(value: &'a str, vars: &'a HashMap<String, String>) -> &'a str {
     let trimmed = value.trim();
-    if let Some(inner) = trimmed.strip_prefix("var(").and_then(|s| s.strip_suffix(')')) {
+    if let Some(inner) = trimmed
+        .strip_prefix("var(")
+        .and_then(|s| s.strip_suffix(')'))
+    {
         let var_name = inner.trim();
         if let Some(resolved) = vars.get(var_name) {
             return resolve_var(resolved, vars);
@@ -254,7 +252,13 @@ fn hash_str(s: &str) -> u64 {
 
 /// Build the hole polygon vertices in clockwise order.
 #[allow(clippy::too_many_arguments)]
-fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width: f64, hole_height: f64) -> Vec<(f64, f64)> {
+fn build_hole_vertices(
+    style: &FrameStyle,
+    hole_x: f64,
+    hole_y: f64,
+    hole_width: f64,
+    hole_height: f64,
+) -> Vec<(f64, f64)> {
     let mut vertices: Vec<(f64, f64)> = Vec::with_capacity(64);
 
     let left_expander_width = style.left_expander_width;
@@ -269,17 +273,21 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
     let (top_left_revealer_width, top_left_revealer_height) = style.top_left_revealer_size;
     let (top_right_revealer_width, top_right_revealer_height) = style.top_right_revealer_size;
     let (bottom_left_revealer_width, bottom_left_revealer_height) = style.bottom_left_revealer_size;
-    let (bottom_right_revealer_width, bottom_right_revealer_height) = style.bottom_right_revealer_size;
+    let (bottom_right_revealer_width, bottom_right_revealer_height) =
+        style.bottom_right_revealer_size;
 
     let has_left_top_expander = left_top_expander_height > 0.0 && left_expander_width > 0.0;
     let has_right_top_expander = right_top_expander_height > 0.0 && right_expander_width > 0.0;
     let has_left_bottom_expander = left_bottom_expander_height > 0.0 && left_expander_width > 0.0;
-    let has_right_bottom_expander = right_bottom_expander_height > 0.0 && right_expander_width > 0.0;
+    let has_right_bottom_expander =
+        right_bottom_expander_height > 0.0 && right_expander_width > 0.0;
 
     let has_top_left_revealer = top_left_revealer_width > 0.0 && top_left_revealer_height > 0.0;
     let has_top_right_revealer = top_right_revealer_width > 0.0 && top_right_revealer_height > 0.0;
-    let has_bottom_left_revealer = bottom_left_revealer_width > 0.0 && bottom_left_revealer_height > 0.0;
-    let has_bottom_right_revealer = bottom_right_revealer_width > 0.0 && bottom_right_revealer_height > 0.0;
+    let has_bottom_left_revealer =
+        bottom_left_revealer_width > 0.0 && bottom_left_revealer_height > 0.0;
+    let has_bottom_right_revealer =
+        bottom_right_revealer_width > 0.0 && bottom_right_revealer_height > 0.0;
     let has_top_revealer = top_revealer_width > 0.0 && top_revealer_height > 0.0;
     let has_bottom_revealer = bottom_revealer_width > 0.0 && bottom_revealer_height > 0.0;
 
@@ -343,30 +351,45 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
                 // Case C: joined L-shape — expander consumed
                 left_top_expander_consumed = true;
                 vertices.push((hole_x - left_expander_width, hole_y));
-                vertices.push((hole_x - left_expander_width, hole_y + left_top_expander_height));
+                vertices.push((
+                    hole_x - left_expander_width,
+                    hole_y + left_top_expander_height,
+                ));
                 vertices.push((hole_x, hole_y + left_top_expander_height));
                 vertices.push((hole_x, hole_y + top_left_revealer_height));
-                vertices.push((hole_x + top_left_revealer_width, hole_y + top_left_revealer_height));
+                vertices.push((
+                    hole_x + top_left_revealer_width,
+                    hole_y + top_left_revealer_height,
+                ));
                 vertices.push((hole_x + top_left_revealer_width, hole_y));
             } else {
                 // Case D: revealer shorter than expander
                 vertices.push((hole_x - left_expander_width, hole_y));
                 vertices.push((hole_x, hole_y));
                 vertices.push((hole_x, hole_y + top_left_revealer_height));
-                vertices.push((hole_x + top_left_revealer_width, hole_y + top_left_revealer_height));
+                vertices.push((
+                    hole_x + top_left_revealer_width,
+                    hole_y + top_left_revealer_height,
+                ));
                 vertices.push((hole_x + top_left_revealer_width, hole_y));
             }
         } else if left_expander_width > 0.0 {
             // Case B: left menu visible but fully expanded, no gap
             vertices.push((hole_x, hole_y));
             vertices.push((hole_x, hole_y + top_left_revealer_height));
-            vertices.push((hole_x + top_left_revealer_width, hole_y + top_left_revealer_height));
+            vertices.push((
+                hole_x + top_left_revealer_width,
+                hole_y + top_left_revealer_height,
+            ));
             vertices.push((hole_x + top_left_revealer_width, hole_y));
         } else {
             // Case A: no left menu, merged with left edge
             vertices.push((hole_x, hole_y));
             vertices.push((hole_x, hole_y + top_left_revealer_height));
-            vertices.push((hole_x + top_left_revealer_width, hole_y + top_left_revealer_height));
+            vertices.push((
+                hole_x + top_left_revealer_width,
+                hole_y + top_left_revealer_height,
+            ));
             vertices.push((hole_x + top_left_revealer_width, hole_y));
         }
     } else {
@@ -397,15 +420,24 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
                 // Case C: joined L-shape — expander consumed
                 right_top_expander_consumed = true;
                 vertices.push((hole_right - top_right_revealer_width, hole_y));
-                vertices.push((hole_right - top_right_revealer_width, hole_y + top_right_revealer_height));
+                vertices.push((
+                    hole_right - top_right_revealer_width,
+                    hole_y + top_right_revealer_height,
+                ));
                 vertices.push((hole_right, hole_y + top_right_revealer_height));
                 vertices.push((hole_right, hole_y + right_top_expander_height));
-                vertices.push((hole_right + right_expander_width, hole_y + right_top_expander_height));
+                vertices.push((
+                    hole_right + right_expander_width,
+                    hole_y + right_top_expander_height,
+                ));
                 vertices.push((hole_right + right_expander_width, hole_y));
             } else {
                 // Case D: revealer shorter than expander
                 vertices.push((hole_right - top_right_revealer_width, hole_y));
-                vertices.push((hole_right - top_right_revealer_width, hole_y + top_right_revealer_height));
+                vertices.push((
+                    hole_right - top_right_revealer_width,
+                    hole_y + top_right_revealer_height,
+                ));
                 vertices.push((hole_right, hole_y + top_right_revealer_height));
                 vertices.push((hole_right, hole_y));
                 vertices.push((hole_right + right_expander_width, hole_y));
@@ -413,13 +445,19 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
         } else if right_expander_width > 0.0 {
             // Case B: right menu visible but fully expanded, no gap
             vertices.push((hole_right - top_right_revealer_width, hole_y));
-            vertices.push((hole_right - top_right_revealer_width, hole_y + top_right_revealer_height));
+            vertices.push((
+                hole_right - top_right_revealer_width,
+                hole_y + top_right_revealer_height,
+            ));
             vertices.push((hole_right, hole_y + top_right_revealer_height));
             vertices.push((hole_right, hole_y));
         } else {
             // Case A: no right menu, merged with right edge
             vertices.push((hole_right - top_right_revealer_width, hole_y));
-            vertices.push((hole_right - top_right_revealer_width, hole_y + top_right_revealer_height));
+            vertices.push((
+                hole_right - top_right_revealer_width,
+                hole_y + top_right_revealer_height,
+            ));
             vertices.push((hole_right, hole_y + top_right_revealer_height));
             vertices.push((hole_right, hole_y));
         }
@@ -434,7 +472,10 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
             vertices.push((hole_right, hole_y));
         }
         vertices.push((hole_right + right_expander_width, hole_y));
-        vertices.push((hole_right + right_expander_width, hole_y + right_top_expander_height));
+        vertices.push((
+            hole_right + right_expander_width,
+            hole_y + right_top_expander_height,
+        ));
         vertices.push((hole_right, hole_y + right_top_expander_height));
     } else if !has_top_right_revealer && !right_top_expander_consumed {
         vertices.push((hole_right, hole_y));
@@ -446,7 +487,10 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
     // Skipped if the bottom-right revealer already consumed this space.
     if has_right_bottom_expander && !right_bottom_expander_consumed {
         vertices.push((hole_right, hole_bottom - right_bottom_expander_height));
-        vertices.push((hole_right + right_expander_width, hole_bottom - right_bottom_expander_height));
+        vertices.push((
+            hole_right + right_expander_width,
+            hole_bottom - right_bottom_expander_height,
+        ));
         vertices.push((hole_right + right_expander_width, hole_bottom));
         vertices.push((hole_right, hole_bottom));
     } else {
@@ -461,28 +505,43 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
             if bottom_right_revealer_height >= right_bottom_expander_height {
                 // Case C: joined L-shape — expander consumed
                 vertices.push((hole_right + right_expander_width, hole_bottom));
-                vertices.push((hole_right + right_expander_width, hole_bottom - right_bottom_expander_height));
+                vertices.push((
+                    hole_right + right_expander_width,
+                    hole_bottom - right_bottom_expander_height,
+                ));
                 vertices.push((hole_right, hole_bottom - right_bottom_expander_height));
                 vertices.push((hole_right, hole_bottom - bottom_right_revealer_height));
-                vertices.push((hole_right - bottom_right_revealer_width, hole_bottom - bottom_right_revealer_height));
+                vertices.push((
+                    hole_right - bottom_right_revealer_width,
+                    hole_bottom - bottom_right_revealer_height,
+                ));
                 vertices.push((hole_right - bottom_right_revealer_width, hole_bottom));
             } else {
                 // Case D: revealer shorter than expander
                 vertices.push((hole_right + right_expander_width, hole_bottom));
                 vertices.push((hole_right, hole_bottom));
                 vertices.push((hole_right, hole_bottom - bottom_right_revealer_height));
-                vertices.push((hole_right - bottom_right_revealer_width, hole_bottom - bottom_right_revealer_height));
+                vertices.push((
+                    hole_right - bottom_right_revealer_width,
+                    hole_bottom - bottom_right_revealer_height,
+                ));
                 vertices.push((hole_right - bottom_right_revealer_width, hole_bottom));
             }
         } else if right_expander_width > 0.0 {
             // Case B: right menu visible but fully expanded, no gap
             vertices.push((hole_right, hole_bottom - bottom_right_revealer_height));
-            vertices.push((hole_right - bottom_right_revealer_width, hole_bottom - bottom_right_revealer_height));
+            vertices.push((
+                hole_right - bottom_right_revealer_width,
+                hole_bottom - bottom_right_revealer_height,
+            ));
             vertices.push((hole_right - bottom_right_revealer_width, hole_bottom));
         } else {
             // Case A: no right menu, merged with right edge
             vertices.push((hole_right, hole_bottom - bottom_right_revealer_height));
-            vertices.push((hole_right - bottom_right_revealer_width, hole_bottom - bottom_right_revealer_height));
+            vertices.push((
+                hole_right - bottom_right_revealer_width,
+                hole_bottom - bottom_right_revealer_height,
+            ));
             vertices.push((hole_right - bottom_right_revealer_width, hole_bottom));
         }
     }
@@ -509,15 +568,24 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
                 // Case C: joined L-shape — expander consumed
                 left_bottom_expander_consumed = true;
                 vertices.push((hole_x + bottom_left_revealer_width, hole_bottom));
-                vertices.push((hole_x + bottom_left_revealer_width, hole_bottom - bottom_left_revealer_height));
+                vertices.push((
+                    hole_x + bottom_left_revealer_width,
+                    hole_bottom - bottom_left_revealer_height,
+                ));
                 vertices.push((hole_x, hole_bottom - bottom_left_revealer_height));
                 vertices.push((hole_x, hole_bottom - left_bottom_expander_height));
-                vertices.push((hole_x - left_expander_width, hole_bottom - left_bottom_expander_height));
+                vertices.push((
+                    hole_x - left_expander_width,
+                    hole_bottom - left_bottom_expander_height,
+                ));
                 vertices.push((hole_x - left_expander_width, hole_bottom));
             } else {
                 // Case D: revealer shorter than expander
                 vertices.push((hole_x + bottom_left_revealer_width, hole_bottom));
-                vertices.push((hole_x + bottom_left_revealer_width, hole_bottom - bottom_left_revealer_height));
+                vertices.push((
+                    hole_x + bottom_left_revealer_width,
+                    hole_bottom - bottom_left_revealer_height,
+                ));
                 vertices.push((hole_x, hole_bottom - bottom_left_revealer_height));
                 vertices.push((hole_x, hole_bottom));
                 vertices.push((hole_x - left_expander_width, hole_bottom));
@@ -525,13 +593,19 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
         } else if left_expander_width > 0.0 {
             // Case B: left menu visible but fully expanded, no gap
             vertices.push((hole_x + bottom_left_revealer_width, hole_bottom));
-            vertices.push((hole_x + bottom_left_revealer_width, hole_bottom - bottom_left_revealer_height));
+            vertices.push((
+                hole_x + bottom_left_revealer_width,
+                hole_bottom - bottom_left_revealer_height,
+            ));
             vertices.push((hole_x, hole_bottom - bottom_left_revealer_height));
             vertices.push((hole_x, hole_bottom));
         } else {
             // Case A: no left menu, merged with left edge
             vertices.push((hole_x + bottom_left_revealer_width, hole_bottom));
-            vertices.push((hole_x + bottom_left_revealer_width, hole_bottom - bottom_left_revealer_height));
+            vertices.push((
+                hole_x + bottom_left_revealer_width,
+                hole_bottom - bottom_left_revealer_height,
+            ));
             vertices.push((hole_x, hole_bottom - bottom_left_revealer_height));
             vertices.push((hole_x, hole_bottom));
         }
@@ -546,7 +620,10 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
             vertices.push((hole_x, hole_bottom));
         }
         vertices.push((hole_x - left_expander_width, hole_bottom));
-        vertices.push((hole_x - left_expander_width, hole_bottom - left_bottom_expander_height));
+        vertices.push((
+            hole_x - left_expander_width,
+            hole_bottom - left_bottom_expander_height,
+        ));
         vertices.push((hole_x, hole_bottom - left_bottom_expander_height));
     } else if !has_bottom_left_revealer && !left_bottom_expander_consumed {
         vertices.push((hole_x, hole_bottom));
@@ -558,7 +635,10 @@ fn build_hole_vertices(style: &FrameStyle, hole_x: f64, hole_y: f64, hole_width:
     // Skipped if the top-left revealer already consumed this space.
     if has_left_top_expander && !left_top_expander_consumed {
         vertices.push((hole_x, hole_y + left_top_expander_height));
-        vertices.push((hole_x - left_expander_width, hole_y + left_top_expander_height));
+        vertices.push((
+            hole_x - left_expander_width,
+            hole_y + left_top_expander_height,
+        ));
         vertices.push((hole_x - left_expander_width, hole_y));
         vertices.push((hole_x, hole_y));
     }
@@ -614,10 +694,15 @@ fn trace_rounded_polygon(cr: &Context, vertices: &[(f64, f64)], max_radius: f64)
         let current = cleaned[i];
         let next = cleaned[(i + 1) % vertex_count];
 
-        let incoming_length = ((current.0 - previous.0).powi(2) + (current.1 - previous.1).powi(2)).sqrt();
+        let incoming_length =
+            ((current.0 - previous.0).powi(2) + (current.1 - previous.1).powi(2)).sqrt();
         let outgoing_length = ((next.0 - current.0).powi(2) + (next.1 - current.1).powi(2)).sqrt();
 
-        radii.push(max_radius.min(incoming_length / 2.0).min(outgoing_length / 2.0));
+        radii.push(
+            max_radius
+                .min(incoming_length / 2.0)
+                .min(outgoing_length / 2.0),
+        );
     }
 
     // Ensure adjacent corners don't overlap on shared edges
@@ -653,7 +738,8 @@ fn trace_rounded_polygon(cr: &Context, vertices: &[(f64, f64)], max_radius: f64)
             continue;
         }
 
-        let incoming_length = ((current.0 - previous.0).powi(2) + (current.1 - previous.1).powi(2)).sqrt();
+        let incoming_length =
+            ((current.0 - previous.0).powi(2) + (current.1 - previous.1).powi(2)).sqrt();
         let outgoing_length = ((next.0 - current.0).powi(2) + (next.1 - current.1).powi(2)).sqrt();
 
         if incoming_length < 1e-9 || outgoing_length < 1e-9 {
@@ -671,8 +757,14 @@ fn trace_rounded_polygon(cr: &Context, vertices: &[(f64, f64)], max_radius: f64)
         let outgoing_dir_y = (next.1 - current.1) / outgoing_length;
 
         // Tangent points where arc meets edges
-        let tangent_incoming = (current.0 - incoming_dir_x * radius, current.1 - incoming_dir_y * radius);
-        let tangent_outgoing = (current.0 + outgoing_dir_x * radius, current.1 + outgoing_dir_y * radius);
+        let tangent_incoming = (
+            current.0 - incoming_dir_x * radius,
+            current.1 - incoming_dir_y * radius,
+        );
+        let tangent_outgoing = (
+            current.0 + outgoing_dir_x * radius,
+            current.1 + outgoing_dir_y * radius,
+        );
 
         let cross = incoming_dir_x * outgoing_dir_y - incoming_dir_y * outgoing_dir_x;
 
@@ -683,10 +775,15 @@ fn trace_rounded_polygon(cr: &Context, vertices: &[(f64, f64)], max_radius: f64)
             (incoming_dir_y, -incoming_dir_x)
         };
 
-        let arc_center = (tangent_incoming.0 + normal_x * radius, tangent_incoming.1 + normal_y * radius);
+        let arc_center = (
+            tangent_incoming.0 + normal_x * radius,
+            tangent_incoming.1 + normal_y * radius,
+        );
 
-        let angle_start = (tangent_incoming.1 - arc_center.1).atan2(tangent_incoming.0 - arc_center.0);
-        let angle_end = (tangent_outgoing.1 - arc_center.1).atan2(tangent_outgoing.0 - arc_center.0);
+        let angle_start =
+            (tangent_incoming.1 - arc_center.1).atan2(tangent_incoming.0 - arc_center.0);
+        let angle_end =
+            (tangent_outgoing.1 - arc_center.1).atan2(tangent_outgoing.0 - arc_center.0);
 
         if i == 0 {
             cr.move_to(tangent_incoming.0, tangent_incoming.1);
@@ -752,12 +849,15 @@ mod imp {
                 });
 
                 let w = widget.downgrade();
-                settings.connect_notify_local(Some("gtk-application-prefer-dark-theme"), move |_, _| {
-                    if let Some(w) = w.upgrade() {
-                        w.imp().invalidate_css_cache();
-                        w.queue_draw();
-                    }
-                });
+                settings.connect_notify_local(
+                    Some("gtk-application-prefer-dark-theme"),
+                    move |_, _| {
+                        if let Some(w) = w.upgrade() {
+                            w.imp().invalidate_css_cache();
+                            w.queue_draw();
+                        }
+                    },
+                );
             }
         }
     }
@@ -782,13 +882,17 @@ mod imp {
             let hole_x = total_left_thickness;
             let hole_y = total_top_thickness;
             let hole_width = (total_width - total_left_thickness - total_right_thickness).max(0.0);
-            let hole_height = (total_height - total_top_thickness - total_bottom_thickness).max(0.0);
-            let border_radius = style.border_radius.clamp(0.0, hole_width.min(hole_height) / 2.0);
+            let hole_height =
+                (total_height - total_top_thickness - total_bottom_thickness).max(0.0);
+            let border_radius = style
+                .border_radius
+                .clamp(0.0, hole_width.min(hole_height) / 2.0);
 
             let vertices = build_hole_vertices(&style, hole_x, hole_y, hole_width, hole_height);
 
             if style.draw_frame && !vertices.is_empty() {
-                let bounds = gtk::graphene::Rect::new(0.0, 0.0, total_width as f32, total_height as f32);
+                let bounds =
+                    gtk::graphene::Rect::new(0.0, 0.0, total_width as f32, total_height as f32);
                 let cr = snapshot.append_cairo(&bounds);
 
                 // 1) Paint full background
@@ -819,7 +923,15 @@ mod imp {
                 }
             }
 
-            self.update_input_region(&style, total_width as i32, total_height as i32, hole_x, hole_y, hole_width, hole_height);
+            self.update_input_region(
+                &style,
+                total_width as i32,
+                total_height as i32,
+                hole_x,
+                hole_y,
+                hole_width,
+                hole_height,
+            );
         }
     }
 
@@ -850,16 +962,25 @@ mod imp {
             *self.resolved_style.borrow_mut() = None;
         }
 
+        #[allow(clippy::too_many_arguments)]
         fn update_input_region(
             &self,
             style: &FrameStyle,
-            window_width: i32, window_height: i32,
-            hole_x: f64, hole_y: f64, hole_width: f64, hole_height: f64,
+            window_width: i32,
+            window_height: i32,
+            hole_x: f64,
+            hole_y: f64,
+            hole_width: f64,
+            hole_height: f64,
         ) {
             let widget = self.obj();
 
-            let Some(native) = widget.native() else { return };
-            let Some(surface) = native.surface() else { return };
+            let Some(native) = widget.native() else {
+                return;
+            };
+            let Some(surface) = native.surface() else {
+                return;
+            };
 
             let hole_left = hole_x.floor().max(0.0) as i32;
             let hole_top = hole_y.floor().max(0.0) as i32;
@@ -889,29 +1010,37 @@ mod imp {
 
             // Subtract side expander negative-space areas (inset by border_width)
             // Left top expander: shrink width from the right (hole edge) by border_width
-            subtract_rect(&region,
-                          hole_left - left_expander_width,
-                          hole_top,
-                          (left_expander_width - border_width).max(0),
-                          style.left_top_expander_height.ceil() as i32);
+            subtract_rect(
+                &region,
+                hole_left - left_expander_width,
+                hole_top,
+                (left_expander_width - border_width).max(0),
+                style.left_top_expander_height.ceil() as i32,
+            );
             // Left bottom expander
-            subtract_rect(&region,
-                          hole_left - left_expander_width,
-                          hole_bottom - style.left_bottom_expander_height.ceil() as i32,
-                          (left_expander_width - border_width).max(0),
-                          style.left_bottom_expander_height.ceil() as i32);
+            subtract_rect(
+                &region,
+                hole_left - left_expander_width,
+                hole_bottom - style.left_bottom_expander_height.ceil() as i32,
+                (left_expander_width - border_width).max(0),
+                style.left_bottom_expander_height.ceil() as i32,
+            );
             // Right top expander: shift x rightward by border_width, shrink width
-            subtract_rect(&region,
-                          hole_right + border_width,
-                          hole_top,
-                          (right_expander_width - border_width).max(0),
-                          style.right_top_expander_height.ceil() as i32);
+            subtract_rect(
+                &region,
+                hole_right + border_width,
+                hole_top,
+                (right_expander_width - border_width).max(0),
+                style.right_top_expander_height.ceil() as i32,
+            );
             // Right bottom expander
-            subtract_rect(&region,
-                          hole_right + border_width,
-                          hole_bottom - style.right_bottom_expander_height.ceil() as i32,
-                          (right_expander_width - border_width).max(0),
-                          style.right_bottom_expander_height.ceil() as i32);
+            subtract_rect(
+                &region,
+                hole_right + border_width,
+                hole_bottom - style.right_bottom_expander_height.ceil() as i32,
+                (right_expander_width - border_width).max(0),
+                style.right_bottom_expander_height.ceil() as i32,
+            );
 
             // Union back inward revealer notches so frame captures input there.
             // Expand each notch by border_width on sides that touch the hole edge
@@ -919,51 +1048,66 @@ mod imp {
             let (top_revealer_width, top_revealer_height) = style.top_revealer_size;
             let (bottom_revealer_width, bottom_revealer_height) = style.bottom_revealer_size;
             let (top_left_revealer_width, top_left_revealer_height) = style.top_left_revealer_size;
-            let (top_right_revealer_width, top_right_revealer_height) = style.top_right_revealer_size;
-            let (bottom_left_revealer_width, bottom_left_revealer_height) = style.bottom_left_revealer_size;
-            let (bottom_right_revealer_width, bottom_right_revealer_height) = style.bottom_right_revealer_size;
+            let (top_right_revealer_width, top_right_revealer_height) =
+                style.top_right_revealer_size;
+            let (bottom_left_revealer_width, bottom_left_revealer_height) =
+                style.bottom_left_revealer_size;
+            let (bottom_right_revealer_width, bottom_right_revealer_height) =
+                style.bottom_right_revealer_size;
 
             // Center top revealer: touches top hole edge, expand upward
-            union_inward_notch(&region,
-                               hole_x + hole_width / 2.0 - top_revealer_width / 2.0,
-                               hole_y - border_width_f,
-                               top_revealer_width,
-                               top_revealer_height + border_width_f);
+            union_inward_notch(
+                &region,
+                hole_x + hole_width / 2.0 - top_revealer_width / 2.0,
+                hole_y - border_width_f,
+                top_revealer_width,
+                top_revealer_height + border_width_f,
+            );
 
             // Center bottom revealer: touches bottom hole edge, expand downward
-            union_inward_notch(&region,
-                               hole_x + hole_width / 2.0 - bottom_revealer_width / 2.0,
-                               hole_y + hole_height - bottom_revealer_height,
-                               bottom_revealer_width,
-                               bottom_revealer_height + border_width_f);
+            union_inward_notch(
+                &region,
+                hole_x + hole_width / 2.0 - bottom_revealer_width / 2.0,
+                hole_y + hole_height - bottom_revealer_height,
+                bottom_revealer_width,
+                bottom_revealer_height + border_width_f,
+            );
 
             // Top-left corner revealer: touches top and left hole edges
-            union_inward_notch(&region,
-                               hole_x - border_width_f,
-                               hole_y - border_width_f,
-                               top_left_revealer_width + border_width_f,
-                               top_left_revealer_height + border_width_f);
+            union_inward_notch(
+                &region,
+                hole_x - border_width_f,
+                hole_y - border_width_f,
+                top_left_revealer_width + border_width_f,
+                top_left_revealer_height + border_width_f,
+            );
 
             // Top-right corner revealer: touches top and right hole edges
-            union_inward_notch(&region,
-                               hole_x + hole_width - top_right_revealer_width,
-                               hole_y - border_width_f,
-                               top_right_revealer_width + border_width_f,
-                               top_right_revealer_height + border_width_f);
+            union_inward_notch(
+                &region,
+                hole_x + hole_width - top_right_revealer_width,
+                hole_y - border_width_f,
+                top_right_revealer_width + border_width_f,
+                top_right_revealer_height + border_width_f,
+            );
 
             // Bottom-left corner revealer: touches bottom and left hole edges
-            union_inward_notch(&region,
-                               hole_x - border_width_f,
-                               hole_y + hole_height - bottom_left_revealer_height,
-                               bottom_left_revealer_width + border_width_f,
-                               bottom_left_revealer_height + border_width_f);
+            union_inward_notch(
+                &region,
+                hole_x - border_width_f,
+                hole_y + hole_height - bottom_left_revealer_height,
+                bottom_left_revealer_width + border_width_f,
+                bottom_left_revealer_height + border_width_f,
+            );
 
             // Bottom-right corner revealer: touches bottom and right hole edges
-            union_inward_notch(&region,
-                               hole_x + hole_width - bottom_right_revealer_width,
-                               hole_y + hole_height - bottom_right_revealer_height,
-                               bottom_right_revealer_width + border_width_f,
-                               bottom_right_revealer_height + border_width_f);
+            union_inward_notch(
+                &region,
+                hole_x + hole_width - bottom_right_revealer_width,
+                hole_y + hole_height - bottom_right_revealer_height,
+                bottom_right_revealer_width + border_width_f,
+                bottom_right_revealer_height + border_width_f,
+            );
 
             surface.set_input_region(&region);
         }
@@ -978,8 +1122,10 @@ mod imp {
     fn union_inward_notch(region: &Region, x: f64, y: f64, width: f64, height: f64) {
         if width > 0.0 && height > 0.0 {
             let _ = region.union_rectangle(&RectangleInt::new(
-                x.floor() as i32, y.floor() as i32,
-                width.ceil() as i32, height.ceil() as i32,
+                x.floor() as i32,
+                y.floor() as i32,
+                width.ceil() as i32,
+                height.ceil() as i32,
             ));
         }
     }

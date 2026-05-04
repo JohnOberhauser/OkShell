@@ -1,12 +1,14 @@
-use std::sync::Arc;
-use gtk4::{gdk};
+use gtk4::gdk;
 use gtk4::prelude::{BoxExt, GtkWindowExt, OrientableExt, RangeExt, WidgetExt};
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use wayle_audio::core::device::output::OutputDevice;
 use okshell_common::WatcherToken;
 use okshell_services::audio_service;
-use okshell_utils::audio::{get_audio_out_icon, spawn_default_output_watcher, spawn_output_device_volume_mute_watcher};
+use okshell_utils::audio::{
+    get_audio_out_icon, spawn_default_output_watcher, spawn_output_device_volume_mute_watcher,
+};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use std::sync::Arc;
+use wayle_audio::core::device::output::OutputDevice;
 
 #[derive(Debug)]
 pub struct VolumeOsdModel {
@@ -83,7 +85,6 @@ impl Component for VolumeOsdModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         root.init_layer_shell();
         root.set_monitor(Some(&params.monitor));
         root.set_namespace(Some("okshell-osd"));
@@ -91,11 +92,7 @@ impl Component for VolumeOsdModel {
         root.set_exclusive_zone(0);
         root.set_anchor(Edge::Bottom, true);
 
-        spawn_default_output_watcher(
-            &sender,
-            None,
-            || VolumeOsdCommandOutput::DeviceChanged,
-        );
+        spawn_default_output_watcher(&sender, None, || VolumeOsdCommandOutput::DeviceChanged);
 
         let model = VolumeOsdModel {
             active_device_watcher_token: WatcherToken::new(),
@@ -124,19 +121,21 @@ impl Component for VolumeOsdModel {
 
                 let token = self.hide_token.reset();
                 sender.command(|out, shutdown| {
-                    shutdown.register(async move {
-                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                        if !token.is_cancelled() {
-                            out.send(VolumeOsdCommandOutput::Hide).ok();
-                        }
-                    }).drop_on_shutdown()
+                    shutdown
+                        .register(async move {
+                            tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                            if !token.is_cancelled() {
+                                out.send(VolumeOsdCommandOutput::Hide).ok();
+                            }
+                        })
+                        .drop_on_shutdown()
                 });
             }
             VolumeOsdInput::Show => {
                 if self.shown_count > 1 {
                     root.set_visible(true);
                 } else {
-                    self.shown_count = self.shown_count + 1;
+                    self.shown_count += 1;
                 }
             }
             VolumeOsdInput::Hide => {
@@ -151,7 +150,7 @@ impl Component for VolumeOsdModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             VolumeOsdCommandOutput::DeviceChanged => {
@@ -161,12 +160,9 @@ impl Component for VolumeOsdModel {
 
                     let token = self.active_device_watcher_token.reset();
 
-                    spawn_output_device_volume_mute_watcher(
-                        &audio_device,
-                        token,
-                        &sender,
-                        ||VolumeOsdCommandOutput::VolumeChanged
-                    );
+                    spawn_output_device_volume_mute_watcher(&audio_device, token, &sender, || {
+                        VolumeOsdCommandOutput::VolumeChanged
+                    });
                 }
             }
             VolumeOsdCommandOutput::VolumeChanged => {

@@ -1,26 +1,43 @@
-use std::fmt::Debug;
-use reactive_graph::traits::{
-    Get,
+use crate::menus::builder::build_widget;
+use crate::menus::menu_widgets::app_launcher::app_launcher::{AppLauncherInput, AppLauncherModel};
+use crate::menus::menu_widgets::audio_in::audio_in_menu_widget::{
+    AudioInMenuWidgetInput, AudioInMenuWidgetModel,
 };
-use relm4::{gtk, gtk::prelude::*, Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmWidgetExt};
+use crate::menus::menu_widgets::audio_out::audio_out_menu_widget::{
+    AudioOutMenuWidgetInput, AudioOutMenuWidgetModel,
+};
+use crate::menus::menu_widgets::bluetooth::bluetooth_menu_widget::{
+    BluetoothMenuWidgetInput, BluetoothMenuWidgetModel,
+};
+use crate::menus::menu_widgets::network::network_menu_widget::{
+    NetworkMenuWidgetInput, NetworkMenuWidgetModel,
+};
+use crate::menus::menu_widgets::power_profile::power_profile_menu_widget::{
+    PowerProfileMenuWidgetInput, PowerProfileMenuWidgetModel,
+};
+use crate::menus::menu_widgets::screenshare::screenshare_menu_widget::{
+    ScreenshareMenuWidgetInit, ScreenshareMenuWidgetInput, ScreenshareMenuWidgetModel,
+    ScreenshareMenuWidgetOutput,
+};
+use crate::menus::menu_widgets::wallpaper::wallpaper_dropdown_menu_widget::{
+    WallpaperDropdownMenuWidgetInput, WallpaperDropdownMenuWidgetModel,
+};
+use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{
+    WallpaperMenuWidgetInput, WallpaperMenuWidgetModel,
+};
+use okshell_common::dynamic_box::generic_widget_controller::{
+    GenericWidgetController, GenericWidgetControllerExtSafe,
+};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::schema::config::{ConfigStoreFields, MenuStoreFields, MenusStoreFields};
 use okshell_config::schema::menu_widgets::MenuWidget;
-use okshell_common::dynamic_box::generic_widget_controller::{
-    GenericWidgetController,
-    GenericWidgetControllerExtSafe,
-};
-use crate::menus::builder::build_widget;
-use crate::menus::menu_widgets::app_launcher::app_launcher::{AppLauncherInput, AppLauncherModel};
-use crate::menus::menu_widgets::audio_in::audio_in_menu_widget::{AudioInMenuWidgetInput, AudioInMenuWidgetModel};
-use crate::menus::menu_widgets::audio_out::audio_out_menu_widget::{AudioOutMenuWidgetInput, AudioOutMenuWidgetModel};
-use crate::menus::menu_widgets::bluetooth::bluetooth_menu_widget::{BluetoothMenuWidgetInput, BluetoothMenuWidgetModel};
-use crate::menus::menu_widgets::network::network_menu_widget::{NetworkMenuWidgetInput, NetworkMenuWidgetModel};
-use crate::menus::menu_widgets::power_profile::power_profile_menu_widget::{PowerProfileMenuWidgetInput, PowerProfileMenuWidgetModel};
-use crate::menus::menu_widgets::screenshare::screenshare_menu_widget::{ScreenshareMenuWidgetInit, ScreenshareMenuWidgetInput, ScreenshareMenuWidgetModel, ScreenshareMenuWidgetOutput};
 use okshell_utils::clear_box::clear_box;
-use crate::menus::menu_widgets::wallpaper::wallpaper_dropdown_menu_widget::{WallpaperDropdownMenuWidgetInput, WallpaperDropdownMenuWidgetModel};
-use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{WallpaperMenuWidgetInput, WallpaperMenuWidgetModel};
+use reactive_graph::traits::Get;
+use relm4::{
+    Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmWidgetExt,
+    gtk, gtk::prelude::*,
+};
+use std::fmt::Debug;
 
 pub(crate) enum MenuType {
     Clipboard,
@@ -46,10 +63,7 @@ pub(crate) enum MenuInput {
     SetWidget(Vec<MenuWidget>),
     SetMinimumWidth(i32),
     AddHyprlandScreenshareWidget,
-    ForwardHyprlandScreenshareReply(
-        tokio::sync::oneshot::Sender<String>,
-        String,
-    )
+    ForwardHyprlandScreenshareReply(tokio::sync::oneshot::Sender<String>, String),
 }
 
 #[derive(Debug)]
@@ -94,7 +108,6 @@ impl Component for MenuModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let base_config = okshell_config::config_manager::config_manager().config();
 
         let mut effects = EffectScope::new();
@@ -236,11 +249,8 @@ impl Component for MenuModel {
 
         let widgets = view_output!();
 
-        match params.menu_type {
-            MenuType::Wallpaper => {
-                widgets.widget_container.set_margin_all(8);
-            }
-            _ => {}
+        if let MenuType::Wallpaper = params.menu_type {
+            widgets.widget_container.set_margin_all(8);
         }
 
         ComponentParts { model, widgets }
@@ -251,38 +261,85 @@ impl Component for MenuModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             MenuInput::RevealChanged(visible) => {
                 // Let widgets that care know they are being revealed
                 for controller in &self.widget_controllers {
-                    if let Some(controller) = controller.downcast_ref::<Controller<AppLauncherModel>>() {
-                        controller.sender().send(AppLauncherInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<AppLauncherModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(AppLauncherInput::ParentRevealChanged(visible))
+                            .ok();
                     }
-                    if let Some(controller) = controller.downcast_ref::<Controller<NetworkMenuWidgetModel>>() {
-                        controller.sender().send(NetworkMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<NetworkMenuWidgetModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(NetworkMenuWidgetInput::ParentRevealChanged(visible))
+                            .ok();
                     }
-                    if let Some(controller) = controller.downcast_ref::<Controller<BluetoothMenuWidgetModel>>() {
-                        controller.sender().send(BluetoothMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<BluetoothMenuWidgetModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(BluetoothMenuWidgetInput::ParentRevealChanged(visible))
+                            .ok();
                     }
-                    if let Some(controller) = controller.downcast_ref::<Controller<AudioOutMenuWidgetModel>>() {
-                        controller.sender().send(AudioOutMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<AudioOutMenuWidgetModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(AudioOutMenuWidgetInput::ParentRevealChanged(visible))
+                            .ok();
                     }
-                    if let Some(controller) = controller.downcast_ref::<Controller<AudioInMenuWidgetModel>>() {
-                        controller.sender().send(AudioInMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<AudioInMenuWidgetModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(AudioInMenuWidgetInput::ParentRevealChanged(visible))
+                            .ok();
                     }
-                    if let Some(controller) = controller.downcast_ref::<Controller<PowerProfileMenuWidgetModel>>() {
-                        controller.sender().send(PowerProfileMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<PowerProfileMenuWidgetModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(PowerProfileMenuWidgetInput::ParentRevealChanged(visible))
+                            .ok();
                     }
-                    if let Some(controller) = controller.downcast_ref::<Controller<ScreenshareMenuWidgetModel>>() {
-                        controller.sender().send(ScreenshareMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<ScreenshareMenuWidgetModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(ScreenshareMenuWidgetInput::ParentRevealChanged(visible))
+                            .ok();
                     }
-                    if let Some(controller) = controller.downcast_ref::<Controller<WallpaperDropdownMenuWidgetModel>>() {
-                        controller.sender().send(WallpaperDropdownMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<WallpaperDropdownMenuWidgetModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(WallpaperDropdownMenuWidgetInput::ParentRevealChanged(
+                                visible,
+                            ))
+                            .ok();
                     }
-                    if let Some(controller) = controller.downcast_ref::<Controller<WallpaperMenuWidgetModel>>() {
-                        controller.sender().send(WallpaperMenuWidgetInput::ParentRevealChanged(visible)).ok();
+                    if let Some(controller) =
+                        controller.downcast_ref::<Controller<WallpaperMenuWidgetModel>>()
+                    {
+                        controller
+                            .sender()
+                            .send(WallpaperMenuWidgetInput::ParentRevealChanged(visible))
+                            .ok();
                     }
                 }
             }
@@ -290,11 +347,7 @@ impl Component for MenuModel {
                 clear_box(&widgets.widget_container);
                 self.widget_controllers.clear();
                 for item in menu_widgets {
-                    let controller = build_widget(
-                        &item,
-                        gtk::Orientation::Vertical,
-                        &sender,
-                    );
+                    let controller = build_widget(&item, gtk::Orientation::Vertical, &sender);
                     widgets.widget_container.append(&controller.root_widget());
                     self.widget_controllers.push(controller);
                 }
@@ -305,21 +358,23 @@ impl Component for MenuModel {
             MenuInput::AddHyprlandScreenshareWidget => {
                 let controller = Box::new(
                     ScreenshareMenuWidgetModel::builder()
-                        .launch(ScreenshareMenuWidgetInit{})
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { ScreenshareMenuWidgetOutput::CloseMenu => {
-                                MenuOutput::CloseMenu
-                            } }
-                        })
+                        .launch(ScreenshareMenuWidgetInit {})
+                        .forward(sender.output_sender(), |msg| match msg {
+                            ScreenshareMenuWidgetOutput::CloseMenu => MenuOutput::CloseMenu,
+                        }),
                 );
                 widgets.widget_container.append(&controller.root_widget());
                 self.widget_controllers.push(controller);
             }
             MenuInput::ForwardHyprlandScreenshareReply(reply, payload) => {
-                if let Some(first_controller) = self.widget_controllers.first() {
-                    if let Some(controller) = first_controller.downcast_ref::<Controller<ScreenshareMenuWidgetModel>>() {
-                        controller.sender().send(ScreenshareMenuWidgetInput::SetReply(reply, payload)).ok();
-                    }
+                if let Some(first_controller) = self.widget_controllers.first()
+                    && let Some(controller) =
+                        first_controller.downcast_ref::<Controller<ScreenshareMenuWidgetModel>>()
+                {
+                    controller
+                        .sender()
+                        .send(ScreenshareMenuWidgetInput::SetReply(reply, payload))
+                        .ok();
                 }
             }
         }
@@ -329,7 +384,6 @@ impl Component for MenuModel {
 
 impl Debug for MenuModel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("MenuModel")
-            .finish()
+        f.debug_struct("MenuModel").finish()
     }
 }

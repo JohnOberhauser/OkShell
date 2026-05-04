@@ -1,11 +1,7 @@
-use std::sync::Arc;
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::{gdk, RevealerTransitionType};
-use relm4::gtk::prelude::{GtkWindowExt, OrientableExt, WidgetExt};
-use wayle_notification::core::notification::Notification;
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
+};
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
 use okshell_common::notification::{NotificationInit, NotificationModel};
 use okshell_common::scoped_effects::EffectScope;
@@ -14,6 +10,12 @@ use okshell_config::schema::config::{ConfigStoreFields, NotificationsStoreFields
 use okshell_config::schema::position::NotificationPosition;
 use okshell_services::notification_service;
 use okshell_utils::notifications::spawn_notification_popups_watcher;
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::prelude::{GtkWindowExt, OrientableExt, WidgetExt};
+use relm4::gtk::{RevealerTransitionType, gdk};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_notification::core::notification::Notification;
 
 pub struct PopupNotificationsModel {
     dynamic_box_controller: Controller<DynamicBoxModel<Arc<Notification>, u32>>,
@@ -69,7 +71,10 @@ impl Component for PopupNotificationsModel {
     ) -> ComponentParts<Self> {
         let config = config_manager().config();
 
-        let position = config.notifications().notification_position().get_untracked();
+        let position = config
+            .notifications()
+            .notification_position()
+            .get_untracked();
 
         root.init_layer_shell();
         root.set_monitor(Some(&params.monitor));
@@ -78,19 +83,16 @@ impl Component for PopupNotificationsModel {
         root.set_exclusive_zone(0);
         set_position(position, &root);
 
-        spawn_notification_popups_watcher(
-            &sender,
-            ||PopupNotificationsCommandOutput::NotificationsChanged,
-        );
+        spawn_notification_popups_watcher(&sender, || {
+            PopupNotificationsCommandOutput::NotificationsChanged
+        });
 
         let notifications_dynamic_box_factory = DynamicBoxFactory::<Arc<Notification>, u32> {
             id: Box::new(|item| item.id),
             create: Box::new(move |item| {
                 let notification = item.clone();
                 let notification_controller = NotificationModel::builder()
-                    .launch(NotificationInit {
-                        notification,
-                    })
+                    .launch(NotificationInit { notification })
                     .detach();
 
                 Box::new(notification_controller) as Box<dyn GenericWidgetController>
@@ -98,19 +100,20 @@ impl Component for PopupNotificationsModel {
             update: None,
         };
 
-        let notifications_dynamic_box_controller: Controller<DynamicBoxModel<Arc<Notification>, u32>> =
-            DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
-                    factory: notifications_dynamic_box_factory,
-                    orientation: gtk::Orientation::Vertical,
-                    spacing: 10,
-                    transition_type: RevealerTransitionType::SlideDown,
-                    transition_duration_ms: 200,
-                    reverse: false,
-                    retain_entries: false,
-                    allow_drag_and_drop: false,
-                })
-                .detach();
+        let notifications_dynamic_box_controller: Controller<
+            DynamicBoxModel<Arc<Notification>, u32>,
+        > = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory: notifications_dynamic_box_factory,
+                orientation: gtk::Orientation::Vertical,
+                spacing: 10,
+                transition_type: RevealerTransitionType::SlideDown,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: false,
+            })
+            .detach();
 
         let mut effects = EffectScope::new();
 
@@ -136,7 +139,7 @@ impl Component for PopupNotificationsModel {
         _widgets: &mut Self::Widgets,
         message: Self::Input,
         _sender: ComponentSender<Self>,
-        root: &Self::Root
+        root: &Self::Root,
     ) {
         match message {
             PopupNotificationsInput::PositionChanged(pos) => {
@@ -150,12 +153,13 @@ impl Component for PopupNotificationsModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             PopupNotificationsCommandOutput::NotificationsChanged => {
                 let notifications = notification_service().popups.get();
-                self.dynamic_box_controller.emit(DynamicBoxInput::SetItems(notifications));
+                self.dynamic_box_controller
+                    .emit(DynamicBoxInput::SetItems(notifications));
             }
         }
 
@@ -163,10 +167,7 @@ impl Component for PopupNotificationsModel {
     }
 }
 
-fn set_position(
-    position: NotificationPosition,
-    root: &gtk::Window,
-) {
+fn set_position(position: NotificationPosition, root: &gtk::Window) {
     match position {
         NotificationPosition::Left => {
             root.set_anchor(Edge::Top, true);

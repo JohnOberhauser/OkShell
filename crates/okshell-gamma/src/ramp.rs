@@ -40,8 +40,8 @@ pub fn build_ramp(temp_k: u32, gamma: f64, ramp_size: usize) -> Vec<u16> {
     for i in 0..n {
         let v = i as f64 / (n - 1) as f64;
         let curve = v.powf(1.0 / gamma);
-        buf[i]         = (curve * r_mul * 65535.0).round() as u16;
-        buf[n + i]     = (curve * g_mul * 65535.0).round() as u16;
+        buf[i] = (curve * r_mul * 65535.0).round() as u16;
+        buf[n + i] = (curve * g_mul * 65535.0).round() as u16;
         buf[2 * n + i] = (curve * b_mul * 65535.0).round() as u16;
     }
 
@@ -71,7 +71,7 @@ mod tests {
     fn ramp_layout() {
         let ramp = build_ramp(6500, 1.0, 256);
         assert_eq!(ramp.len(), 768);
-        assert_eq!(ramp[0], 0);           // first R entry is black
-        assert!(ramp[255] > 65000);       // last R entry is near-white
+        assert_eq!(ramp[0], 0); // first R entry is black
+        assert!(ramp[255] > 65000); // last R entry is near-white
     }
 }

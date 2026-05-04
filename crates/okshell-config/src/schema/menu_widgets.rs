@@ -1,7 +1,7 @@
+use crate::schema::position::Orientation;
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use crate::schema::position::Orientation;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum MenuWidget {
@@ -99,17 +99,9 @@ impl MenuWidget {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub struct QuickActionsConfig {
-    pub widgets: Vec<QuickActionWidget>
-}
-
-impl Default for QuickActionsConfig {
-    fn default() -> Self {
-        Self {
-            widgets: Vec::new(),
-        }
-    }
+    pub widgets: Vec<QuickActionWidget>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]

@@ -1,5 +1,5 @@
-use okshell_screenshot::OutputTarget;
 use crate::common_widgets::option_list::{OptionItem, OptionsList};
+use okshell_screenshot::OutputTarget;
 
 #[derive(Debug, Clone)]
 pub struct SaveOptionRow {

@@ -1,13 +1,22 @@
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::prelude::WidgetExt;
+use crate::common_widgets::revealer_row::revealer_row::{
+    RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput,
+};
+use crate::common_widgets::revealer_row::revealer_row_label::{
+    RevealerRowLabelInit, RevealerRowLabelModel,
+};
+use crate::menus::menu_widgets::bluetooth::bluetooth_revealed_content::{
+    BluetoothRevealedContentInit, BluetoothRevealedContentInput, BluetoothRevealedContentModel,
+};
 use okshell_services::bluetooth_service;
-use crate::common_widgets::revealer_row::revealer_row::{RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput};
-use crate::common_widgets::revealer_row::revealer_row_label::{RevealerRowLabelInit, RevealerRowLabelModel};
-use crate::menus::menu_widgets::bluetooth::bluetooth_revealed_content::{BluetoothRevealedContentInit, BluetoothRevealedContentInput, BluetoothRevealedContentModel};
-use okshell_utils::bluetooth::{set_bluetooth_icon, set_bluetooth_label, spawn_bluetooth_enabled_watcher};
+use okshell_utils::bluetooth::{
+    set_bluetooth_icon, set_bluetooth_label, spawn_bluetooth_enabled_watcher,
+};
+use relm4::gtk::prelude::WidgetExt;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 
 pub(crate) struct BluetoothMenuWidgetModel {
-    revealer_row: Controller<RevealerRowModel<RevealerRowLabelModel, BluetoothRevealedContentModel>>,
+    revealer_row:
+        Controller<RevealerRowModel<RevealerRowLabelModel, BluetoothRevealedContentModel>>,
 }
 
 #[derive(Debug)]
@@ -39,7 +48,7 @@ impl Component for BluetoothMenuWidgetModel {
         #[root]
         gtk::Box {
             add_css_class: "audio-out-menu-widget",
-            
+
             model.revealer_row.widget().clone() {}
         }
     }
@@ -49,11 +58,9 @@ impl Component for BluetoothMenuWidgetModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        
-        spawn_bluetooth_enabled_watcher(
-            &sender,
-            ||BluetoothMenuWidgetCommandOutput::BluetoothStateChanged,
-        );
+        spawn_bluetooth_enabled_watcher(&sender, || {
+            BluetoothMenuWidgetCommandOutput::BluetoothStateChanged
+        });
 
         let row_content = RevealerRowLabelModel::builder()
             .launch(RevealerRowLabelInit {
@@ -62,33 +69,26 @@ impl Component for BluetoothMenuWidgetModel {
             .detach();
 
         let bluetooth_revealed_content = BluetoothRevealedContentModel::builder()
-            .launch(BluetoothRevealedContentInit{})
+            .launch(BluetoothRevealedContentInit {})
             .detach();
 
-        let revealer_row = RevealerRowModel::<RevealerRowLabelModel, BluetoothRevealedContentModel>::builder()
-            .launch(RevealerRowInit {
-                icon_name: "bluetooth-hardware-disabled-symbolic".into(),
-                action_button_sensitive: false,
-                content: row_content,
-                revealed_content: bluetooth_revealed_content,
-            })
-            .forward(sender.input_sender(), |msg| {
-                match msg {
+        let revealer_row =
+            RevealerRowModel::<RevealerRowLabelModel, BluetoothRevealedContentModel>::builder()
+                .launch(RevealerRowInit {
+                    icon_name: "bluetooth-hardware-disabled-symbolic".into(),
+                    action_button_sensitive: false,
+                    content: row_content,
+                    revealed_content: bluetooth_revealed_content,
+                })
+                .forward(sender.input_sender(), |msg| match msg {
                     RevealerRowOutput::ActionButtonClicked => {
                         BluetoothMenuWidgetInput::ActionButtonClicked
                     }
-                    RevealerRowOutput::Revealed => {
-                        BluetoothMenuWidgetInput::RevealerRowRevealed
-                    }
-                    RevealerRowOutput::Hidden => {
-                        BluetoothMenuWidgetInput::RevealerRowHidden
-                    }
-                }
-            });
-        
-        let model = BluetoothMenuWidgetModel {
-            revealer_row,
-        };
+                    RevealerRowOutput::Revealed => BluetoothMenuWidgetInput::RevealerRowRevealed,
+                    RevealerRowOutput::Hidden => BluetoothMenuWidgetInput::RevealerRowHidden,
+                });
+
+        let model = BluetoothMenuWidgetModel { revealer_row };
 
         let widgets = view_output!();
 
@@ -108,23 +108,27 @@ impl Component for BluetoothMenuWidgetModel {
                 tokio::spawn(async move {
                     let _ = bluetooth.start_discovery().await;
                 });
-                self.revealer_row.model().revealed_content.emit(BluetoothRevealedContentInput::Revealed);
+                self.revealer_row
+                    .model()
+                    .revealed_content
+                    .emit(BluetoothRevealedContentInput::Revealed);
             }
             BluetoothMenuWidgetInput::RevealerRowHidden => {
                 let bluetooth = bluetooth_service();
                 tokio::spawn(async move {
                     let _ = bluetooth.stop_discovery().await;
                 });
-                self.revealer_row.model().revealed_content.emit(BluetoothRevealedContentInput::Hidden);
+                self.revealer_row
+                    .model()
+                    .revealed_content
+                    .emit(BluetoothRevealedContentInput::Hidden);
             }
             BluetoothMenuWidgetInput::ParentRevealChanged(revealed) => {
                 if !revealed {
                     self.revealer_row.emit(RevealerRowInput::SetRevealed(false));
                 }
             }
-            BluetoothMenuWidgetInput::ActionButtonClicked => {
-                
-            }
+            BluetoothMenuWidgetInput::ActionButtonClicked => {}
         }
     }
 

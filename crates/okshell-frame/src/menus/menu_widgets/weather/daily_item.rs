@@ -1,11 +1,11 @@
-use reactive_graph::traits::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
-use wayle_weather::{DailyForecast, TemperatureUnit};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
 use okshell_utils::weather::{get_temperature_string, get_weather_icon_name};
+use reactive_graph::traits::{Get, GetUntracked};
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use wayle_weather::{DailyForecast, TemperatureUnit};
 
 #[derive(Debug, Clone)]
 pub(crate) struct DailyItemModel {
@@ -81,7 +81,6 @@ impl Component for DailyItemModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let base_config = config_manager().config();
 
         let mut effects = EffectScope::new();
@@ -91,12 +90,16 @@ impl Component for DailyItemModel {
         effects.push(move |_| {
             let config = config.clone();
             let temperature_unit = config.general().temperature_unit().get();
-            sender_clone.input(DailyItemInput::UpdateTemperatureUnit(TemperatureUnit::from(temperature_unit)));
+            sender_clone.input(DailyItemInput::UpdateTemperatureUnit(
+                TemperatureUnit::from(temperature_unit),
+            ));
         });
 
         let model = DailyItemModel {
             daily: params.daily,
-            temperature_unit: TemperatureUnit::from(base_config.general().temperature_unit().get_untracked()),
+            temperature_unit: TemperatureUnit::from(
+                base_config.general().temperature_unit().get_untracked(),
+            ),
             _effects: effects,
         };
 

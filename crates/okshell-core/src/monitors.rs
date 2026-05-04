@@ -1,16 +1,11 @@
+use crate::relm_app::{Shell, ShellInput, WindowGroup};
+use okshell_utils::gtk as utils;
+use relm4::gtk::glib::SignalHandlerId;
+use relm4::{gtk::gdk, gtk::prelude::DisplayExt, gtk::prelude::*, prelude::*};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use relm4::{
-    gtk::prelude::*,
-    gtk::prelude::DisplayExt,
-    gtk::gdk,
-    prelude::*,
-};
-use relm4::gtk::glib::SignalHandlerId;
 use tracing::info;
-use okshell_utils::gtk as utils;
-use crate::relm_app::{Shell, ShellInput, WindowGroup};
 
 pub(crate) fn setup_monitor_watcher(sender: &ComponentSender<Shell>) {
     let display = gdk::Display::default().expect("No display");
@@ -55,7 +50,7 @@ pub(crate) fn sync_monitors(
 
     let stale_connectors: Vec<String> = window_groups
         .keys()
-        .filter(|connector| !connectors_in_monitors.contains(&connector))
+        .filter(|connector| !connectors_in_monitors.contains(connector))
         .cloned()
         .collect();
 

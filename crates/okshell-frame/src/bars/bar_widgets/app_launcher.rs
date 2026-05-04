@@ -1,11 +1,6 @@
-use relm4::{
-    gtk,
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-};
 use relm4::gtk::Orientation;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct AppLauncherModel {

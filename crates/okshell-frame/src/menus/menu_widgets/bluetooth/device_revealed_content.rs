@@ -1,11 +1,11 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::Justification;
-use relm4::gtk::prelude::*;
-use relm4::gtk::glib;
-use wayle_bluetooth::core::device::Device;
 use okshell_common::WatcherToken;
 use okshell_utils::bluetooth::spawn_bluetooth_device_watcher;
+use relm4::gtk::Justification;
+use relm4::gtk::glib;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use std::sync::Arc;
+use wayle_bluetooth::core::device::Device;
 
 pub(crate) struct DeviceRevealedContentModel {
     device: Arc<Device>,
@@ -215,17 +215,13 @@ impl Component for DeviceRevealedContentModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut device_watcher_token = WatcherToken::new();
 
         let token = device_watcher_token.reset();
 
-        spawn_bluetooth_device_watcher(
-            &params.device,
-            token,
-            &sender,
-            ||DeviceRevealedContentCommandOutput::DeviceUpdated,
-        );
+        spawn_bluetooth_device_watcher(&params.device, token, &sender, || {
+            DeviceRevealedContentCommandOutput::DeviceUpdated
+        });
 
         let device = params.device.clone();
         let model = DeviceRevealedContentModel {
@@ -343,12 +339,9 @@ impl Component for DeviceRevealedContentModel {
                 let token = self.device_watcher_token.reset();
 
                 if revealed {
-                    spawn_bluetooth_device_watcher(
-                        &self.device,
-                        token,
-                        &sender,
-                        ||DeviceRevealedContentCommandOutput::DeviceUpdated,
-                    );
+                    spawn_bluetooth_device_watcher(&self.device, token, &sender, || {
+                        DeviceRevealedContentCommandOutput::DeviceUpdated
+                    });
                 }
             }
         }
@@ -360,7 +353,7 @@ impl Component for DeviceRevealedContentModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             DeviceRevealedContentCommandOutput::DeviceUpdated => {

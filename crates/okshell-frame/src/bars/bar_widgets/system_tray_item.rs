@@ -1,6 +1,6 @@
-use std::sync::Arc;
-use relm4::{gtk, gtk::gdk, gtk::glib, Component, ComponentParts, ComponentSender, Sender};
 use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentParts, ComponentSender, Sender, gtk, gtk::gdk, gtk::glib};
+use std::sync::Arc;
 use wayle_systray::adapters::gtk4::Adapter;
 use wayle_systray::core::item::TrayItem;
 use wayle_systray::types::item::IconPixmap;
@@ -76,7 +76,7 @@ impl Component for SystemTrayItemModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         _sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             SystemTrayItemInput::Clicked => {
@@ -87,10 +87,8 @@ impl Component for SystemTrayItemModel {
 
                 let model = Adapter::build_model(&self.tray_item);
 
-                let popover = gtk::PopoverMenu::from_model_full(
-                    &model.menu,
-                    gtk::PopoverMenuFlags::NESTED,
-                );
+                let popover =
+                    gtk::PopoverMenu::from_model_full(&model.menu, gtk::PopoverMenuFlags::NESTED);
 
                 popover.insert_action_group("app", Some(&model.actions));
                 popover.set_parent(&widgets.button);
@@ -100,11 +98,7 @@ impl Component for SystemTrayItemModel {
         }
     }
 
-    fn shutdown(
-        &mut self,
-        _widgets: &mut Self::Widgets,
-        _output: Sender<Self::Output>
-    ) {
+    fn shutdown(&mut self, _widgets: &mut Self::Widgets, _output: Sender<Self::Output>) {
         if let Some(popover) = self.popover.take() {
             popover.unparent();
         }
@@ -114,10 +108,7 @@ impl Component for SystemTrayItemModel {
 impl SystemTrayItemModel {
     // Logic comes from wayle shell
     // https://github.com/Jas-SinghFSU/wayle/blob/master/crates/wayle-shell/src/shell/bar/modules/systray/item/mod.rs
-    fn update_icon(
-        &self,
-        image: &gtk::Image,
-    ) {
+    fn update_icon(&self, image: &gtk::Image) {
         if let Some(icon_name) = self.tray_item.icon_name.get() {
             let theme_path = self.tray_item.icon_theme_path.get();
             if let Some(texture) = theme_path
@@ -131,10 +122,9 @@ impl SystemTrayItemModel {
             return;
         }
 
-        if let Some(texture) = Self::select_best_pixmap(
-            &self.tray_item.icon_pixmap.get(),
-            24
-        ).and_then(Self::create_texture_from_pixmap) {
+        if let Some(texture) = Self::select_best_pixmap(&self.tray_item.icon_pixmap.get(), 24)
+            .and_then(Self::create_texture_from_pixmap)
+        {
             image.set_paintable(Some(&texture));
             return;
         }
@@ -142,10 +132,7 @@ impl SystemTrayItemModel {
         image.set_icon_name(Some("application-x-executable-symbolic"));
     }
 
-    fn select_best_pixmap(
-        pixmaps: &[IconPixmap],
-        target_size: i32,
-    ) -> Option<&IconPixmap> {
+    fn select_best_pixmap(pixmaps: &[IconPixmap], target_size: i32) -> Option<&IconPixmap> {
         pixmaps
             .iter()
             .min_by_key(|p| (p.width - target_size).abs() + (p.height - target_size).abs())
@@ -162,8 +149,8 @@ impl SystemTrayItemModel {
             &bytes,
             (pixmap.width * 4) as usize,
         )
-            .upcast::<gdk::Texture>()
-            .into()
+        .upcast::<gdk::Texture>()
+        .into()
     }
 
     fn argb_to_rgba(argb: &[u8]) -> Vec<u8> {

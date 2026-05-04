@@ -1,6 +1,6 @@
-use gtk4_layer_shell::LayerShell;
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use gtk::prelude::*;
+use gtk4_layer_shell::LayerShell;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 pub struct ConfirmationDialogModel {
     message: String,
@@ -114,7 +114,7 @@ impl Component for ConfirmationDialogModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         _sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             ConfirmationDialogInput::Close => {

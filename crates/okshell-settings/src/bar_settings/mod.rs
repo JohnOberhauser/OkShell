@@ -1,4 +1,4 @@
-mod monitor_chip;
+pub mod bar_settings;
 mod bar_widget_factory;
 mod bar_widget_section;
-pub mod bar_settings;
+mod monitor_chip;

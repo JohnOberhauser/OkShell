@@ -1,4 +1,4 @@
-use tracing_subscriber::{EnvFilter};
+use tracing_subscriber::EnvFilter;
 
 pub fn init(app_name: &str) {
     let filter = EnvFilter::try_from_default_env()

@@ -1,3 +1,9 @@
+use crate::dynamic_box::generic_widget_controller::GenericWidgetController;
+use gtk::prelude::*;
+use relm4::gtk::{gdk, glib};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::{
     collections::{HashMap, HashSet},
     fmt::{Debug, Formatter},
@@ -5,15 +11,6 @@ use std::{
     marker::PhantomData,
     time::Duration,
 };
-use std::cell::RefCell;
-use std::rc::Rc;
-use relm4::gtk::{gdk, glib};
-use gtk::prelude::*;
-use relm4::{
-    gtk,
-    Component, ComponentParts, ComponentSender,
-};
-use crate::dynamic_box::generic_widget_controller::GenericWidgetController;
 // ---- DynamicBox -------------------------------------------------------------
 
 /// Entry stored per key: a Revealer inserted into the box, and the child controller.
@@ -173,14 +170,24 @@ where
                 self.finalize_removal(root, key);
             }
             DynamicBoxInput::Reorder { from, to } => {
-                if from == to { return; }
-                let Some(from_idx) = self.order.iter().position(|k| *k == from) else { return };
-                let Some(to_idx_before_remove) = self.order.iter().position(|k| *k == to) else { return };
+                if from == to {
+                    return;
+                }
+                let Some(from_idx) = self.order.iter().position(|k| *k == from) else {
+                    return;
+                };
+                let Some(to_idx_before_remove) = self.order.iter().position(|k| *k == to) else {
+                    return;
+                };
                 let moving_forward = from_idx < to_idx_before_remove;
 
                 self.order.remove(from_idx);
 
-                let to_idx = self.order.iter().position(|k| *k == to).unwrap_or(self.order.len());
+                let to_idx = self
+                    .order
+                    .iter()
+                    .position(|k| *k == to)
+                    .unwrap_or(self.order.len());
                 let insert_idx = if moving_forward { to_idx + 1 } else { to_idx };
                 self.order.insert(insert_idx, from.clone());
 
@@ -341,7 +348,10 @@ where
         let Some(pos) = self.order.iter().position(|k| k == key) else {
             self.exit_anchors.insert(
                 key.clone(),
-                ExitAnchor { prev: None, next: None },
+                ExitAnchor {
+                    prev: None,
+                    next: None,
+                },
             );
             return;
         };
@@ -357,7 +367,8 @@ where
             .find(|k| desired_set.contains(*k))
             .cloned();
 
-        self.exit_anchors.insert(key.clone(), ExitAnchor { prev, next });
+        self.exit_anchors
+            .insert(key.clone(), ExitAnchor { prev, next });
     }
 
     fn rebuild_order(&mut self, desired_keys: &[Key], desired_set: &HashSet<Key>) {
@@ -383,7 +394,10 @@ where
                         if let Some(i) = new_order.iter().position(|k| k == prev) {
                             i + 1
                         } else if let Some(next) = &a.next {
-                            new_order.iter().position(|k| k == next).unwrap_or(new_order.len())
+                            new_order
+                                .iter()
+                                .position(|k| k == next)
+                                .unwrap_or(new_order.len())
                         } else {
                             new_order.len()
                         }
@@ -482,13 +496,13 @@ where
 
         target.connect_drop(move |_target, _value, _x, _y| {
             let from = drag_key.borrow_mut().take();
-            if let Some(from_key) = from {
-                if from_key != to_key {
-                    let _ = tx.send(DynamicBoxInput::Reorder {
-                        from: from_key,
-                        to: to_key.clone(),
-                    });
-                }
+            if let Some(from_key) = from
+                && from_key != to_key
+            {
+                let _ = tx.send(DynamicBoxInput::Reorder {
+                    from: from_key,
+                    to: to_key.clone(),
+                });
             }
             true
         });

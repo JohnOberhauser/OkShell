@@ -1,15 +1,15 @@
+use okshell_common::WatcherToken;
+use okshell_utils::media::spawn_media_player_watcher;
+use relm4::gtk::glib;
+use relm4::gtk::pango;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentParts, ComponentSender, RelmWidgetExt, gtk};
 use std::cell::Cell;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt};
-use relm4::gtk::glib;
-use relm4::gtk::pango;
-use relm4::gtk::prelude::*;
-use okshell_common::WatcherToken;
 use wayle_media::core::player::Player;
 use wayle_media::types::{LoopMode, PlaybackState, ShuffleMode};
-use okshell_utils::media::spawn_media_player_watcher;
 
 #[derive(Clone, Copy)]
 enum ScrollState {
@@ -42,8 +42,8 @@ pub(crate) struct MediaPlayerModel {
 
 #[derive(Debug)]
 pub(crate) enum MediaPlayerInput {
-    ScaleChanged(f64),  // fires continuously while dragging, only updates pending_seek display
-    ScaleClicked(f64),  // fires once on mouse up, triggers actual seek
+    ScaleChanged(f64), // fires continuously while dragging, only updates pending_seek display
+    ScaleClicked(f64), // fires once on mouse up, triggers actual seek
     ShuffleClicked,
     LoopClicked,
     PreviousClicked,
@@ -270,7 +270,6 @@ impl Component for MediaPlayerModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut watcher_token = WatcherToken::new();
 
         let token = watcher_token.reset();
@@ -279,18 +278,23 @@ impl Component for MediaPlayerModel {
             &params.player,
             &sender,
             token,
-            ||MediaPlayerCommandOutput::PlaybackStateChanged,
-            ||MediaPlayerCommandOutput::MetaDataChanged,
-            ||MediaPlayerCommandOutput::LoopModeChanged,
-            ||MediaPlayerCommandOutput::ShuffleModeChanged,
-            ||MediaPlayerCommandOutput::CapabilitiesChanged,
-            |d|MediaPlayerCommandOutput::PositionChanged(d),
+            || MediaPlayerCommandOutput::PlaybackStateChanged,
+            || MediaPlayerCommandOutput::MetaDataChanged,
+            || MediaPlayerCommandOutput::LoopModeChanged,
+            || MediaPlayerCommandOutput::ShuffleModeChanged,
+            || MediaPlayerCommandOutput::CapabilitiesChanged,
+            MediaPlayerCommandOutput::PositionChanged,
         );
 
         let position = params.player.position.get();
         let current_track_time = format_duration(position);
         let track_length = format_duration(
-            params.player.metadata.length.get().unwrap_or(Duration::new(0, 0))
+            params
+                .player
+                .metadata
+                .length
+                .get()
+                .unwrap_or(Duration::new(0, 0)),
         );
 
         let can_shuffle = params.player.can_shuffle.get();
@@ -431,13 +435,12 @@ impl Component for MediaPlayerModel {
         self.update_view(widgets, sender);
     }
 
-
     fn update_cmd_with_view(
         &mut self,
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             MediaPlayerCommandOutput::PlaybackStateChanged => {
@@ -491,7 +494,9 @@ impl Component for MediaPlayerModel {
                     if let Some(scale_signal) = &self.scale_value_changed_signal {
                         if !length.is_zero() {
                             widgets.scale.block_signal(scale_signal);
-                            widgets.scale.set_value(position.as_secs_f64() / length.as_secs_f64());
+                            widgets
+                                .scale
+                                .set_value(position.as_secs_f64() / length.as_secs_f64());
                             widgets.scale.unblock_signal(scale_signal);
                         } else {
                             widgets.scale.set_value(0.0);
@@ -525,7 +530,7 @@ fn setup_scale_seek(
         let value = scale.value();
 
         // Immediately update display so it doesn't jump while dragging
-        let _ = sender.input(MediaPlayerInput::ScaleChanged(value));
+        sender.input(MediaPlayerInput::ScaleChanged(value));
 
         let seek_sender = sender.clone();
         let pending = pending_source.clone();
@@ -533,13 +538,12 @@ fn setup_scale_seek(
         // Only actually seek after dragging stops
         let source_id = glib::timeout_add_local_once(Duration::from_millis(300), move || {
             pending.set(None);
-            let _ = seek_sender.input(MediaPlayerInput::ScaleClicked(value));
+            seek_sender.input(MediaPlayerInput::ScaleClicked(value));
         });
 
         pending_source.set(Some(source_id));
     })
 }
-
 
 fn start_scroll(scrolled_window: &gtk::ScrolledWindow) -> glib::SourceId {
     let state = Rc::new(Cell::new(ScrollState::PauseStart(0)));

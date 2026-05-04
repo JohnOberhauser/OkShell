@@ -1,9 +1,9 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
+use crate::menu_settings::menu_widget_row::{MenuWidgetRowModel, MenuWidgetRowOutput};
+use okshell_config::schema::menu_widgets::MenuWidget;
 use relm4::factory::{DynamicIndex, FactoryVecDeque};
 use relm4::gtk::gio;
 use relm4::gtk::prelude::{ActionMapExt, BoxExt, OrientableExt, WidgetExt};
-use okshell_config::schema::menu_widgets::MenuWidget;
-use crate::menu_settings::menu_widget_row::{MenuWidgetRowModel, MenuWidgetRowOutput};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 pub struct MenuWidgetListInit {
     pub widgets: Vec<MenuWidget>,
@@ -93,7 +93,10 @@ impl Component for MenuWidgetListModel {
 
         Self::build_add_menu(&view_widgets.add_button, &sender);
 
-        ComponentParts { model, widgets: view_widgets }
+        ComponentParts {
+            model,
+            widgets: view_widgets,
+        }
     }
 
     fn update_with_view(
@@ -148,9 +151,7 @@ impl Component for MenuWidgetListModel {
 
 impl MenuWidgetListModel {
     fn emit_changed(&self, sender: &ComponentSender<Self>) {
-        let widgets: Vec<MenuWidget> = self.widgets.iter()
-            .map(|row| row.widget.clone())
-            .collect();
+        let widgets: Vec<MenuWidget> = self.widgets.iter().map(|row| row.widget.clone()).collect();
         let _ = sender.output(MenuWidgetListOutput::Changed(widgets));
     }
 

@@ -12,7 +12,6 @@ use std::sync::OnceLock;
 static CLIPBOARD: OnceLock<ClipboardWatcher> = OnceLock::new();
 
 pub fn clipboard_service() -> &'static ClipboardWatcher {
-    CLIPBOARD.get_or_init(|| {
-        ClipboardWatcher::start(100).expect("Failed to start clipboard watcher")
-    })
+    CLIPBOARD
+        .get_or_init(|| ClipboardWatcher::start(100).expect("Failed to start clipboard watcher"))
 }

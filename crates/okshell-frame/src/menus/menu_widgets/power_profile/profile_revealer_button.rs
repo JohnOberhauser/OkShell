@@ -1,10 +1,12 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller, ComponentController};
-use relm4::gtk::prelude::*;
+use crate::common_widgets::revealer_button::revealer_button_icon_label::{
+    RevealerButtonIconLabelInit, RevealerButtonIconLabelInput, RevealerButtonIconLabelModel,
+};
 use okshell_common::WatcherToken;
-use wayle_power_profiles::types::profile::{Profile};
-use okshell_services::{power_profile_service};
-use crate::common_widgets::revealer_button::revealer_button_icon_label::{RevealerButtonIconLabelInit, RevealerButtonIconLabelInput, RevealerButtonIconLabelModel};
+use okshell_services::power_profile_service;
 use okshell_utils::power_profile::{get_power_profile_label, spawn_active_profile_watcher};
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use wayle_power_profiles::types::profile::Profile;
 
 pub(crate) struct ProfileRevealerButtonModel {
     profile: Profile,
@@ -60,16 +62,13 @@ impl Component for ProfileRevealerButtonModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut watcher_token = WatcherToken::new();
 
         let token = watcher_token.reset();
 
-        spawn_active_profile_watcher(
-            &sender,
-            Some(token),
-            ||ProfileRevealerButtonCommandOutput::ActiveProfileChanged,
-        );
+        spawn_active_profile_watcher(&sender, Some(token), || {
+            ProfileRevealerButtonCommandOutput::ActiveProfileChanged
+        });
 
         let button_content = RevealerButtonIconLabelModel::builder()
             .launch(RevealerButtonIconLabelInit {
@@ -82,7 +81,7 @@ impl Component for ProfileRevealerButtonModel {
         let model = ProfileRevealerButtonModel {
             profile: params.profile,
             content: button_content,
-            watcher_token
+            watcher_token,
         };
 
         let widgets = view_output!();
@@ -102,26 +101,33 @@ impl Component for ProfileRevealerButtonModel {
                 let profile = self.profile.clone();
                 tokio::spawn(async move {
                     let service = power_profile_service();
-                    let _ = service.power_profiles.set_active_profile(profile.profile).await;
+                    let _ = service
+                        .power_profiles
+                        .set_active_profile(profile.profile)
+                        .await;
                 });
             }
             ProfileRevealerButtonInput::ActiveProfileChanged => {
                 let active_profile = power_profile_service().power_profiles.active_profile.get();
 
                 if active_profile.eq(&self.profile.profile) {
-                    self.content.emit(RevealerButtonIconLabelInput::SetPrimaryIconName("check-circle-symbolic".to_string()))
+                    self.content
+                        .emit(RevealerButtonIconLabelInput::SetPrimaryIconName(
+                            "check-circle-symbolic".to_string(),
+                        ))
                 } else {
-                    self.content.emit(RevealerButtonIconLabelInput::SetPrimaryIconName("".to_string()))
+                    self.content
+                        .emit(RevealerButtonIconLabelInput::SetPrimaryIconName(
+                            "".to_string(),
+                        ))
                 }
             }
             ProfileRevealerButtonInput::Revealed => {
                 let token = self.watcher_token.reset();
 
-                spawn_active_profile_watcher(
-                    &sender,
-                    Some(token),
-                    ||ProfileRevealerButtonCommandOutput::ActiveProfileChanged,
-                );
+                spawn_active_profile_watcher(&sender, Some(token), || {
+                    ProfileRevealerButtonCommandOutput::ActiveProfileChanged
+                });
             }
             ProfileRevealerButtonInput::Hidden => {
                 self.watcher_token.reset();
@@ -133,7 +139,7 @@ impl Component for ProfileRevealerButtonModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             ProfileRevealerButtonCommandOutput::ActiveProfileChanged => {

@@ -1,13 +1,15 @@
-use reactive_graph::prelude::Get;
-use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt};
-use relm4::factory::FactoryVecDeque;
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use crate::menus::menu_widgets::theme_picker::theme_card::{
+    ThemeCardInput, ThemeCardModel, ThemeCardOutput,
+};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::Themes;
 use okshell_utils::scroll_extensions::wire_vertical_to_horizontal;
-use crate::menus::menu_widgets::theme_picker::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
+use reactive_graph::prelude::Get;
+use relm4::factory::FactoryVecDeque;
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, RelmWidgetExt, gtk};
 
 #[derive(Debug)]
 pub(crate) struct ThemePickerMenuWidgetModel {
@@ -105,22 +107,21 @@ impl Component for ThemePickerMenuWidgetModel {
         let mut theme_cards = FactoryVecDeque::builder()
             .launch(widgets.flow_box.clone())
             .forward(sender.input_sender(), |msg| match msg {
-                ThemeCardOutput::Selected(theme) => ThemePickerMenuWidgetInput::ThemeSelected(theme),
+                ThemeCardOutput::Selected(theme) => {
+                    ThemePickerMenuWidgetInput::ThemeSelected(theme)
+                }
             });
 
         {
             let mut guard = theme_cards.guard();
             for theme in Themes::all() {
-                guard.push_back(theme.clone());
+                guard.push_back(*theme);
             }
         }
 
         model.theme_cards = Some(theme_cards);
 
-        wire_vertical_to_horizontal(
-            &widgets.scroll_window,
-            64.0,
-        );
+        wire_vertical_to_horizontal(&widgets.scroll_window, 64.0);
 
         ComponentParts { model, widgets }
     }
@@ -135,13 +136,13 @@ impl Component for ThemePickerMenuWidgetModel {
         match message {
             ThemePickerMenuWidgetInput::ThemeSelected(theme) => {
                 config_manager().update_config(|config| {
-                    config.theme.theme = theme.clone();
+                    config.theme.theme = theme;
                 });
 
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {
-                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
                 }
             }
@@ -149,7 +150,7 @@ impl Component for ThemePickerMenuWidgetModel {
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {
-                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
                 }
             }

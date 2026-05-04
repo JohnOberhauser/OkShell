@@ -1,7 +1,7 @@
-use relm4::factory::{DynamicIndex, FactoryComponent};
-use relm4::{gtk, FactorySender};
-use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
 use okshell_config::schema::menu_widgets::QuickActionWidget;
+use relm4::factory::{DynamicIndex, FactoryComponent};
+use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
+use relm4::{FactorySender, gtk};
 
 #[derive(Debug)]
 pub struct QuickActionRowModel {
@@ -36,7 +36,7 @@ impl FactoryComponent for QuickActionRowModel {
                 add_css_class: "label-small",
                 set_label: self.action.display_name(),
             },
-            
+
             gtk::Button {
                 add_css_class: "ok-button-surface",
                 set_icon_name: "menu-up-symbolic",
@@ -63,11 +63,7 @@ impl FactoryComponent for QuickActionRowModel {
         }
     }
 
-    fn init_model(
-        action: Self::Init,
-        _index: &DynamicIndex,
-        _sender: FactorySender<Self>,
-    ) -> Self {
+    fn init_model(action: Self::Init, _index: &DynamicIndex, _sender: FactorySender<Self>) -> Self {
         Self { action }
     }
 }

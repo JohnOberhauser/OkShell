@@ -1,18 +1,20 @@
+use crate::utils::username::current_username;
 use gtk4::glib;
 use gtk4::glib::SourceId;
+use okshell_cache::wallpaper::{
+    WallpaperStateStoreFields, current_wallpaper_image, wallpaper_store,
+};
+use okshell_common::scoped_effects::EffectScope;
+use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
+use okshell_session::session_lock::session_lock;
 use pam::Client;
 use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, once_cell, Component, ComponentParts, ComponentSender};
 use relm4::gtk::gdk;
 use relm4::gtk::prelude::*;
-use time::format_description::parse;
+use relm4::{Component, ComponentParts, ComponentSender, gtk, once_cell};
 use time::OffsetDateTime;
+use time::format_description::parse;
 use tracing::info;
-use okshell_cache::wallpaper::{current_wallpaper_image, wallpaper_store, WallpaperStateStoreFields};
-use okshell_common::scoped_effects::EffectScope;
-use okshell_session::session_lock::session_lock;
-use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
-use crate::utils::username::current_username;
 
 static TIME_FORMAT_24: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
@@ -284,30 +286,28 @@ impl Component for LockScreenModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let base_config = okshell_config::config_manager::config_manager().config();
 
         let sender_clone = sender.clone();
-        let id = glib::timeout_add_local(
-            std::time::Duration::from_secs(1),
-            move || {
-                sender_clone.input(LockScreenInput::UpdateTime);
-                glib::ControlFlow::Continue
-            },
-        );
+        let id = glib::timeout_add_local(std::time::Duration::from_secs(1), move || {
+            sender_clone.input(LockScreenInput::UpdateTime);
+            glib::ControlFlow::Continue
+        });
 
-        let format_24_h = base_config.clone().general().clock_format_24_h().get_untracked();
+        let format_24_h = base_config
+            .clone()
+            .general()
+            .clock_format_24_h()
+            .get_untracked();
 
-        let now = OffsetDateTime::now_local()
-            .unwrap_or_else(|_| OffsetDateTime::now_utc());
+        let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
 
-        let time: String;
-
-        if format_24_h {
-            time = now.format(&TIME_FORMAT_24).unwrap();
+        let time = if format_24_h {
+            now.format(&TIME_FORMAT_24)
         } else {
-            time = now.format(&TIME_FORMAT_12).unwrap();
+            now.format(&TIME_FORMAT_12)
         }
+        .unwrap();
 
         let day = now.format(&DAY_FORMAT).unwrap();
 
@@ -344,7 +344,9 @@ impl Component for LockScreenModel {
 
         EditableExt::set_alignment(&widgets.password_entry, 0.5);
 
-        widgets.use_password_button.set_cursor_from_name(Some("pointer"));
+        widgets
+            .use_password_button
+            .set_cursor_from_name(Some("pointer"));
 
         info!("Lock screen created");
 
@@ -375,7 +377,9 @@ impl Component for LockScreenModel {
                 tokio::task::spawn_blocking(move || {
                     let success = (|| {
                         let mut client = Client::with_password("system-login").ok()?;
-                        client.conversation_mut().set_credentials(username, password);
+                        client
+                            .conversation_mut()
+                            .set_credentials(username, password);
                         client.authenticate().ok()
                     })();
                     if success.is_some() {
@@ -388,8 +392,12 @@ impl Component for LockScreenModel {
             LockScreenInput::PasswordSuccess => {
                 sender.input(LockScreenInput::HideScreen);
                 glib::timeout_add_local_once(
-                    std::time::Duration::from_millis(LOCK_SCREEN_REVEALER_TRANSITION_DURATION as u64),
-                    || { session_lock().unlock(); },
+                    std::time::Duration::from_millis(
+                        LOCK_SCREEN_REVEALER_TRANSITION_DURATION as u64,
+                    ),
+                    || {
+                        session_lock().unlock();
+                    },
                 );
             }
 
@@ -435,16 +443,14 @@ impl Component for LockScreenModel {
                 self.revealed = false
             }
             LockScreenInput::UpdateTime => {
-                let now = OffsetDateTime::now_local()
-                    .unwrap_or_else(|_| OffsetDateTime::now_utc());
+                let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
 
-                let time: String;
-
-                if self.format_24_h {
-                    time = now.format(&TIME_FORMAT_24).unwrap();
+                let time = if self.format_24_h {
+                    now.format(&TIME_FORMAT_24)
                 } else {
-                    time = now.format(&TIME_FORMAT_12).unwrap();
+                    now.format(&TIME_FORMAT_12)
                 }
+                .unwrap();
 
                 let day = now.format(&DAY_FORMAT).unwrap();
 

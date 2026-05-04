@@ -1,16 +1,26 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use wayle_bluetooth::core::device::Device;
+use crate::common_widgets::revealer_button::revealer_button::{
+    RevealerButtonInit, RevealerButtonInput, RevealerButtonModel,
+};
+use crate::common_widgets::revealer_button::revealer_button_icon_label::{
+    RevealerButtonIconLabelInit, RevealerButtonIconLabelInput, RevealerButtonIconLabelModel,
+};
+use crate::menus::menu_widgets::bluetooth::device_revealed_content::{
+    DeviceRevealedContentInit, DeviceRevealedContentModel,
+};
 use okshell_common::WatcherToken;
-use crate::common_widgets::revealer_button::revealer_button::{RevealerButtonInit, RevealerButtonInput, RevealerButtonModel};
-use crate::common_widgets::revealer_button::revealer_button_icon_label::{RevealerButtonIconLabelInit, RevealerButtonIconLabelInput, RevealerButtonIconLabelModel};
-use crate::menus::menu_widgets::bluetooth::device_revealed_content::{DeviceRevealedContentInit, DeviceRevealedContentModel};
 use okshell_utils::battery::get_battery_icon;
-use okshell_utils::bluetooth::{get_bluetooth_device_icon, spawn_bluetooth_device_battery_watcher, spawn_bluetooth_device_watcher};
+use okshell_utils::bluetooth::{
+    get_bluetooth_device_icon, spawn_bluetooth_device_battery_watcher,
+    spawn_bluetooth_device_watcher,
+};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_bluetooth::core::device::Device;
 
 pub(crate) struct DeviceRevealerButtonModel {
     device: Arc<Device>,
-    pub revealer_button_controller: Controller<RevealerButtonModel<RevealerButtonIconLabelModel, DeviceRevealedContentModel>>,
+    pub revealer_button_controller:
+        Controller<RevealerButtonModel<RevealerButtonIconLabelModel, DeviceRevealedContentModel>>,
     battery_watcher_token: WatcherToken,
     device_watcher_token: WatcherToken,
 }
@@ -54,7 +64,6 @@ impl Component for DeviceRevealerButtonModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let device = params.device;
 
         let device_clone = device.clone();
@@ -84,23 +93,17 @@ impl Component for DeviceRevealerButtonModel {
 
         let token = battery_watcher_token.reset();
 
-        spawn_bluetooth_device_battery_watcher(
-            &device,
-            token,
-            &sender,
-            ||DeviceRevealerButtonCommandOutput::BatteryUpdated,
-        );
+        spawn_bluetooth_device_battery_watcher(&device, token, &sender, || {
+            DeviceRevealerButtonCommandOutput::BatteryUpdated
+        });
 
         let mut device_watcher_token = WatcherToken::new();
 
         let token = device_watcher_token.reset();
 
-        spawn_bluetooth_device_watcher(
-            &device,
-            token,
-            &sender,
-            ||DeviceRevealerButtonCommandOutput::DeviceUpdated,
-        );
+        spawn_bluetooth_device_watcher(&device, token, &sender, || {
+            DeviceRevealerButtonCommandOutput::DeviceUpdated
+        });
 
         let model = DeviceRevealerButtonModel {
             device,
@@ -134,34 +137,28 @@ impl Component for DeviceRevealerButtonModel {
                         || DeviceRevealerButtonCommandOutput::BatteryUpdated,
                     );
 
-                    spawn_bluetooth_device_watcher(
-                        &self.device,
-                        device_token,
-                        &sender,
-                        ||DeviceRevealerButtonCommandOutput::DeviceUpdated,
-                    );
+                    spawn_bluetooth_device_watcher(&self.device, device_token, &sender, || {
+                        DeviceRevealerButtonCommandOutput::DeviceUpdated
+                    });
                 } else {
-                    self.revealer_button_controller.emit(RevealerButtonInput::SetRevealed(false))
+                    self.revealer_button_controller
+                        .emit(RevealerButtonInput::SetRevealed(false))
                 }
             }
             DeviceRevealerButtonInput::BatteryUpdated => {
                 if let Some(battery_percent) = self.device.battery_percentage.get() {
-                    self.revealer_button_controller
-                        .model()
-                        .content
-                        .emit(
-                            RevealerButtonIconLabelInput::SetSecondaryIconName(
-                                get_battery_icon(battery_percent as f64).to_string()
-                            )
-                        )
+                    self.revealer_button_controller.model().content.emit(
+                        RevealerButtonIconLabelInput::SetSecondaryIconName(
+                            get_battery_icon(battery_percent as f64).to_string(),
+                        ),
+                    )
                 }
             }
             DeviceRevealerButtonInput::DeviceUpdated => {
                 if !self.device.connected.get() {
-                    self.revealer_button_controller
-                        .model()
-                        .content
-                        .emit(RevealerButtonIconLabelInput::SetSecondaryIconName("".to_string()))
+                    self.revealer_button_controller.model().content.emit(
+                        RevealerButtonIconLabelInput::SetSecondaryIconName("".to_string()),
+                    )
                 }
             }
         }

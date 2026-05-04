@@ -1,16 +1,15 @@
 use std::os::fd::{AsFd, FromRawFd, OwnedFd};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use wayland_client::{
-    delegate_noop,
+    Connection, Dispatch, EventQueue, QueueHandle, delegate_noop,
     protocol::{wl_output, wl_registry},
-    Connection, Dispatch, EventQueue, QueueHandle,
 };
 use wayland_protocols_wlr::gamma_control::v1::client::{
     zwlr_gamma_control_manager_v1, zwlr_gamma_control_v1,
 };
 
-use crate::{ramp::build_ramp, GammaState, TEMP_NEUTRAL};
+use crate::{GammaState, TEMP_NEUTRAL, ramp::build_ramp};
 
 struct Output {
     wl: wl_output::WlOutput,
@@ -25,7 +24,10 @@ struct AppData {
 
 impl AppData {
     fn new() -> Self {
-        Self { manager: None, outputs: Vec::new() }
+        Self {
+            manager: None,
+            outputs: Vec::new(),
+        }
     }
 }
 
@@ -40,20 +42,33 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppData {
         _: &Connection,
         qh: &QueueHandle<Self>,
     ) {
-        let wl_registry::Event::Global { name, interface, version } = event else { return };
+        let wl_registry::Event::Global {
+            name,
+            interface,
+            version,
+        } = event
+        else {
+            return;
+        };
 
         match interface.as_str() {
             "zwlr_gamma_control_manager_v1" => {
-                let mgr = registry.bind::<
-                    zwlr_gamma_control_manager_v1::ZwlrGammaControlManagerV1, _, _,
-                >(name, version.min(1), qh, ());
+                let mgr = registry
+                    .bind::<zwlr_gamma_control_manager_v1::ZwlrGammaControlManagerV1, _, _>(
+                        name,
+                        version.min(1),
+                        qh,
+                        (),
+                    );
                 state.manager = Some(mgr);
             }
             "wl_output" => {
-                let wl = registry.bind::<wl_output::WlOutput, _, _>(
-                    name, version.min(4), qh, (),
-                );
-                state.outputs.push(Output { wl, ctrl: None, ramp_size: 0 });
+                let wl = registry.bind::<wl_output::WlOutput, _, _>(name, version.min(4), qh, ());
+                state.outputs.push(Output {
+                    wl,
+                    ctrl: None,
+                    ramp_size: 0,
+                });
             }
             _ => {}
         }
@@ -70,7 +85,8 @@ impl Dispatch<zwlr_gamma_control_manager_v1::ZwlrGammaControlManagerV1, ()> for 
         _: &(),
         _: &Connection,
         _: &QueueHandle<Self>,
-    ) {}
+    ) {
+    }
 }
 
 // ── Dispatch: per-output gamma control ───────────────────────────────────────
@@ -113,8 +129,7 @@ impl GammaManager {
     /// Returns an error if the compositor does not advertise
     /// `zwlr_gamma_control_manager_v1`
     pub fn connect() -> Result<Self> {
-        let conn = Connection::connect_to_env()
-            .context("failed to connect to Wayland display")?;
+        let conn = Connection::connect_to_env().context("failed to connect to Wayland display")?;
         let mut queue = conn.new_event_queue();
         let qh = queue.handle();
 
@@ -123,7 +138,9 @@ impl GammaManager {
         let mut data = AppData::new();
 
         // Roundtrip 1: discover globals.
-        queue.roundtrip(&mut data).context("Wayland roundtrip 1 failed")?;
+        queue
+            .roundtrip(&mut data)
+            .context("Wayland roundtrip 1 failed")?;
 
         let Some(ref mgr) = data.manager else {
             bail!(
@@ -140,14 +157,24 @@ impl GammaManager {
         }
 
         // Roundtrip 2: collect gamma_size events.
-        queue.roundtrip(&mut data).context("Wayland roundtrip 2 failed")?;
+        queue
+            .roundtrip(&mut data)
+            .context("Wayland roundtrip 2 failed")?;
 
-        Ok(Self { _conn: conn, queue, data })
+        Ok(Self {
+            _conn: conn,
+            queue,
+            data,
+        })
     }
 
     /// Apply `state` to every output.
     pub fn apply(&mut self, state: &GammaState) -> Result<()> {
-        let temp = if state.enabled { state.night_temp } else { TEMP_NEUTRAL };
+        let temp = if state.enabled {
+            state.night_temp
+        } else {
+            TEMP_NEUTRAL
+        };
 
         // Keep all fds alive in this Vec until after the roundtrip.
         // set_gamma() only queues the request; the compositor reads the fd
@@ -159,11 +186,12 @@ impl GammaManager {
                 // gamma_size not yet received — skip; shouldn't happen after connect().
                 continue;
             }
-            let Some(ref ctrl) = output.ctrl else { continue };
+            let Some(ref ctrl) = output.ctrl else {
+                continue;
+            };
 
             let ramp = build_ramp(temp, 1.0, output.ramp_size);
-            let fd = ramp_to_memfd(&ramp)
-                .context("failed to create memfd for gamma ramp")?;
+            let fd = ramp_to_memfd(&ramp).context("failed to create memfd for gamma ramp")?;
             ctrl.set_gamma(fd.as_fd());
             _fds.push(fd);
         }
@@ -181,12 +209,15 @@ impl GammaManager {
         let mut _fds: Vec<OwnedFd> = Vec::new();
 
         for output in &self.data.outputs {
-            if output.ramp_size == 0 { continue; }
-            let Some(ref ctrl) = output.ctrl else { continue };
+            if output.ramp_size == 0 {
+                continue;
+            }
+            let Some(ref ctrl) = output.ctrl else {
+                continue;
+            };
 
             let ramp = build_ramp(temp_k, 1.0, output.ramp_size);
-            let fd = ramp_to_memfd(&ramp)
-                .context("failed to create memfd for gamma ramp")?;
+            let fd = ramp_to_memfd(&ramp).context("failed to create memfd for gamma ramp")?;
             ctrl.set_gamma(fd.as_fd());
             _fds.push(fd);
         }

@@ -1,30 +1,31 @@
-use std::sync::Arc;
-use futures::StreamExt;
-use reactive_graph::traits::*;
-use relm4::{
-    gtk,
-    gtk::prelude::*,
-    Component,
-    ComponentController,
-    ComponentParts,
-    ComponentSender,
-    Controller
-};
-use relm4::gtk::{Orientation, RevealerTransitionType};
-use okshell_common::watch;
-use wayle_hyprland::{Address, Client, HyprlandEvent};
-use okshell_cache::pinned_apps::{pinned_apps_store, PinnedAppsStateStoreFields};
-use okshell_common::scoped_effects::EffectScope;
-use okshell_services::hyprland_service;
 use crate::bars::bar::BarType;
-use crate::bars::bar_widgets::app_launcher::{AppLauncherInit, AppLauncherModel, AppLauncherOutput};
+use crate::bars::bar_widgets::app_launcher::{
+    AppLauncherInit, AppLauncherModel, AppLauncherOutput,
+};
 use crate::bars::bar_widgets::hyprland_dock::HyprlandDockOutput::AppLauncherClicked;
-use crate::bars::bar_widgets::hyprland_dock_item::{HyprlandDockItemInit, HyprlandDockItemInput, HyprlandDockItemModel};
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel, DynamicBoxOutput};
+use crate::bars::bar_widgets::hyprland_dock_item::{
+    HyprlandDockItemInit, HyprlandDockItemInput, HyprlandDockItemModel,
+};
+use futures::StreamExt;
+use okshell_cache::pinned_apps::{PinnedAppsStateStoreFields, pinned_apps_store};
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel, DynamicBoxOutput,
+};
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetControllerExtSafe;
+use okshell_common::scoped_effects::EffectScope;
+use okshell_common::watch;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
+use okshell_services::hyprland_service;
+use reactive_graph::traits::*;
+use relm4::gtk::{Orientation, RevealerTransitionType};
+use relm4::{
+    Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk,
+    gtk::prelude::*,
+};
+use std::sync::Arc;
+use wayle_hyprland::{Address, Client, HyprlandEvent};
 
 #[derive(Clone, Debug)]
 pub struct DockItem {
@@ -117,34 +118,27 @@ impl Component for HyprlandDockModel {
             RevealerTransitionType::SwingUp
         };
 
-        let dynamic: Controller<DynamicBoxModel<DockItem, String>> =
-            DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
-                    factory,
-                    orientation: params.orientation,
-                    spacing: 0,
-                    transition_type,
-                    transition_duration_ms: 200,
-                    reverse: false,
-                    retain_entries: false,
-                    allow_drag_and_drop: true,
-                })
-                .forward(sender.input_sender(), |msg| {
-                    match msg { DynamicBoxOutput::Reordered(keys) => {
-                        HyprlandDockInput::OnReordered(keys)
-                    } }
-                });
+        let dynamic: Controller<DynamicBoxModel<DockItem, String>> = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory,
+                orientation: params.orientation,
+                spacing: 0,
+                transition_type,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: true,
+            })
+            .forward(sender.input_sender(), |msg| match msg {
+                DynamicBoxOutput::Reordered(keys) => HyprlandDockInput::OnReordered(keys),
+            });
 
         let app_launcher_controller = AppLauncherModel::builder()
-            .launch(AppLauncherInit{
+            .launch(AppLauncherInit {
                 orientation: params.orientation,
             })
-            .forward(sender.output_sender(), |msg| {
-                match msg {
-                    AppLauncherOutput::Clicked => {
-                        AppLauncherClicked
-                    }
-                }
+            .forward(sender.output_sender(), |msg| match msg {
+                AppLauncherOutput::Clicked => AppLauncherClicked,
             });
 
         let mut effects = EffectScope::new();
@@ -156,17 +150,44 @@ impl Component for HyprlandDockModel {
             let _ = store.apps().get();
             let hyprland = hyprland_service();
             let clients = hyprland.clients.get();
-            let _ = sender_clone.command_sender().send(HyprlandDockCommandOutput::ClientsChanged(clients));
+            let _ = sender_clone
+                .command_sender()
+                .send(HyprlandDockCommandOutput::ClientsChanged(clients));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let _ = config_manager().config().theme().icons().app_icon_theme().get();
-            let _ = config_manager().config().theme().icons().apply_theme_filter().get();
+            let _ = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .app_icon_theme()
+                .get();
+            let _ = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .apply_theme_filter()
+                .get();
             let _ = config_manager().config().theme().theme().get();
-            let _ = config_manager().config().theme().icons().filter_strength().get();
-            let _ = config_manager().config().theme().icons().monochrome_strength().get();
-            let _ = config_manager().config().theme().icons().contrast_strength().get();
+            let _ = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .filter_strength()
+                .get();
+            let _ = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .monochrome_strength()
+                .get();
+            let _ = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .contrast_strength()
+                .get();
             sender_clone.input(HyprlandDockInput::ThemeChanged);
         });
 
@@ -183,20 +204,43 @@ impl Component for HyprlandDockModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        _sender: ComponentSender<Self>,
-        _root: &Self::Root
-    ) {
+    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>, _root: &Self::Root) {
         match message {
             HyprlandDockInput::ThemeChanged => {
-                let theme = config_manager().config().theme().icons().app_icon_theme().get_untracked();
-                let apply_theme = config_manager().config().theme().icons().apply_theme_filter().get_untracked();
+                let theme = config_manager()
+                    .config()
+                    .theme()
+                    .icons()
+                    .app_icon_theme()
+                    .get_untracked();
+                let apply_theme = config_manager()
+                    .config()
+                    .theme()
+                    .icons()
+                    .apply_theme_filter()
+                    .get_untracked();
                 let color_theme = config_manager().config().theme().theme().get_untracked();
-                let filter_strength = config_manager().config().theme().icons().filter_strength().get_untracked().get();
-                let monochrome_strength = config_manager().config().theme().icons().monochrome_strength().get_untracked().get();
-                let contrast_strength = config_manager().config().theme().icons().contrast_strength().get_untracked().get();
+                let filter_strength = config_manager()
+                    .config()
+                    .theme()
+                    .icons()
+                    .filter_strength()
+                    .get_untracked()
+                    .get();
+                let monochrome_strength = config_manager()
+                    .config()
+                    .theme()
+                    .icons()
+                    .monochrome_strength()
+                    .get_untracked()
+                    .get();
+                let contrast_strength = config_manager()
+                    .config()
+                    .theme()
+                    .icons()
+                    .contrast_strength()
+                    .get_untracked()
+                    .get();
 
                 self.dynamic_box.model().for_each_entry(|_, entry| {
                     if let Some(ctrl) = entry
@@ -206,14 +250,13 @@ impl Component for HyprlandDockModel {
                     {
                         let sender = ctrl.sender().clone();
                         let theme = theme.clone();
-                        let color_theme = color_theme.clone();
 
                         let _ = sender.send(HyprlandDockItemInput::ThemeChanged(
-                            theme, 
-                            color_theme, 
-                            apply_theme, 
-                            filter_strength, 
-                            monochrome_strength, 
+                            theme,
+                            color_theme,
+                            apply_theme,
+                            filter_strength,
+                            monochrome_strength,
                             contrast_strength,
                         ));
                     }
@@ -235,8 +278,14 @@ impl Component for HyprlandDockModel {
                     .filter_map(|class| pinned_map.get(class.as_str()).copied().cloned())
                     .collect();
 
-                if reordered_pinned.iter().map(|a| &a.hyprland_class).collect::<Vec<_>>()
-                    != current_pinned.iter().map(|a| &a.hyprland_class).collect::<Vec<_>>()
+                if reordered_pinned
+                    .iter()
+                    .map(|a| &a.hyprland_class)
+                    .collect::<Vec<_>>()
+                    != current_pinned
+                        .iter()
+                        .map(|a| &a.hyprland_class)
+                        .collect::<Vec<_>>()
                 {
                     store.write().apps = reordered_pinned;
                 }
@@ -257,7 +306,8 @@ impl Component for HyprlandDockModel {
                 let mut sorted_clients = clients.to_vec();
                 sorted_clients.sort_by_key(|c| c.pid.get());
 
-                let mut counts: std::collections::HashMap<String, i16> = std::collections::HashMap::new();
+                let mut counts: std::collections::HashMap<String, i16> =
+                    std::collections::HashMap::new();
                 for client in &sorted_clients {
                     *counts.entry(client.class.get().to_string()).or_insert(0) += 1;
                 }
@@ -308,9 +358,13 @@ impl Component for HyprlandDockModel {
                 // Prune ordered_keys: remove classes that no longer exist in the dock.
                 let current_classes: std::collections::HashSet<&str> =
                     rows.iter().map(|r| r.class.as_str()).collect();
-                self.ordered_keys.retain(|k| current_classes.contains(k.as_str()));
+                self.ordered_keys
+                    .retain(|k| current_classes.contains(k.as_str()));
 
-                self.dynamic_box.sender().send(DynamicBoxInput::SetItems(rows)).unwrap();
+                self.dynamic_box
+                    .sender()
+                    .send(DynamicBoxInput::SetItems(rows))
+                    .unwrap();
 
                 // Update each entry's client count and pinned state.
                 let pinned_classes: std::collections::HashSet<&str> = pinned_apps
@@ -359,9 +413,7 @@ impl Component for HyprlandDockModel {
                                 .sender()
                                 .send(HyprlandDockItemInput::Selected(address.clone()));
                         } else {
-                            let _ = ctrl
-                                .sender()
-                                .send(HyprlandDockItemInput::Unselected);
+                            let _ = ctrl.sender().send(HyprlandDockItemInput::Unselected);
                         }
                     }
                 });
@@ -371,9 +423,7 @@ impl Component for HyprlandDockModel {
 }
 
 impl HyprlandDockModel {
-    fn spawn_main_watcher(
-        sender: &ComponentSender<Self>,
-    ) {
+    fn spawn_main_watcher(sender: &ComponentSender<Self>) {
         let hyprland = hyprland_service();
         let clients = hyprland.clients.clone();
 
@@ -382,9 +432,7 @@ impl HyprlandDockModel {
         })
     }
 
-    fn spawn_active_window_watcher(
-        sender: &ComponentSender<Self>,
-    ) {
+    fn spawn_active_window_watcher(sender: &ComponentSender<Self>) {
         sender.command(move |out, shutdown| {
             async move {
                 let hyprland = hyprland_service();
@@ -397,11 +445,8 @@ impl HyprlandDockModel {
                         () = &mut shutdown_fut => return,
                         event = events.next() => {
                             let Some(event) = event else { continue; };
-                            match event {
-                                HyprlandEvent::ActiveWindowV2 { address } => {
-                                    let _ = out.send(HyprlandDockCommandOutput::ActiveWindowChanged(address));
-                                }
-                                _ => {}
+                            if let HyprlandEvent::ActiveWindowV2 { address } = event {
+                                let _ = out.send(HyprlandDockCommandOutput::ActiveWindowChanged(address));
                             }
                         }
                     }
