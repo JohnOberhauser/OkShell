@@ -40,25 +40,25 @@ repository = "https://github.com/JohnOberhauser/OkShell"
 license = "GPL-3"
 
 [workspace.dependencies]
-anyhow = "1.0.101"
+anyhow = "1.0.102"
 any_spawner = { version = "0.3.0", features = ["glib", "async-executor"] }
-cairo-rs = "0.22.0-alpha.3"
-clap = { version = "4.5.57", features = ["color", "derive"] }
+cairo-rs = "0.22.0"
+clap = { version = "4.6.1", features = ["color", "derive"] }
 dirs = "6.0.0"
 figment = { version = "0.10.19", features = ["yaml"] }
-fontconfig = "0.10.0"
+fontconfig = "0.10.1"
 futures = "0.3.32"
 grass = "0.13.4"
 gtk4 = { version = "0.10.3", features = ["v4_20"] }
 gtk4-layer-shell = "0.7.1"
 gtk4-session-lock = { version = "0.3.0", features = ["v1_2"] }
-image = { version = "0.25.9", features = ["png", "jpeg", "bmp"] }
+image = { version = "0.25.10", features = ["png", "jpeg", "bmp"] }
 libc = "1.0.0-alpha.3"
 lutgen = { version = "0.14.1", default-features = false, features = ["rayon"] }
 memmap2 = "0.9.10"
-nix = {  version = "0.31.2", features = ["signal", "user"] }
+nix = { version = "0.31.2", features = ["signal", "user"] }
 notify = "9.0.0-rc.1"
-notify-rust = "4.12.0"
+notify-rust = "4.16.1"
 okshell-auth = { path = "crates/okshell-auth" }
 okshell-cache = { path = "crates/okshell-cache" }
 okshell-cli-style = { path = "crates/okshell-cli-style" }
@@ -86,28 +86,31 @@ okshell-style = { path = "crates/okshell-style" }
 okshell-utils = { path = "crates/okshell-utils" }
 okshell-wallpaper = { path = "crates/okshell-wallpaper" }
 pam = "0.8.0"
-rayon = "1.11.0"
-reactive_graph = { version = "0.2.12", features = ["effects"] }
-reactive_stores = "0.4.2"
+rayon = "1.12.0"
+reactive_graph = { version = "0.2.14", features = ["effects"] }
+reactive_stores = "0.4.3"
 regex = "1.12.3"
 relm4 = { version = "0.10.1" }
-rodio = { version = "0.22.1", default-features = false, features = ["vorbis", "playback"] }
+rodio = { version = "0.22.2", default-features = false, features = [
+    "vorbis",
+    "playback",
+] }
 rustix = { version = "1.1.4", features = ["shm", "fs"] }
 schemars = "1.2.1"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
-serde_yaml = "0.9.33"
+serde_yaml = "0.9.34"
 thiserror = "2.0.18"
-time = {  version = "0.3.47", features = ["local-offset", "formatting"] }
-tokio = { version = "1.49.0", features = ["full"] }
+time = { version = "0.3.47", features = ["local-offset", "formatting"] }
+tokio = { version = "1.52.2", features = ["full"] }
 tokio-stream = "0.1.18"
 tokio-util = "0.7.18"
 tracing = "0.1.44"
-tracing-appender = "0.2.4"
-tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
-wayland-client = "0.31.12"
-wayland-protocols = { version = "0.32.10", features = ["staging", "client"] }
-wayland-protocols-wlr = { version = "0.3.10", features = ["client"] }
+tracing-appender = "0.2.5"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+wayland-client = "0.31.14"
+wayland-protocols = { version = "0.32.12", features = ["staging", "client"] }
+wayland-protocols-wlr = { version = "0.3.12", features = ["client"] }
 wayle-audio = "0.1.2"
 wayle-battery = "0.1.2"
 wayle-bluetooth = "0.1.2"
@@ -120,4 +123,4 @@ wayle-power-profiles = "0.1.2"
 wayle-sysinfo = "0.1.2"
 wayle-systray = { version = "0.1.2", features = ["adapter-gtk"] }
 wayle-weather = "0.1.2"
-zbus = "5.14.0"
+zbus = "5.15.0"
