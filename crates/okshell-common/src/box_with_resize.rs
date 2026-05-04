@@ -55,6 +55,12 @@ glib::wrapper! {
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
+impl Default for BoxWithResize {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BoxWithResize {
     pub fn new() -> Self {
         glib::Object::new()

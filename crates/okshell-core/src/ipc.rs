@@ -116,27 +116,27 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                     play_audio_volume_change();
                 }
                 IPCCommand::BrightnessUp => {
-                    if let Some(brightness_service) = brightness_service() {
-                        if let Some(primary) = brightness_service.primary.get() {
-                            let current_brightness = primary.percentage().value();
-                            let max_brightness: f64 = 100.0;
-                            let new_brightness = max_brightness.min(current_brightness + 5.0);
-                            let _ = primary
-                                .set_percentage(Percentage::new(new_brightness))
-                                .await;
-                        }
+                    if let Some(brightness_service) = brightness_service()
+                        && let Some(primary) = brightness_service.primary.get()
+                    {
+                        let current_brightness = primary.percentage().value();
+                        let max_brightness: f64 = 100.0;
+                        let new_brightness = max_brightness.min(current_brightness + 5.0);
+                        let _ = primary
+                            .set_percentage(Percentage::new(new_brightness))
+                            .await;
                     }
                 }
                 IPCCommand::BrightnessDown => {
-                    if let Some(brightness_service) = brightness_service() {
-                        if let Some(primary) = brightness_service.primary.get() {
-                            let current_brightness = primary.percentage().value();
-                            let min_brightness: f64 = 0.0;
-                            let new_brightness = min_brightness.max(current_brightness - 5.0);
-                            let _ = primary
-                                .set_percentage(Percentage::new(new_brightness))
-                                .await;
-                        }
+                    if let Some(brightness_service) = brightness_service()
+                        && let Some(primary) = brightness_service.primary.get()
+                    {
+                        let current_brightness = primary.percentage().value();
+                        let min_brightness: f64 = 0.0;
+                        let new_brightness = min_brightness.max(current_brightness - 5.0);
+                        let _ = primary
+                            .set_percentage(Percentage::new(new_brightness))
+                            .await;
                     }
                 }
                 IPCCommand::SetWallpaper(path) => {

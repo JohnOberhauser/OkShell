@@ -717,7 +717,7 @@ impl Component for Frame {
             ) => {
                 sender.input(FrameInput::CloseMenus);
                 self.apply_left_and_right_side_children(
-                    &widgets,
+                    widgets,
                     clock_menu_position,
                     clipboard_menu_position,
                     quick_settings_menu_position,
@@ -939,15 +939,15 @@ impl Frame {
                     self.bottom_left_revealed = true;
                 }
             }
-        } else if in_bottom_right {
-            if let Some(visible) = widgets.bottom_right_stack.visible_child_name() {
-                if visible.as_str() == name {
-                    self.bottom_right_revealed = !bottom_right_revealed;
-                    now_visible = self.bottom_right_revealed;
-                } else {
-                    widgets.bottom_right_stack.set_visible_child_name(name);
-                    self.bottom_right_revealed = true;
-                }
+        } else if in_bottom_right
+            && let Some(visible) = widgets.bottom_right_stack.visible_child_name()
+        {
+            if visible.as_str() == name {
+                self.bottom_right_revealed = !bottom_right_revealed;
+                now_visible = self.bottom_right_revealed;
+            } else {
+                widgets.bottom_right_stack.set_visible_child_name(name);
+                self.bottom_right_revealed = true;
             }
         }
 

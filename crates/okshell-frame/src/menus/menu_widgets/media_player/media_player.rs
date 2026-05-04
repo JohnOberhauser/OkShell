@@ -283,7 +283,7 @@ impl Component for MediaPlayerModel {
             || MediaPlayerCommandOutput::LoopModeChanged,
             || MediaPlayerCommandOutput::ShuffleModeChanged,
             || MediaPlayerCommandOutput::CapabilitiesChanged,
-            |d| MediaPlayerCommandOutput::PositionChanged(d),
+            MediaPlayerCommandOutput::PositionChanged,
         );
 
         let position = params.player.position.get();
@@ -530,7 +530,7 @@ fn setup_scale_seek(
         let value = scale.value();
 
         // Immediately update display so it doesn't jump while dragging
-        let _ = sender.input(MediaPlayerInput::ScaleChanged(value));
+        sender.input(MediaPlayerInput::ScaleChanged(value));
 
         let seek_sender = sender.clone();
         let pending = pending_source.clone();
@@ -538,7 +538,7 @@ fn setup_scale_seek(
         // Only actually seek after dragging stops
         let source_id = glib::timeout_add_local_once(Duration::from_millis(300), move || {
             pending.set(None);
-            let _ = seek_sender.input(MediaPlayerInput::ScaleClicked(value));
+            seek_sender.input(MediaPlayerInput::ScaleClicked(value));
         });
 
         pending_source.set(Some(source_id));

@@ -12,7 +12,7 @@ mod theme_settings;
 mod wallpaper_settings;
 
 thread_local! {
-    static SETTINGS_ROOT: RefCell<Option<relm4::Controller<SettingsWindowModel>>> = RefCell::new(None);
+    static SETTINGS_ROOT: RefCell<Option<relm4::Controller<SettingsWindowModel>>> = const { RefCell::new(None) };
 }
 
 pub fn open_settings() {

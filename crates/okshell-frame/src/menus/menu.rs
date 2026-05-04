@@ -249,11 +249,8 @@ impl Component for MenuModel {
 
         let widgets = view_output!();
 
-        match params.menu_type {
-            MenuType::Wallpaper => {
-                widgets.widget_container.set_margin_all(8);
-            }
-            _ => {}
+        if let MenuType::Wallpaper = params.menu_type {
+            widgets.widget_container.set_margin_all(8);
         }
 
         ComponentParts { model, widgets }
@@ -370,15 +367,14 @@ impl Component for MenuModel {
                 self.widget_controllers.push(controller);
             }
             MenuInput::ForwardHyprlandScreenshareReply(reply, payload) => {
-                if let Some(first_controller) = self.widget_controllers.first() {
-                    if let Some(controller) =
+                if let Some(first_controller) = self.widget_controllers.first()
+                    && let Some(controller) =
                         first_controller.downcast_ref::<Controller<ScreenshareMenuWidgetModel>>()
-                    {
-                        controller
-                            .sender()
-                            .send(ScreenshareMenuWidgetInput::SetReply(reply, payload))
-                            .ok();
-                    }
+                {
+                    controller
+                        .sender()
+                        .send(ScreenshareMenuWidgetInput::SetReply(reply, payload))
+                        .ok();
                 }
             }
         }

@@ -10,12 +10,11 @@ pub(crate) fn find_gdk_monitor(
     output: &OutputInfo,
 ) -> Option<gdk::Monitor> {
     for i in 0..monitors.n_items() {
-        if let Some(obj) = monitors.item(i) {
-            if let Ok(monitor) = obj.downcast::<gdk::Monitor>() {
-                if monitor.connector().as_deref() == Some(&output.name) {
-                    return Some(monitor);
-                }
-            }
+        if let Some(obj) = monitors.item(i)
+            && let Ok(monitor) = obj.downcast::<gdk::Monitor>()
+            && monitor.connector().as_deref() == Some(&output.name)
+        {
+            return Some(monitor);
         }
     }
     None

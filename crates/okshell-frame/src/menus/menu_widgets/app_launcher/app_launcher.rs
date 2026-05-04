@@ -355,10 +355,11 @@ impl Component for AppLauncherModel {
                     widgets.search_entry.set_text("");
                     widgets.search_entry.grab_focus();
                 // if state is change from revealed to hidden
-                } else if !revealed && self.is_revealed {
-                    if let Some(window) = widgets.apps_box.toplevel_window() {
-                        window.set_keyboard_mode(KeyboardMode::None);
-                    }
+                } else if !revealed
+                    && self.is_revealed
+                    && let Some(window) = widgets.apps_box.toplevel_window()
+                {
+                    window.set_keyboard_mode(KeyboardMode::None);
                 }
                 self.is_revealed = revealed;
             }
@@ -481,7 +482,7 @@ impl Component for AppLauncherModel {
                     {
                         let sender = ctrl.sender().clone();
                         let theme = theme.clone();
-                        let color_theme = color_theme.clone();
+                        let color_theme = color_theme;
 
                         let _ = sender.send(AppLauncherItemInput::ThemeChanged(
                             theme,

@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
+#[derive(Default)]
 pub struct Config {
     pub general: General,
     pub theme: Theme,
@@ -23,19 +24,6 @@ pub struct Config {
     pub menus: Menus,
     pub notifications: Notifications,
     pub wallpaper: Wallpaper,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            general: General::default(),
-            theme: Theme::default(),
-            bars: Bars::default(),
-            menus: Menus::default(),
-            notifications: Notifications::default(),
-            wallpaper: Wallpaper::default(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
@@ -125,20 +113,11 @@ impl Default for ThemeAttributes {
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
+#[derive(Default)]
 pub struct Font {
     pub primary: String,
     pub secondary: String,
     pub tertiary: String,
-}
-
-impl Default for Font {
-    fn default() -> Self {
-        Self {
-            primary: String::new(),
-            secondary: String::new(),
-            tertiary: String::new(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]

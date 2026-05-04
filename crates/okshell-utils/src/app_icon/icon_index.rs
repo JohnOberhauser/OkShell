@@ -14,10 +14,10 @@ impl IconIndex {
     pub fn get_or_build(theme_name: &str) -> Arc<IconIndex> {
         {
             let guard = ICON_INDEX.read().unwrap();
-            if let Some((cached_theme, index)) = guard.as_ref() {
-                if cached_theme == theme_name {
-                    return Arc::clone(index);
-                }
+            if let Some((cached_theme, index)) = guard.as_ref()
+                && cached_theme == theme_name
+            {
+                return Arc::clone(index);
             }
         }
 

@@ -499,33 +499,27 @@ impl Component for WallpaperMenuWidgetModel {
                         .unwrap_or(false)
                 };
 
-                if still_current {
-                    if let Some((bytes, width, height, rowstride, has_alpha)) = result {
-                        let format = if has_alpha {
-                            gdk::MemoryFormat::R8g8b8a8
-                        } else {
-                            gdk::MemoryFormat::R8g8b8
-                        };
-                        let texture = gdk::MemoryTexture::new(
-                            width,
-                            height,
-                            format,
-                            &bytes,
-                            rowstride as usize,
-                        );
+                if still_current && let Some((bytes, width, height, rowstride, has_alpha)) = result
+                {
+                    let format = if has_alpha {
+                        gdk::MemoryFormat::R8g8b8a8
+                    } else {
+                        gdk::MemoryFormat::R8g8b8
+                    };
+                    let texture =
+                        gdk::MemoryTexture::new(width, height, format, &bytes, rowstride as usize);
 
-                        cache_insert
-                            .lock()
-                            .unwrap()
-                            .insert(path_str, texture.clone());
+                    cache_insert
+                        .lock()
+                        .unwrap()
+                        .insert(path_str, texture.clone());
 
-                        let paintable = ParallelogramPaintable::new(
-                            params.thumbnail_width,
-                            params.thumbnail_height,
-                        );
-                        paintable.set_texture(Some(texture.upcast_ref::<gdk::Texture>()));
-                        picture.set_paintable(Some(&paintable));
-                    }
+                    let paintable = ParallelogramPaintable::new(
+                        params.thumbnail_width,
+                        params.thumbnail_height,
+                    );
+                    paintable.set_texture(Some(texture.upcast_ref::<gdk::Texture>()));
+                    picture.set_paintable(Some(&paintable));
                 }
             });
         });
@@ -843,12 +837,12 @@ impl Component for WallpaperMenuWidgetModel {
                     .build();
 
                 dialog.select_folder(gtk::Window::NONE, gio::Cancellable::NONE, move |result| {
-                    if let Ok(file) = result {
-                        if let Some(path) = file.path() {
-                            config_manager().update_config(|config| {
-                                config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
-                            });
-                        }
+                    if let Ok(file) = result
+                        && let Some(path) = file.path()
+                    {
+                        config_manager().update_config(|config| {
+                            config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
+                        });
                     }
                 });
             }

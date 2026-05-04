@@ -1,10 +1,6 @@
 use clap::Parser;
 use std::error::Error;
 
-use okshell_cli_style;
-use okshell_core;
-use okshell_logging;
-
 #[derive(Parser)]
 #[command(
     name = "okshell",

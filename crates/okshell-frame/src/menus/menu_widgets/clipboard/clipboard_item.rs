@@ -40,7 +40,7 @@ impl Component for ClipboardItemModel {
                 set_vexpand: false,
                 set_margin_all: 8,
                 connect_clicked[sender] => move |_| {
-                    let _ = sender.input(ClipboardItemInput::DeleteEntry);
+                    sender.input(ClipboardItemInput::DeleteEntry);
                 },
 
                 #[name="image"]
@@ -56,7 +56,7 @@ impl Component for ClipboardItemModel {
             gtk::Button {
                 add_css_class: "clipboard-copy-button",
                 connect_clicked[sender] => move |_| {
-                    let _ = sender.input(ClipboardItemInput::CopyEntry);
+                    sender.input(ClipboardItemInput::CopyEntry);
                 },
 
                 gtk::Box {
@@ -66,7 +66,7 @@ impl Component for ClipboardItemModel {
 
                     gtk::Label {
                         add_css_class: "clipboard-item-title",
-                        set_label: format!("#{}", model.entry.id.to_string()).as_str(),
+                        set_label: format!("#{}", model.entry.id).as_str(),
                         set_hexpand: true,
                         set_halign: gtk::Align::Start,
                     },
@@ -132,7 +132,7 @@ impl Component for ClipboardItemModel {
             }
             EntryPreview::Binary { mime_type, size } => {
                 let label = gtk::Label::builder()
-                    .label(&format!("{mime_type}  ({})", format_size(*size)))
+                    .label(format!("{mime_type}  ({})", format_size(*size)))
                     .halign(gtk::Align::Start)
                     .build();
                 label.add_css_class("label-small-bold");

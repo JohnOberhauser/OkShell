@@ -134,7 +134,7 @@ impl Component for PowerProfileMenuWidgetModel {
                     .content
                     .emit(RevealerRowLabelInput::SetLabel(format!(
                         "Power Profile: {}",
-                        get_power_profile_label(&profile).to_string()
+                        get_power_profile_label(&profile)
                     )))
             }
         }

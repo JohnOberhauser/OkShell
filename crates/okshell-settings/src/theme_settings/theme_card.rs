@@ -157,9 +157,7 @@ impl FactoryComponent for ThemeCardModel {
     ) {
         match message {
             ThemeCardInput::Clicked => {
-                sender
-                    .output(ThemeCardOutput::Selected(self.theme.clone()))
-                    .ok();
+                sender.output(ThemeCardOutput::Selected(self.theme)).ok();
             }
             ThemeCardInput::SelectionChanged(active_theme) => {
                 self.is_selected = self.theme == active_theme;

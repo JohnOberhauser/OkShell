@@ -135,7 +135,7 @@ impl Component for VolumeOsdModel {
                 if self.shown_count > 1 {
                     root.set_visible(true);
                 } else {
-                    self.shown_count = self.shown_count + 1;
+                    self.shown_count += 1;
                 }
             }
             VolumeOsdInput::Hide => {

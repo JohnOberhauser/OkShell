@@ -138,21 +138,21 @@ impl PolkitAgentObject {
 
 fn pick_username(identities: &[(String, HashMap<String, OwnedValue>)]) -> Option<String> {
     for (kind, props) in identities {
-        if kind == "unix-user" {
-            if let Some(uid_val) = props.get("uid") {
-                // uid comes as a variant; try to extract u32
-                let uid: u32 = uid_val.try_into().ok().or_else(|| {
-                    // Fallback: try downcast to u32 directly
-                    TryInto::<u32>::try_into(uid_val).ok()
-                })?;
+        if kind == "unix-user"
+            && let Some(uid_val) = props.get("uid")
+        {
+            // uid comes as a variant; try to extract u32
+            let uid: u32 = uid_val.try_into().ok().or_else(|| {
+                // Fallback: try downcast to u32 directly
+                TryInto::<u32>::try_into(uid_val).ok()
+            })?;
 
-                // Resolve uid → username via nix or libc
-                #[cfg(target_os = "linux")]
-                {
-                    use nix::unistd::{Uid, User};
-                    if let Ok(Some(user)) = User::from_uid(Uid::from_raw(uid)) {
-                        return Some(user.name);
-                    }
+            // Resolve uid → username via nix or libc
+            #[cfg(target_os = "linux")]
+            {
+                use nix::unistd::{Uid, User};
+                if let Ok(Some(user)) = User::from_uid(Uid::from_raw(uid)) {
+                    return Some(user.name);
                 }
             }
         }

@@ -172,10 +172,8 @@ impl Component for Shell {
                                 })
                                 .detach(),
                         );
-                    } else if !should_have_frame {
-                        if let Some(frame) = group.frame.take() {
-                            frame.widget().close();
-                        }
+                    } else if !should_have_frame && let Some(frame) = group.frame.take() {
+                        frame.widget().close();
                     }
                 }
             }
@@ -359,10 +357,10 @@ fn resolve_frame<'a>(
     window_groups: &'a HashMap<String, WindowGroup>,
     monitor_name: &Option<String>,
 ) -> Option<&'a Controller<Frame>> {
-    if let Some(name) = monitor_name {
-        if let Some(frame) = window_groups.get(name).and_then(|g| g.frame.as_ref()) {
-            return Some(frame);
-        }
+    if let Some(name) = monitor_name
+        && let Some(frame) = window_groups.get(name).and_then(|g| g.frame.as_ref())
+    {
+        return Some(frame);
     }
     window_groups.values().find_map(|g| g.frame.as_ref())
 }

@@ -4,10 +4,10 @@ pub fn list_model_to_monitors(model: &gio::ListModel) -> Vec<gdk::Monitor> {
     let mut out = Vec::new();
 
     for i in 0..model.n_items() {
-        if let Some(obj) = model.item(i) {
-            if let Ok(mon) = obj.downcast::<gdk::Monitor>() {
-                out.push(mon);
-            }
+        if let Some(obj) = model.item(i)
+            && let Ok(mon) = obj.downcast::<gdk::Monitor>()
+        {
+            out.push(mon);
         }
     }
 

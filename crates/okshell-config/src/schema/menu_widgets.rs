@@ -99,17 +99,9 @@ impl MenuWidget {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema, Default)]
 pub struct QuickActionsConfig {
     pub widgets: Vec<QuickActionWidget>,
-}
-
-impl Default for QuickActionsConfig {
-    fn default() -> Self {
-        Self {
-            widgets: Vec::new(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]

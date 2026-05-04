@@ -115,7 +115,7 @@ impl Component for ThemePickerMenuWidgetModel {
         {
             let mut guard = theme_cards.guard();
             for theme in Themes::all() {
-                guard.push_back(theme.clone());
+                guard.push_back(*theme);
             }
         }
 
@@ -136,13 +136,13 @@ impl Component for ThemePickerMenuWidgetModel {
         match message {
             ThemePickerMenuWidgetInput::ThemeSelected(theme) => {
                 config_manager().update_config(|config| {
-                    config.theme.theme = theme.clone();
+                    config.theme.theme = theme;
                 });
 
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {
-                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
                 }
             }
@@ -150,7 +150,7 @@ impl Component for ThemePickerMenuWidgetModel {
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {
-                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
                 }
             }

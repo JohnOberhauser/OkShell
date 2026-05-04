@@ -157,10 +157,11 @@ impl Component for ScreenshareMenuWidgetModel {
                         widgets.monitor_button.grab_focus();
                     }
                 // if state is change from revealed to hidden
-                } else if !revealed && self.is_revealed {
-                    if let Some(window) = widgets.root.toplevel_window() {
-                        window.set_keyboard_mode(KeyboardMode::None);
-                    }
+                } else if !revealed
+                    && self.is_revealed
+                    && let Some(window) = widgets.root.toplevel_window()
+                {
+                    window.set_keyboard_mode(KeyboardMode::None);
                 }
                 self.is_revealed = revealed;
             }

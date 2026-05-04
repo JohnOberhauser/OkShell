@@ -20,6 +20,12 @@ impl Drop for OwnedEffect {
 #[derive(Clone, Debug)]
 pub struct EffectScope(Vec<OwnedEffect>);
 
+impl Default for EffectScope {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EffectScope {
     pub fn new() -> Self {
         Self(Vec::new())

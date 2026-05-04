@@ -36,7 +36,7 @@ pub fn set_icon(
     };
 
     let image = image.clone();
-    let color_theme = color_theme.clone();
+    let color_theme = *color_theme;
     let hyprland_class = hyprland_class.clone();
 
     // Also grab the direct file path if it's a FileIcon
@@ -81,11 +81,11 @@ pub fn set_icon(
             })
             .await;
 
-            if let Ok(Some(r)) = result {
-                if let Some(texture) = rgba_to_texture(&r.buf, r.width, r.height) {
-                    image.set_paintable(Some(&texture));
-                    return;
-                }
+            if let Ok(Some(r)) = result
+                && let Some(texture) = rgba_to_texture(&r.buf, r.width, r.height)
+            {
+                image.set_paintable(Some(&texture));
+                return;
             }
         } else {
             let result =
@@ -118,17 +118,17 @@ fn resolve_icon_candidates(icon: &gio::Icon, hyprland_class: &Option<String>) ->
     }
 
     // FileIcon path walk — derive names from parent directories
-    if let Some(file_icon) = icon.downcast_ref::<gio::FileIcon>() {
-        if let Some(path) = file_icon.file().path() {
-            let mut dir = path.as_path();
-            for _ in 0..4 {
-                if let Some(stem) = dir.file_stem().and_then(|s| s.to_str()) {
-                    candidates.push(stem.to_string());
-                }
-                match dir.parent() {
-                    Some(p) => dir = p,
-                    None => break,
-                }
+    if let Some(file_icon) = icon.downcast_ref::<gio::FileIcon>()
+        && let Some(path) = file_icon.file().path()
+    {
+        let mut dir = path.as_path();
+        for _ in 0..4 {
+            if let Some(stem) = dir.file_stem().and_then(|s| s.to_str()) {
+                candidates.push(stem.to_string());
+            }
+            match dir.parent() {
+                Some(p) => dir = p,
+                None => break,
             }
         }
     }

@@ -308,35 +308,35 @@ impl Component for HyprlandDockItemModel {
                 // Launch the app if it's not already running
                 if matching.is_empty() {
                     if let Some(app) = &self.app_info {
-                        launch_detached(&app);
+                        launch_detached(app);
                     }
                     return;
                 }
 
                 // If the app is already focused, select the next client if there is one
-                if self.is_selected {
-                    if let Some(last_selected_address) = &self.last_selected_address {
-                        let current_idx = matching
-                            .iter()
-                            .position(|c| c.address.get() == *last_selected_address);
-                        if let Some(idx) = current_idx {
-                            let next_idx = (idx + 1) % matching.len();
-                            let client_to_focus = matching[next_idx];
-                            let client_workspace = client_to_focus.workspace.get();
-                            let client_address = client_to_focus.address.get();
+                if self.is_selected
+                    && let Some(last_selected_address) = &self.last_selected_address
+                {
+                    let current_idx = matching
+                        .iter()
+                        .position(|c| c.address.get() == *last_selected_address);
+                    if let Some(idx) = current_idx {
+                        let next_idx = (idx + 1) % matching.len();
+                        let client_to_focus = matching[next_idx];
+                        let client_workspace = client_to_focus.workspace.get();
+                        let client_address = client_to_focus.address.get();
 
-                            tokio::spawn(async move {
-                                let command = format!("workspace {}", client_workspace.id);
-                                if let Err(e) = hyprland.dispatch(&command).await {
-                                    error!(error = %e, workspace = client_workspace.id, "Failed to switch workspace");
-                                }
-                                let command = format!("focuswindow address:0x{}", client_address);
-                                if let Err(e) = hyprland.dispatch(&command).await {
-                                    error!(error = %e, "Failed to focus client");
-                                }
-                            });
-                            return;
-                        }
+                        tokio::spawn(async move {
+                            let command = format!("workspace {}", client_workspace.id);
+                            if let Err(e) = hyprland.dispatch(&command).await {
+                                error!(error = %e, workspace = client_workspace.id, "Failed to switch workspace");
+                            }
+                            let command = format!("focuswindow address:0x{}", client_address);
+                            if let Err(e) = hyprland.dispatch(&command).await {
+                                error!(error = %e, "Failed to focus client");
+                            }
+                        });
+                        return;
                     }
                 }
 
@@ -591,7 +591,7 @@ fn add_app_actions_to_menu(
     for (index, action_id) in actions.iter().enumerate() {
         let action_name = format!("action{}", index);
         let action = gio::SimpleAction::new(&action_name, None);
-        let label = app.action_name(&action_id).to_string();
+        let label = app.action_name(action_id).to_string();
 
         let app = app.clone();
         let action_id = action_id.clone();

@@ -132,9 +132,8 @@ impl Component for ClipboardModel {
         let factory = DynamicBoxFactory::<ClipboardEntry, u64> {
             id: Box::new(|item| item.id),
             create: Box::new(move |item| {
-                let controller: Controller<ClipboardItemModel> = ClipboardItemModel::builder()
-                    .launch(item.clone().into())
-                    .detach();
+                let controller: Controller<ClipboardItemModel> =
+                    ClipboardItemModel::builder().launch(item.clone()).detach();
                 Box::new(controller) as Box<dyn GenericWidgetController>
             }),
             update: None,

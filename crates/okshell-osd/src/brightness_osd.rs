@@ -136,7 +136,7 @@ impl Component for BrightnessOsdModel {
                 if self.shown_count > 1 {
                     root.set_visible(true);
                 } else {
-                    self.shown_count = self.shown_count + 1;
+                    self.shown_count += 1;
                 }
             }
             BrightnessOsdInput::Hide => {
