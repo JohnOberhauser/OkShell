@@ -90,9 +90,8 @@ impl Component for SystemTrayModel {
         let factory = DynamicBoxFactory::<Arc<TrayItem>, String> {
             id: Box::new(|item| item.id.get()),
             create: Box::new(move |item| {
-                let controller: Controller<SystemTrayItemModel> = SystemTrayItemModel::builder()
-                    .launch(item.clone().into())
-                    .detach();
+                let controller: Controller<SystemTrayItemModel> =
+                    SystemTrayItemModel::builder().launch(item.clone()).detach();
                 Box::new(controller) as Box<dyn GenericWidgetController>
             }),
             update: None,
@@ -157,7 +156,7 @@ impl Component for SystemTrayModel {
     ) {
         match message {
             SystemTrayCommandOutput::ItemsChanged(items) => {
-                widgets.root.set_visible(items.len() > 0);
+                widgets.root.set_visible(!items.is_empty());
                 self.dynamic_box
                     .sender()
                     .send(DynamicBoxInput::SetItems(items))

@@ -496,13 +496,13 @@ where
 
         target.connect_drop(move |_target, _value, _x, _y| {
             let from = drag_key.borrow_mut().take();
-            if let Some(from_key) = from {
-                if from_key != to_key {
-                    let _ = tx.send(DynamicBoxInput::Reorder {
-                        from: from_key,
-                        to: to_key.clone(),
-                    });
-                }
+            if let Some(from_key) = from
+                && from_key != to_key
+            {
+                let _ = tx.send(DynamicBoxInput::Reorder {
+                    from: from_key,
+                    to: to_key.clone(),
+                });
             }
             true
         });

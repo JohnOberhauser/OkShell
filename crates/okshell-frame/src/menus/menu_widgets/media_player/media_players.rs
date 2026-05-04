@@ -141,30 +141,28 @@ impl Component for MediaPlayersModel {
                 let service = media_service();
                 let players = service.player_list.get();
                 let active = service.active_player.get();
-                if let Some(active) = active {
-                    if let Some(idx) = players.iter().position(|p| p.id == active.id) {
-                        if idx > 0 {
-                            let prev_id = players[idx - 1].id.clone();
-                            tokio::spawn(async move {
-                                let _ = service.set_active_player(Some(prev_id)).await;
-                            });
-                        }
-                    }
+                if let Some(active) = active
+                    && let Some(idx) = players.iter().position(|p| p.id == active.id)
+                    && idx > 0
+                {
+                    let prev_id = players[idx - 1].id.clone();
+                    tokio::spawn(async move {
+                        let _ = service.set_active_player(Some(prev_id)).await;
+                    });
                 }
             }
             MediaPlayersInput::NextClicked => {
                 let service = media_service();
                 let players = service.player_list.get();
                 let active = service.active_player.get();
-                if let Some(active) = active {
-                    if let Some(idx) = players.iter().position(|p| p.id == active.id) {
-                        if idx + 1 < players.len() {
-                            let next_id = players[idx + 1].id.clone();
-                            tokio::spawn(async move {
-                                let _ = service.set_active_player(Some(next_id)).await;
-                            });
-                        }
-                    }
+                if let Some(active) = active
+                    && let Some(idx) = players.iter().position(|p| p.id == active.id)
+                    && idx + 1 < players.len()
+                {
+                    let next_id = players[idx + 1].id.clone();
+                    tokio::spawn(async move {
+                        let _ = service.set_active_player(Some(next_id)).await;
+                    });
                 }
             }
             MediaPlayersInput::UpdateState => {

@@ -20,7 +20,7 @@ pub struct UserStyleManager {
 static STYLE_MANAGER: OnceLock<UserStyleManager> = OnceLock::new();
 
 pub fn style_manager() -> &'static UserStyleManager {
-    STYLE_MANAGER.get_or_init(|| UserStyleManager::new())
+    STYLE_MANAGER.get_or_init(UserStyleManager::new)
 }
 
 impl UserStyleManager {

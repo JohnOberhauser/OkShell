@@ -66,12 +66,12 @@ fn classify(def: &serde_json::Value) -> Kind {
 
 fn get_type(node: &serde_json::Value, defs: &serde_json::Map<String, serde_json::Value>) -> String {
     if let Some(r) = node["$ref"].as_str() {
-        let name = r.split('/').last().unwrap_or("?");
-        if let Some(def) = defs.get(name) {
-            if matches!(classify(def), Kind::Scalar) {
-                // Unwrap to the primitive
-                return def["type"].as_str().unwrap_or(name).to_string();
-            }
+        let name = r.split('/').next_back().unwrap_or("?");
+        if let Some(def) = defs.get(name)
+            && matches!(classify(def), Kind::Scalar)
+        {
+            // Unwrap to the primitive
+            return def["type"].as_str().unwrap_or(name).to_string();
         }
         return name.to_string();
     }

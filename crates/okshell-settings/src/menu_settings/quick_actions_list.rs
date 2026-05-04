@@ -165,7 +165,7 @@ impl QuickActionListModel {
         let action_group = gio::SimpleActionGroup::new();
 
         for action in QuickActionWidget::all() {
-            if selected.contains(&&action) {
+            if selected.contains(&action) {
                 continue;
             }
 

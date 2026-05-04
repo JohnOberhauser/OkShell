@@ -98,10 +98,8 @@ impl Component for SoundAlertsModel {
                         glib::ControlFlow::Continue
                     });
                     self.battery_sound_tick_source = Some(id);
-                } else if !discharging_low {
-                    if let Some(id) = self.battery_sound_tick_source.take() {
-                        id.remove();
-                    }
+                } else if !discharging_low && let Some(id) = self.battery_sound_tick_source.take() {
+                    id.remove();
                 }
             }
             SoundAlertsCommandOutput::BatteryTypeChanged => {

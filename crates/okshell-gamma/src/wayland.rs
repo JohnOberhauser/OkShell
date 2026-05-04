@@ -241,7 +241,7 @@ impl GammaManager {
 /// a plain write_all does not, which is why the previous memfd approach
 /// produced a size mismatch error.
 fn ramp_to_memfd(ramp: &[u16]) -> Result<OwnedFd> {
-    let byte_len = ramp.len() * std::mem::size_of::<u16>();
+    let byte_len = std::mem::size_of_val(ramp);
 
     // mkstemp + immediate unlink: anonymous temp file, cleaned up on close.
     let raw_fd = unsafe {

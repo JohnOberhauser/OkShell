@@ -93,7 +93,7 @@ impl Component for ScreenRecordMenuWidgetModel {
                     #[template]
                     BigButton {
                         #[watch]
-                        set_sensitive: !model.recording_handle.is_some(),
+                        set_sensitive: model.recording_handle.is_none(),
                         connect_clicked[sender] => move |_| {
                             sender.input(ScreenRecordMenuWidgetInput::AllClicked);
                         },
@@ -111,7 +111,7 @@ impl Component for ScreenRecordMenuWidgetModel {
                     #[template]
                     BigButton {
                         #[watch]
-                        set_sensitive: !model.recording_handle.is_some(),
+                        set_sensitive: model.recording_handle.is_none(),
                         connect_clicked[sender] => move |_| {
                             sender.input(ScreenRecordMenuWidgetInput::MonitorClicked);
                         },
@@ -134,7 +134,7 @@ impl Component for ScreenRecordMenuWidgetModel {
                     #[template]
                     BigButton {
                         #[watch]
-                        set_sensitive: !model.recording_handle.is_some(),
+                        set_sensitive: model.recording_handle.is_none(),
                         connect_clicked[sender] => move |_| {
                             sender.input(ScreenRecordMenuWidgetInput::WindowClicked);
                         },
@@ -152,7 +152,7 @@ impl Component for ScreenRecordMenuWidgetModel {
                     #[template]
                     BigButton {
                         #[watch]
-                        set_sensitive: !model.recording_handle.is_some(),
+                        set_sensitive: model.recording_handle.is_none(),
                         connect_clicked[sender] => move |_| {
                             sender.input(ScreenRecordMenuWidgetInput::AreaClicked);
                         },
@@ -360,7 +360,7 @@ impl ScreenRecordMenuWidgetModel {
             .selected_audio_option
             .value
             .as_ref()
-            .and_then(|v| Some(v.name.get()));
+            .map(|v| v.name.get());
         let sender_clone = sender.clone();
         okshell_screenshot::record_screen(
             ScreenRecordRequest { area, audio },

@@ -384,10 +384,10 @@ impl Dispatch<ExtDataControlOfferV1, ()> for WatcherState {
         _conn: &Connection,
         _qh: &QueueHandle<Self>,
     ) {
-        if let ext_data_control_offer_v1::Event::Offer { mime_type } = event {
-            if let Some(pending) = &mut state.pending_offer {
-                pending.mime_types.push(mime_type);
-            }
+        if let ext_data_control_offer_v1::Event::Offer { mime_type } = event
+            && let Some(pending) = &mut state.pending_offer
+        {
+            pending.mime_types.push(mime_type);
         }
     }
 }
@@ -481,8 +481,7 @@ fn read_offer_data(
     // Flush the connection so the compositor sees the receive request
     // and forwards it to the source app. Without this, the read below
     // will block forever waiting for data that was never requested.
-    conn.flush()
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    conn.flush().map_err(|e| std::io::Error::other(e))?;
 
     // Close the write end so we get EOF when the source is done.
     drop(write_fd);

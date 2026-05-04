@@ -50,7 +50,7 @@ pub(crate) fn sync_monitors(
 
     let stale_connectors: Vec<String> = window_groups
         .keys()
-        .filter(|connector| !connectors_in_monitors.contains(&connector))
+        .filter(|connector| !connectors_in_monitors.contains(connector))
         .cloned()
         .collect();
 

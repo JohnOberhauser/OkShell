@@ -295,12 +295,12 @@ impl Component for WallpaperSettingsModel {
                     .build();
 
                 dialog.select_folder(gtk::Window::NONE, gio::Cancellable::NONE, move |result| {
-                    if let Ok(file) = result {
-                        if let Some(path) = file.path() {
-                            config_manager().update_config(|config| {
-                                config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
-                            });
-                        }
+                    if let Ok(file) = result
+                        && let Some(path) = file.path()
+                    {
+                        config_manager().update_config(|config| {
+                            config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
+                        });
                     }
                 });
             }

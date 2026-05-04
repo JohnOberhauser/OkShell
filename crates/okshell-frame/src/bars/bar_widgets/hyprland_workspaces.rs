@@ -87,14 +87,14 @@ impl Component for HyprlandWorkspacesModel {
 
         let factory = DynamicBoxFactory::<WsRow, WsRowKey> {
             id: Box::new(|item| match item {
-                WsRow::Divider(monitor_id) => WsRowKey::Divider(monitor_id.clone()),
+                WsRow::Divider(monitor_id) => WsRowKey::Divider(*monitor_id),
                 WsRow::Workspace(workspace) => WsRowKey::Workspace(workspace.id.get()),
             }),
             create: Box::new(move |item| match item {
                 WsRow::Workspace(workspace) => {
                     let controller: Controller<HyprlandWorkspaceModel> =
                         HyprlandWorkspaceModel::builder()
-                            .launch(workspace.clone().into())
+                            .launch(workspace.clone())
                             .detach();
                     Box::new(controller) as Box<dyn GenericWidgetController>
                 }

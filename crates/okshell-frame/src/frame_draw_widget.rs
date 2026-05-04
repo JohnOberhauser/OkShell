@@ -70,12 +70,12 @@ fn collect_css_vars(css: &str) -> HashMap<String, String> {
     let mut vars = HashMap::new();
     for line in css.lines() {
         let trimmed = line.trim();
-        if let Some(rest) = trimmed.strip_prefix("--") {
-            if let Some((name, value)) = rest.split_once(':') {
-                let name = format!("--{}", name.trim());
-                let value = value.trim().trim_end_matches(';').trim().to_string();
-                vars.insert(name, value);
-            }
+        if let Some(rest) = trimmed.strip_prefix("--")
+            && let Some((name, value)) = rest.split_once(':')
+        {
+            let name = format!("--{}", name.trim());
+            let value = value.trim().trim_end_matches(';').trim().to_string();
+            vars.insert(name, value);
         }
     }
     vars

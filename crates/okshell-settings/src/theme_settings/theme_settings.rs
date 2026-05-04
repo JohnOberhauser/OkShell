@@ -1281,7 +1281,7 @@ impl Component for ThemeSettingsModel {
         {
             let mut guard = theme_cards.guard();
             for theme in Themes::all() {
-                guard.push_back(theme.clone());
+                guard.push_back(*theme);
             }
         }
 
@@ -1365,13 +1365,13 @@ impl Component for ThemeSettingsModel {
             }
             ThemeSettingsInput::ThemeSelected(theme) => {
                 config_manager().update_config(|config| {
-                    config.theme.theme = theme.clone();
+                    config.theme.theme = theme;
                 });
 
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {
-                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
                 }
             }
@@ -1455,7 +1455,7 @@ impl Component for ThemeSettingsModel {
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {
-                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
                 }
             }
@@ -1494,10 +1494,10 @@ fn available_shell_icon_themes() -> Vec<String> {
         };
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.join("index.theme").exists() {
-                if let Some(name) = entry.file_name().to_str() {
-                    themes.insert(name.to_string());
-                }
+            if path.join("index.theme").exists()
+                && let Some(name) = entry.file_name().to_str()
+            {
+                themes.insert(name.to_string());
             }
         }
     }
@@ -1525,10 +1525,10 @@ fn available_app_icon_themes() -> Vec<String> {
         };
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.join("index.theme").exists() {
-                if let Some(name) = entry.file_name().to_str() {
-                    themes.insert(name.to_string());
-                }
+            if path.join("index.theme").exists()
+                && let Some(name) = entry.file_name().to_str()
+            {
+                themes.insert(name.to_string());
             }
         }
     }

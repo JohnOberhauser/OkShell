@@ -40,10 +40,10 @@ pub fn find_app_info(class: &str) -> Option<DesktopAppInfo> {
         }
 
         // 3. Match against StartupWMClass
-        if let Some(wm_class) = desktop.string("StartupWMClass") {
-            if wm_class.eq_ignore_ascii_case(class) {
-                return Some(desktop.clone());
-            }
+        if let Some(wm_class) = desktop.string("StartupWMClass")
+            && wm_class.eq_ignore_ascii_case(class)
+        {
+            return Some(desktop.clone());
         }
 
         // 4. Exact name match

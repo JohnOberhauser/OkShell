@@ -15,10 +15,9 @@ fn extract_hex_color(s: &str) -> Option<String> {
             let hex = token.trim_matches(|c: char| !c.is_ascii_hexdigit() && c != '#');
 
             // accept #RRGGBB or #RRGGBBAA
-            if hex.len() == 7 || hex.len() == 9 {
-                if hex[1..].chars().all(|c| c.is_ascii_hexdigit()) {
-                    return Some(hex.to_string());
-                }
+            if (hex.len() == 7 || hex.len() == 9) && hex[1..].chars().all(|c| c.is_ascii_hexdigit())
+            {
+                return Some(hex.to_string());
             }
         }
     }

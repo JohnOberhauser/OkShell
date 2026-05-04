@@ -250,7 +250,7 @@ impl Component for HyprlandDockModel {
                     {
                         let sender = ctrl.sender().clone();
                         let theme = theme.clone();
-                        let color_theme = color_theme.clone();
+                        let color_theme = color_theme;
 
                         let _ = sender.send(HyprlandDockItemInput::ThemeChanged(
                             theme,
@@ -446,11 +446,8 @@ impl HyprlandDockModel {
                         () = &mut shutdown_fut => return,
                         event = events.next() => {
                             let Some(event) = event else { continue; };
-                            match event {
-                                HyprlandEvent::ActiveWindowV2 { address } => {
-                                    let _ = out.send(HyprlandDockCommandOutput::ActiveWindowChanged(address));
-                                }
-                                _ => {}
+                            if let HyprlandEvent::ActiveWindowV2 { address } = event {
+                                let _ = out.send(HyprlandDockCommandOutput::ActiveWindowChanged(address));
                             }
                         }
                     }

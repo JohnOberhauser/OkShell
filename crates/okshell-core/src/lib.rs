@@ -16,7 +16,6 @@ use std::cell::Cell;
 use std::error::Error;
 use std::sync::OnceLock;
 use tokio::runtime::Runtime;
-use tracing;
 use tracing::info;
 use wayle_weather::{LocationQuery, TemperatureUnit};
 

@@ -41,11 +41,11 @@ fn write_cached_state(enabled: bool) {
         warn!("cannot determine cache path for idle inhibitor state");
         return;
     };
-    if let Some(parent) = path.parent() {
-        if let Err(e) = std::fs::create_dir_all(parent) {
-            warn!("failed to create cache dir {}: {}", parent.display(), e);
-            return;
-        }
+    if let Some(parent) = path.parent()
+        && let Err(e) = std::fs::create_dir_all(parent)
+    {
+        warn!("failed to create cache dir {}: {}", parent.display(), e);
+        return;
     }
     let contents = if enabled { "1" } else { "0" };
     if let Err(e) = std::fs::write(&path, contents) {

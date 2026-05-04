@@ -89,16 +89,15 @@ pub(crate) fn is_relevant_style_event(event: &Event, active_style_path: &PathBuf
 
     event.paths.iter().any(|path| {
         // ignore editor temp files
-        if let Some(name) = path.file_name().and_then(|s| s.to_str()) {
-            if name.ends_with("~")
+        if let Some(name) = path.file_name().and_then(|s| s.to_str())
+            && (name.ends_with("~")
                 || name.ends_with(".swp")
                 || name.ends_with(".swx")
                 || name.ends_with(".tmp")
                 || name.starts_with(".#")
-                || name.starts_with('#')
-            {
-                return false;
-            }
+                || name.starts_with('#'))
+        {
+            return false;
         }
 
         if path == active_style_path {

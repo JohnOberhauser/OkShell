@@ -23,7 +23,7 @@ pub struct ConfigManager {
 static CONFIG_MANAGER: OnceLock<ConfigManager> = OnceLock::new();
 
 pub fn config_manager() -> &'static ConfigManager {
-    CONFIG_MANAGER.get_or_init(|| ConfigManager::new())
+    CONFIG_MANAGER.get_or_init(ConfigManager::new)
 }
 
 impl ConfigManager {
