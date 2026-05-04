@@ -60,6 +60,7 @@ pub(crate) struct BarModel {
     min_width: i32,
     css_class: String,
     revealed: bool,
+    hovered: bool,
     _effects: EffectScope,
 }
 
@@ -72,6 +73,7 @@ pub(crate) enum BarInput {
     SetMinHeight(i32),
     SetRevealed(bool),
     ToggleRevealed,
+    SetHovered(bool),
 }
 
 #[derive(Debug)]
@@ -99,41 +101,54 @@ impl Component for BarModel {
 
     view! {
         #[root]
-        gtk::Revealer {
-            #[watch]
-            set_reveal_child: model.revealed,
-            set_transition_type: transition_type,
-
-            gtk::CenterBox {
-                set_css_classes: &["bar", model.css_class.as_str()],
-                #[watch]
-                set_hexpand: model.h_expand,
-                set_vexpand: model.v_expand,
-                set_orientation: model.orientation,
-                #[watch]
-                set_width_request: model.min_width,
-                #[watch]
-                set_height_request: model.min_height,
-
-                #[wrap(Some)]
-                #[name = "start_container"]
-                set_start_widget = &gtk::Box {
-                    set_css_classes: &["bar-widget-container", "start-container"],
-                    set_orientation: model.orientation,
+        gtk::Box {
+            set_width_request: hover_strip_width,
+            set_height_request: hover_strip_height,
+            add_controller = gtk::EventControllerMotion {
+                connect_enter[sender] => move |_, _, _| {
+                    sender.input(BarInput::SetHovered(true));
                 },
-
-                #[wrap(Some)]
-                #[name = "center_container"]
-                set_center_widget = &gtk::Box {
-                    set_css_classes: &["bar-widget-container", "center-container"],
-                    set_orientation: model.orientation,
+                connect_leave[sender] => move |_| {
+                    sender.input(BarInput::SetHovered(false));
                 },
+            },
 
-                #[wrap(Some)]
-                #[name = "end_container"]
-                set_end_widget = &gtk::Box {
-                    set_css_classes: &["bar-widget-container", "end-container"],
+            gtk::Revealer {
+                #[watch]
+                set_reveal_child: model.revealed || model.hovered,
+                set_transition_type: transition_type,
+
+                gtk::CenterBox {
+                    set_css_classes: &["bar", model.css_class.as_str()],
+                    #[watch]
+                    set_hexpand: model.h_expand,
+                    set_vexpand: model.v_expand,
                     set_orientation: model.orientation,
+                    #[watch]
+                    set_width_request: model.min_width,
+                    #[watch]
+                    set_height_request: model.min_height,
+
+                    #[wrap(Some)]
+                    #[name = "start_container"]
+                    set_start_widget = &gtk::Box {
+                        set_css_classes: &["bar-widget-container", "start-container"],
+                        set_orientation: model.orientation,
+                    },
+
+                    #[wrap(Some)]
+                    #[name = "center_container"]
+                    set_center_widget = &gtk::Box {
+                        set_css_classes: &["bar-widget-container", "center-container"],
+                        set_orientation: model.orientation,
+                    },
+
+                    #[wrap(Some)]
+                    #[name = "end_container"]
+                    set_end_widget = &gtk::Box {
+                        set_css_classes: &["bar-widget-container", "end-container"],
+                        set_orientation: model.orientation,
+                    },
                 },
             },
         },
@@ -153,6 +168,8 @@ impl Component for BarModel {
         let v_expand: bool;
         let css_class: String;
         let transition_type: gtk::RevealerTransitionType;
+        let hover_strip_width: i32;
+        let hover_strip_height: i32;
         let mut effects= EffectScope::new();
 
         match params.bar_type {
@@ -162,6 +179,8 @@ impl Component for BarModel {
                 v_expand = false;
                 css_class = "bar-top".to_string();
                 transition_type = gtk::RevealerTransitionType::SlideDown;
+                hover_strip_width = -1;
+                hover_strip_height = 1;
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -199,6 +218,8 @@ impl Component for BarModel {
                 v_expand = false;
                 css_class = "bar-bottom".to_string();
                 transition_type = gtk::RevealerTransitionType::SlideUp;
+                hover_strip_width = -1;
+                hover_strip_height = 1;
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -236,6 +257,8 @@ impl Component for BarModel {
                 h_expand = false;
                 css_class = "bar-left".to_string();
                 transition_type = gtk::RevealerTransitionType::SlideRight;
+                hover_strip_width = 1;
+                hover_strip_height = -1;
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -273,6 +296,8 @@ impl Component for BarModel {
                 h_expand = false;
                 css_class = "bar-right".to_string();
                 transition_type = gtk::RevealerTransitionType::SlideLeft;
+                hover_strip_width = 1;
+                hover_strip_height = -1;
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -318,6 +343,7 @@ impl Component for BarModel {
             min_height: 0,
             css_class,
             revealed: false,
+            hovered: false,
             _effects: effects,
         };
 
@@ -392,6 +418,9 @@ impl Component for BarModel {
             }
             BarInput::ToggleRevealed => {
                 self.revealed = !self.revealed;
+            }
+            BarInput::SetHovered(hovered) => {
+                self.hovered = hovered;
             }
         }
         self.update_view(widgets, sender);
