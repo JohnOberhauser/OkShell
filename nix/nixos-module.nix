@@ -18,5 +18,7 @@ in
 
   config = lib.mkIf cfg.enable {
     environment.systemPackages = [ cfg.package ];
+    services.upower.enable = true;
+    services.power-profiles-daemon.enable = true;
   };
 }
