@@ -170,6 +170,7 @@ impl Component for BarModel {
         let transition_type: gtk::RevealerTransitionType;
         let hover_strip_width: i32;
         let hover_strip_height: i32;
+        let reveal_by_default: bool;
         let mut effects= EffectScope::new();
 
         match params.bar_type {
@@ -181,6 +182,7 @@ impl Component for BarModel {
                 transition_type = gtk::RevealerTransitionType::SlideDown;
                 hover_strip_width = -1;
                 hover_strip_height = 1;
+                reveal_by_default = config_manager().config().bars().top_bar().reveal_by_default().get_untracked();
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -220,6 +222,7 @@ impl Component for BarModel {
                 transition_type = gtk::RevealerTransitionType::SlideUp;
                 hover_strip_width = -1;
                 hover_strip_height = 1;
+                reveal_by_default = config_manager().config().bars().bottom_bar().reveal_by_default().get_untracked();
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -259,6 +262,7 @@ impl Component for BarModel {
                 transition_type = gtk::RevealerTransitionType::SlideRight;
                 hover_strip_width = 1;
                 hover_strip_height = -1;
+                reveal_by_default = config_manager().config().bars().left_bar().reveal_by_default().get_untracked();
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -298,6 +302,7 @@ impl Component for BarModel {
                 transition_type = gtk::RevealerTransitionType::SlideLeft;
                 hover_strip_width = 1;
                 hover_strip_height = -1;
+                reveal_by_default = config_manager().config().bars().right_bar().reveal_by_default().get_untracked();
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
@@ -349,10 +354,12 @@ impl Component for BarModel {
 
         let widgets = view_output!();
 
-        tokio::spawn(async move {
-            sleep(Duration::from_secs(1)).await;
-            sender.input(BarInput::SetRevealed(true));
-        });
+        if reveal_by_default {
+            tokio::spawn(async move {
+                sleep(Duration::from_secs(1)).await;
+                sender.input(BarInput::SetRevealed(true));
+            });
+        }
 
         ComponentParts { model, widgets }
     }

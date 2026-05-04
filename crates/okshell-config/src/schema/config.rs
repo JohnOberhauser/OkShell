@@ -193,6 +193,7 @@ impl Default for Bars {
             bottom_bar: HorizontalBar::default(),
             left_bar: VerticalBar {
                 minimum_width: 0,
+                reveal_by_default: true,
                 top_widgets: vec![
                     BarWidget::QuickSettings,
                     BarWidget::HyprlandWorkspaces,
@@ -412,6 +413,7 @@ impl Default for ScreenshareMenu {
 #[serde(default)]
 pub struct HorizontalBar {
     pub minimum_height: i32,
+    pub reveal_by_default: bool,
     pub left_widgets: Vec<BarWidget>,
     pub center_widgets: Vec<BarWidget>,
     pub right_widgets: Vec<BarWidget>,
@@ -421,6 +423,7 @@ impl Default for HorizontalBar {
     fn default() -> Self {
         Self {
             minimum_height: 0,
+            reveal_by_default: true,
             left_widgets: Vec::new(),
             center_widgets: Vec::new(),
             right_widgets: Vec::new(),
@@ -432,6 +435,7 @@ impl Default for HorizontalBar {
 #[serde(default)]
 pub struct VerticalBar {
     pub minimum_width: i32,
+    pub reveal_by_default: bool,
     pub top_widgets: Vec<BarWidget>,
     pub center_widgets: Vec<BarWidget>,
     pub bottom_widgets: Vec<BarWidget>,
@@ -441,6 +445,7 @@ impl Default for VerticalBar {
     fn default() -> Self {
         Self {
             minimum_width: 0,
+            reveal_by_default: true,
             top_widgets: Vec::new(),
             center_widgets: Vec::new(),
             bottom_widgets: Vec::new(),
@@ -458,10 +463,10 @@ pub enum VerticalMenuExpansion {
 
 impl PatchField for VerticalMenuExpansion {
     fn patch_field(
-        &mut self, 
-        new: Self, 
-        path: &StorePath, 
-        notify: &mut dyn FnMut(&StorePath), 
+        &mut self,
+        new: Self,
+        path: &StorePath,
+        notify: &mut dyn FnMut(&StorePath),
         _keys: Option<&KeyMap>
     ) {
         if *self != new {

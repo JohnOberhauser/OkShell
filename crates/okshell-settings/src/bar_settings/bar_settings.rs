@@ -32,6 +32,10 @@ pub(crate) struct BarSettingsModel {
     bottom_min_height: i32,
     left_min_width: i32,
     right_min_width: i32,
+    top_reveal_by_default: bool,
+    bottom_reveal_by_default: bool,
+    left_reveal_by_default: bool,
+    right_reveal_by_default: bool,
     _effects: EffectScope,
 }
 
@@ -59,6 +63,10 @@ pub(crate) enum BarSettingsInput {
     BottomMinHeightChanged(i32),
     RightMinWidthChanged(i32),
     LeftMinWidthChanged(i32),
+    TopRevealByDefaultChanged(bool),
+    BottomRevealByDefaultChanged(bool),
+    LeftRevealByDefaultChanged(bool),
+    RightRevealByDefaultChanged(bool),
 
     TopStartEffect(Vec<BarWidget>),
     TopCenterEffect(Vec<BarWidget>),
@@ -76,6 +84,10 @@ pub(crate) enum BarSettingsInput {
     BottomMinHeightEffect(i32),
     RightMinWidthEffect(i32),
     LeftMinWidthEffect(i32),
+    TopRevealByDefaultEffect(bool),
+    BottomRevealByDefaultEffect(bool),
+    LeftRevealByDefaultEffect(bool),
+    RightRevealByDefaultEffect(bool),
 }
 
 #[derive(Debug)]
@@ -225,6 +237,43 @@ impl Component for BarSettingsModel {
                     },
                 },
 
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Reveal by default",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Whether to reveal the bar when first starting OkShell.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        #[watch]
+                        #[block_signal(top_reveal_by_default_handler)]
+                        set_active: model.top_reveal_by_default,
+                        connect_state_set[sender] => move |_, enabled| {
+                            sender.input(BarSettingsInput::TopRevealByDefaultChanged(enabled));
+                            glib::Propagation::Proceed
+                        } @top_reveal_by_default_handler,
+                    }
+                },
+
                 model.top_bar_start_controller.widget().clone() {},
                 model.top_bar_center_controller.widget().clone() {},
                 model.top_bar_end_controller.widget().clone() {},
@@ -258,6 +307,43 @@ impl Component for BarSettingsModel {
                             sender.input(BarSettingsInput::LeftMinWidthChanged(s.value() as i32));
                         } @left_min_handler,
                     },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Reveal by default",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Whether to reveal the bar when first starting OkShell.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        #[watch]
+                        #[block_signal(left_reveal_by_default_handler)]
+                        set_active: model.left_reveal_by_default,
+                        connect_state_set[sender] => move |_, enabled| {
+                            sender.input(BarSettingsInput::LeftRevealByDefaultChanged(enabled));
+                            glib::Propagation::Proceed
+                        } @left_reveal_by_default_handler,
+                    }
                 },
 
                 model.left_bar_start_controller.widget().clone() {},
@@ -295,6 +381,43 @@ impl Component for BarSettingsModel {
                     },
                 },
 
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Reveal by default",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Whether to reveal the bar when first starting OkShell.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        #[watch]
+                        #[block_signal(right_reveal_by_default_handler)]
+                        set_active: model.right_reveal_by_default,
+                        connect_state_set[sender] => move |_, enabled| {
+                            sender.input(BarSettingsInput::RightRevealByDefaultChanged(enabled));
+                            glib::Propagation::Proceed
+                        } @right_reveal_by_default_handler,
+                    }
+                },
+
                 model.right_bar_start_controller.widget().clone() {},
                 model.right_bar_center_controller.widget().clone() {},
                 model.right_bar_end_controller.widget().clone() {},
@@ -328,6 +451,43 @@ impl Component for BarSettingsModel {
                             sender.input(BarSettingsInput::BottomMinHeightChanged(s.value() as i32));
                         } @bottom_min_handler,
                     },
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Reveal by default",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Whether to reveal the bar when first starting OkShell.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::Switch {
+                        set_valign: gtk::Align::Center,
+                        #[watch]
+                        #[block_signal(bottom_reveal_by_default_handler)]
+                        set_active: model.bottom_reveal_by_default,
+                        connect_state_set[sender] => move |_, enabled| {
+                            sender.input(BarSettingsInput::BottomRevealByDefaultChanged(enabled));
+                            glib::Propagation::Proceed
+                        } @bottom_reveal_by_default_handler,
+                    }
                 },
 
                 model.bottom_bar_start_controller.widget().clone() {},
@@ -398,6 +558,13 @@ impl Component for BarSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
+            let value = config.bars().top_bar().reveal_by_default().get();
+            sender_clone.input(BarSettingsInput::TopRevealByDefaultEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
             let value = config.bars().top_bar().left_widgets().get();
             sender_clone.input(BarSettingsInput::TopStartEffect(value));
         });
@@ -421,6 +588,13 @@ impl Component for BarSettingsModel {
             let config = config_manager().config();
             let value = config.bars().bottom_bar().minimum_height().get();
             sender_clone.input(BarSettingsInput::BottomMinHeightEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().bottom_bar().reveal_by_default().get();
+            sender_clone.input(BarSettingsInput::BottomRevealByDefaultEffect(value));
         });
 
         let sender_clone = sender.clone();
@@ -454,6 +628,13 @@ impl Component for BarSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = config_manager().config();
+            let value = config.bars().left_bar().reveal_by_default().get();
+            sender_clone.input(BarSettingsInput::LeftRevealByDefaultEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
             let value = config.bars().left_bar().top_widgets().get();
             sender_clone.input(BarSettingsInput::LeftStartEffect(value));
         });
@@ -477,6 +658,13 @@ impl Component for BarSettingsModel {
             let config = config_manager().config();
             let value = config.bars().right_bar().minimum_width().get();
             sender_clone.input(BarSettingsInput::RightMinWidthEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().right_bar().reveal_by_default().get();
+            sender_clone.input(BarSettingsInput::RightRevealByDefaultEffect(value));
         });
 
         let sender_clone = sender.clone();
@@ -653,6 +841,10 @@ impl Component for BarSettingsModel {
             bottom_min_height: config_manager().config().bars().bottom_bar().minimum_height().get_untracked(),
             left_min_width: config_manager().config().bars().left_bar().minimum_width().get_untracked(),
             right_min_width: config_manager().config().bars().right_bar().minimum_width().get_untracked(),
+            top_reveal_by_default: config_manager().config().bars().top_bar().reveal_by_default().get_untracked(),
+            bottom_reveal_by_default: config_manager().config().bars().bottom_bar().reveal_by_default().get_untracked(),
+            left_reveal_by_default: config_manager().config().bars().left_bar().reveal_by_default().get_untracked(),
+            right_reveal_by_default: config_manager().config().bars().right_bar().reveal_by_default().get_untracked(),
             _effects: effects,
         };
 
@@ -815,6 +1007,30 @@ impl Component for BarSettingsModel {
                     config.bars.right_bar.minimum_width = min;
                 });
             }
+            BarSettingsInput::TopRevealByDefaultChanged(reveal) => {
+                self.top_reveal_by_default = reveal;
+                config_manager().update_config(|config| {
+                    config.bars.top_bar.reveal_by_default = reveal;
+                });
+            }
+            BarSettingsInput::BottomRevealByDefaultChanged(reveal) => {
+                self.bottom_reveal_by_default = reveal;
+                config_manager().update_config(|config| {
+                    config.bars.bottom_bar.reveal_by_default = reveal;
+                });
+            }
+            BarSettingsInput::LeftRevealByDefaultChanged(reveal) => {
+                self.left_reveal_by_default = reveal;
+                config_manager().update_config(|config| {
+                    config.bars.left_bar.reveal_by_default = reveal;
+                });
+            }
+            BarSettingsInput::RightRevealByDefaultChanged(reveal) => {
+                self.right_reveal_by_default = reveal;
+                config_manager().update_config(|config| {
+                    config.bars.right_bar.reveal_by_default = reveal;
+                });
+            }
             BarSettingsInput::TopStartEffect(widgets) => {
                 self.top_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
@@ -862,6 +1078,18 @@ impl Component for BarSettingsModel {
             }
             BarSettingsInput::LeftMinWidthEffect(width) => {
                 self.left_min_width = width;
+            }
+            BarSettingsInput::TopRevealByDefaultEffect(reveal) => {
+                self.top_reveal_by_default = reveal;
+            }
+            BarSettingsInput::BottomRevealByDefaultEffect(reveal) => {
+                self.bottom_reveal_by_default = reveal;
+            }
+            BarSettingsInput::LeftRevealByDefaultEffect(reveal) => {
+                self.left_reveal_by_default = reveal;
+            }
+            BarSettingsInput::RightRevealByDefaultEffect(reveal) => {
+                self.right_reveal_by_default = reveal;
             }
         }
 
