@@ -1,6 +1,6 @@
+use okshell_config::schema::config::Config;
 use schemars::_private::serde_json;
 use schemars::schema_for;
-use okshell_config::schema::config::Config;
 
 fn main() {
     let schema = schema_for!(Config);
@@ -51,8 +51,11 @@ fn classify(def: &serde_json::Value) -> Kind {
         return Kind::Scalar;
     }
     if def["oneOf"].is_array() {
-        let has_objects = def["oneOf"].as_array().unwrap()
-            .iter().any(|v| v["type"] == "object");
+        let has_objects = def["oneOf"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|v| v["type"] == "object");
         if has_objects {
             return Kind::TaggedUnion;
         }
@@ -61,10 +64,7 @@ fn classify(def: &serde_json::Value) -> Kind {
     Kind::Scalar
 }
 
-fn get_type(
-    node: &serde_json::Value,
-    defs: &serde_json::Map<String, serde_json::Value>,
-) -> String {
+fn get_type(node: &serde_json::Value, defs: &serde_json::Map<String, serde_json::Value>) -> String {
     if let Some(r) = node["$ref"].as_str() {
         let name = r.split('/').last().unwrap_or("?");
         if let Some(def) = defs.get(name) {
@@ -100,7 +100,11 @@ fn format_default(val: &serde_json::Value) -> String {
     }
 }
 
-fn render_struct(out: &mut String, def: &serde_json::Value, defs: &serde_json::Map<String, serde_json::Value>) {
+fn render_struct(
+    out: &mut String,
+    def: &serde_json::Value,
+    defs: &serde_json::Map<String, serde_json::Value>,
+) {
     let Some(props) = def["properties"].as_object() else {
         out.push_str("_No properties._\n\n");
         return;
@@ -124,7 +128,9 @@ fn render_enum(out: &mut String, def: &serde_json::Value) {
     let variants = if def["enum"].is_array() {
         def["enum"].as_array().unwrap().to_vec()
     } else if def["oneOf"].is_array() {
-        def["oneOf"].as_array().unwrap()
+        def["oneOf"]
+            .as_array()
+            .unwrap()
             .iter()
             .flat_map(|v| v["enum"].as_array().cloned().unwrap_or_default())
             .collect()
@@ -162,7 +168,8 @@ fn render_tagged_union(
             if let Some(tag) = variant["properties"]["type"]["const"].as_str() {
                 // internally tagged: #[serde(tag = "type")]
                 let fields: Vec<String> = variant["properties"]
-                    .as_object().unwrap()
+                    .as_object()
+                    .unwrap()
                     .iter()
                     .filter(|(k, _)| *k != "type")
                     .map(|(k, v)| format!("{}: {}", k, get_type(v, defs)))

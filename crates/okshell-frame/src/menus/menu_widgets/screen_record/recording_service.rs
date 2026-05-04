@@ -1,6 +1,6 @@
-use std::sync::OnceLock;
-use reactive_stores::{ArcStore, KeyMap, PatchField, Store, StorePath};
 use okshell_screenshot::record::RecordHandle;
+use reactive_stores::{ArcStore, KeyMap, PatchField, Store, StorePath};
+use std::sync::OnceLock;
 
 #[derive(Clone, Default, Store)]
 pub struct RecordingState {

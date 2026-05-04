@@ -1,16 +1,22 @@
-use std::time::Duration;
-use notify_rust::Notification;
-use relm4::gtk::prelude::*;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use okshell_screenshot::{take_screenshot, CaptureArea, OutputTarget, ScreenshotRequest, ScreenshotResult};
-use okshell_sounds::play_shutter;
 use crate::common_widgets::big_button::BigButton;
-use crate::common_widgets::option_list::{OptionsListOutput};
-use crate::common_widgets::revealer_row::revealer_row::{RevealerRowInit, RevealerRowInput, RevealerRowModel};
-use crate::common_widgets::revealer_row::revealer_row_label::{RevealerRowLabelInit, RevealerRowLabelInput, RevealerRowLabelModel};
+use crate::common_widgets::option_list::OptionsListOutput;
+use crate::common_widgets::revealer_row::revealer_row::{
+    RevealerRowInit, RevealerRowInput, RevealerRowModel,
+};
+use crate::common_widgets::revealer_row::revealer_row_label::{
+    RevealerRowLabelInit, RevealerRowLabelInput, RevealerRowLabelModel,
+};
 use crate::menus::menu_widgets::screenshot::delay_option::{DelayOption, DelayOptionsList};
 use crate::menus::menu_widgets::screenshot::save_option::{SaveOptionRow, SaveOptionsList};
+use notify_rust::Notification;
+use okshell_screenshot::{
+    CaptureArea, OutputTarget, ScreenshotRequest, ScreenshotResult, take_screenshot,
+};
+use okshell_sounds::play_shutter;
 use okshell_utils::notifications::show_file_saved_notification;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::time::Duration;
 
 pub(crate) struct ScreenshotMenuWidgetModel {
     delay: u32,
@@ -150,7 +156,6 @@ impl Component for ScreenshotMenuWidgetModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let delay_row_content = RevealerRowLabelModel::builder()
             .launch(RevealerRowLabelInit {
                 label: "Delay: 0 seconds".to_string(),
@@ -159,20 +164,31 @@ impl Component for ScreenshotMenuWidgetModel {
 
         let delay_row_revealed_content = DelayOptionsList::builder()
             .launch(vec![
-                DelayOption { value: 0, icon_name: "timer-symbolic".into() },
-                DelayOption { value: 1, icon_name: "timer-symbolic".into() },
-                DelayOption { value: 3, icon_name: "timer-symbolic".into() },
-                DelayOption { value: 5, icon_name: "timer-symbolic".into() },
-                DelayOption { value: 10, icon_name: "timer-symbolic".into() },
+                DelayOption {
+                    value: 0,
+                    icon_name: "timer-symbolic".into(),
+                },
+                DelayOption {
+                    value: 1,
+                    icon_name: "timer-symbolic".into(),
+                },
+                DelayOption {
+                    value: 3,
+                    icon_name: "timer-symbolic".into(),
+                },
+                DelayOption {
+                    value: 5,
+                    icon_name: "timer-symbolic".into(),
+                },
+                DelayOption {
+                    value: 10,
+                    icon_name: "timer-symbolic".into(),
+                },
             ])
-            .forward(sender.input_sender(), |msg| {
-                match msg {
-                    OptionsListOutput::Selected(opt) => {
-                        ScreenshotMenuWidgetInput::DelaySelected(opt)
-                    } 
-                }
+            .forward(sender.input_sender(), |msg| match msg {
+                OptionsListOutput::Selected(opt) => ScreenshotMenuWidgetInput::DelaySelected(opt),
             });
-        
+
         let delay_row = RevealerRowModel::<RevealerRowLabelModel, DelayOptionsList>::builder()
             .launch(RevealerRowInit {
                 icon_name: "timer-symbolic".into(),
@@ -190,15 +206,22 @@ impl Component for ScreenshotMenuWidgetModel {
 
         let save_option_row_revealed_content = SaveOptionsList::builder()
             .launch(vec![
-                SaveOptionRow { value: OutputTarget::FileAndClipboard, icon_name: "screenshot-save-both-symbolic".into() },
-                SaveOptionRow { value: OutputTarget::Clipboard, icon_name: "screenshot-save-clipboard-symbolic".into() },
-                SaveOptionRow { value: OutputTarget::File, icon_name: "screenshot-save-file-symbolic".into() },
+                SaveOptionRow {
+                    value: OutputTarget::FileAndClipboard,
+                    icon_name: "screenshot-save-both-symbolic".into(),
+                },
+                SaveOptionRow {
+                    value: OutputTarget::Clipboard,
+                    icon_name: "screenshot-save-clipboard-symbolic".into(),
+                },
+                SaveOptionRow {
+                    value: OutputTarget::File,
+                    icon_name: "screenshot-save-file-symbolic".into(),
+                },
             ])
-            .forward(sender.input_sender(), |msg| {
-                match msg {
-                    OptionsListOutput::Selected(opt) => {
-                        ScreenshotMenuWidgetInput::SaveOptionSelected(opt)
-                    }
+            .forward(sender.input_sender(), |msg| match msg {
+                OptionsListOutput::Selected(opt) => {
+                    ScreenshotMenuWidgetInput::SaveOptionSelected(opt)
                 }
             });
 
@@ -232,31 +255,28 @@ impl Component for ScreenshotMenuWidgetModel {
         match message {
             ScreenshotMenuWidgetInput::DelaySelected(opt) => {
                 self.delay = opt.value;
-                self.delay_row.model().content.emit(RevealerRowLabelInput::SetLabel(
-                    if opt.value == 1 {
+                self.delay_row
+                    .model()
+                    .content
+                    .emit(RevealerRowLabelInput::SetLabel(if opt.value == 1 {
                         format!("Delay: {} second", opt.value)
                     } else {
                         format!("Delay: {} seconds", opt.value)
-                    }
-                ));
+                    }));
                 self.delay_row.emit(RevealerRowInput::SetRevealed(false));
             }
             ScreenshotMenuWidgetInput::SaveOptionSelected(opt) => {
                 self.save_option = opt.value.clone();
-                self.save_row.model().content.emit(RevealerRowLabelInput::SetLabel(
-                    match opt.value {
-                        OutputTarget::FileAndClipboard => {
-                            "Save to file and clipboard".to_string()
-                        }
-                        OutputTarget::File => {
-                            "Save to file".to_string()
-                        }
-                        OutputTarget::Clipboard => {
-                            "Save to clipboard".to_string()
-                        }
-                    },
-                ));
-                self.save_row.emit(RevealerRowInput::UpdateActionIconName(opt.icon_name));
+                self.save_row
+                    .model()
+                    .content
+                    .emit(RevealerRowLabelInput::SetLabel(match opt.value {
+                        OutputTarget::FileAndClipboard => "Save to file and clipboard".to_string(),
+                        OutputTarget::File => "Save to file".to_string(),
+                        OutputTarget::Clipboard => "Save to clipboard".to_string(),
+                    }));
+                self.save_row
+                    .emit(RevealerRowInput::UpdateActionIconName(opt.icon_name));
                 self.save_row.emit(RevealerRowInput::SetRevealed(false));
             }
             ScreenshotMenuWidgetInput::AllClicked => {
@@ -267,11 +287,9 @@ impl Component for ScreenshotMenuWidgetModel {
                         target: self.save_option.clone(),
                     },
                     Duration::from_secs(self.delay as u64).max(Duration::from_millis(500)),
-                    |result| {
-                        match result {
-                            Ok(r) => complete_screenshot(r),
-                            Err(e) => eprintln!("screenshot failed: {e}"),
-                        }
+                    |result| match result {
+                        Ok(r) => complete_screenshot(r),
+                        Err(e) => eprintln!("screenshot failed: {e}"),
                     },
                 );
             }
@@ -283,11 +301,9 @@ impl Component for ScreenshotMenuWidgetModel {
                         target: self.save_option.clone(),
                     },
                     Duration::from_secs(self.delay as u64),
-                    move |result| {
-                        match result {
-                            Ok(r) => complete_screenshot(r),
-                            Err(e) => eprintln!("screenshot failed: {e}"),
-                        }
+                    move |result| match result {
+                        Ok(r) => complete_screenshot(r),
+                        Err(e) => eprintln!("screenshot failed: {e}"),
                     },
                 );
             }
@@ -299,11 +315,9 @@ impl Component for ScreenshotMenuWidgetModel {
                         target: self.save_option.clone(),
                     },
                     Duration::from_secs(self.delay as u64),
-                    move |result| {
-                        match result {
-                            Ok(r) => complete_screenshot(r),
-                            Err(e) => eprintln!("screenshot failed: {e}"),
-                        }
+                    move |result| match result {
+                        Ok(r) => complete_screenshot(r),
+                        Err(e) => eprintln!("screenshot failed: {e}"),
                     },
                 );
             }
@@ -315,11 +329,9 @@ impl Component for ScreenshotMenuWidgetModel {
                         target: self.save_option.clone(),
                     },
                     Duration::from_secs(self.delay as u64),
-                    |result| {
-                        match result {
-                            Ok(r) => complete_screenshot(r),
-                            Err(e) => eprintln!("screenshot failed: {e}"),
-                        }
+                    |result| match result {
+                        Ok(r) => complete_screenshot(r),
+                        Err(e) => eprintln!("screenshot failed: {e}"),
                     },
                 );
             }

@@ -1,7 +1,7 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use okshell_services::notification_service;
 use okshell_utils::notifications::spawn_dnd_watcher;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct DoNotDisturbModel {
@@ -69,15 +69,9 @@ impl Component for DoNotDisturbModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
+        spawn_dnd_watcher(&sender, || DoNotDisturbCommandOutput::DndChanged);
 
-        spawn_dnd_watcher(
-            &sender,
-            ||DoNotDisturbCommandOutput::DndChanged,
-        );
-
-        let model = DoNotDisturbModel {
-            enabled: false,
-        };
+        let model = DoNotDisturbModel { enabled: false };
 
         let widgets = view_output!();
 
@@ -89,7 +83,7 @@ impl Component for DoNotDisturbModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             DoNotDisturbInput::Clicked => {
@@ -108,7 +102,7 @@ impl Component for DoNotDisturbModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             DoNotDisturbCommandOutput::DndChanged => {

@@ -1,8 +1,6 @@
 use zbus::connection;
 
-pub async fn bus_command(
-    method_name: &'static str,
-) -> zbus::Result<()> {
+pub async fn bus_command(method_name: &'static str) -> zbus::Result<()> {
     let connection = connection::Builder::session()?.build().await?;
     connection
         .call_method(

@@ -1,15 +1,10 @@
-use std::sync::Arc;
-use relm4::{
-    gtk,
-    Component,
-    ComponentParts,
-    ComponentSender
-};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
-use tracing::error;
-use wayle_hyprland::{Workspace, WorkspaceInfo};
 use okshell_services::hyprland_service;
 use okshell_utils::hyprland::is_an_active_workspace;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use std::sync::Arc;
+use tracing::error;
+use wayle_hyprland::{Workspace, WorkspaceInfo};
 
 #[derive(Debug, Clone)]
 pub(crate) struct HyprlandWorkspaceModel {
@@ -74,7 +69,9 @@ impl Component for HyprlandWorkspaceModel {
         let widgets = view_output!();
 
         if model.is_active {
-            widgets.image.set_icon_name(Some("workspace-selected-symbolic"));
+            widgets
+                .image
+                .set_icon_name(Some("workspace-selected-symbolic"));
         }
 
         ComponentParts { model, widgets }
@@ -85,16 +82,18 @@ impl Component for HyprlandWorkspaceModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         _sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             HyprlandWorkspaceInput::ActiveUpdate(workspace_infos) => {
                 self.is_active = workspace_infos
                     .iter()
-                    .find(|p| p.id  == self.workspace.id.get())
+                    .find(|p| p.id == self.workspace.id.get())
                     .is_some();
                 if self.is_active {
-                    widgets.image.set_icon_name(Some("workspace-selected-symbolic"));
+                    widgets
+                        .image
+                        .set_icon_name(Some("workspace-selected-symbolic"));
                 } else {
                     widgets.image.set_icon_name(Some("workspace-symbolic"));
                 }

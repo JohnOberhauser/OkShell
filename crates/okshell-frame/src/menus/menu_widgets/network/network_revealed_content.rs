@@ -1,20 +1,36 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::{Justification, RevealerTransitionType};
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
-use okshell_common::WatcherToken;
-use wayle_network::core::access_point::{AccessPoint, Ssid};
-use okshell_services::network_service;
-use crate::common_widgets::revealer_button::revealer_button::{RevealerButtonInit, RevealerButtonInput, RevealerButtonModel};
-use crate::common_widgets::revealer_button::revealer_button_icon_label::{RevealerButtonIconLabelInit, RevealerButtonIconLabelModel};
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
-use okshell_common::dynamic_box::generic_widget_controller::{GenericWidgetController, GenericWidgetControllerExtSafe};
+use crate::common_widgets::revealer_button::revealer_button::{
+    RevealerButtonInit, RevealerButtonInput, RevealerButtonModel,
+};
+use crate::common_widgets::revealer_button::revealer_button_icon_label::{
+    RevealerButtonIconLabelInit, RevealerButtonIconLabelModel,
+};
+use crate::menus::menu_widgets::network::available_network_revealed_content::{
+    AvailableNetworkRevealedContentInit, AvailableNetworkRevealedContentInput,
+    AvailableNetworkRevealedContentModel,
+};
 use crate::menus::menu_widgets::network::disconnect_button::DisconnectButtonModel;
-use crate::menus::menu_widgets::network::available_network_revealed_content::{AvailableNetworkRevealedContentInit, AvailableNetworkRevealedContentInput, AvailableNetworkRevealedContentModel};
-use okshell_utils::network::{get_wifi_icon_for_strength, set_network_icon, set_network_label, spawn_available_wifi_networks_watcher, spawn_network_watcher, spawn_wifi_watcher, spawn_wired_watcher};
+use okshell_common::WatcherToken;
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
+};
+use okshell_common::dynamic_box::generic_widget_controller::{
+    GenericWidgetController, GenericWidgetControllerExtSafe,
+};
+use okshell_services::network_service;
+use okshell_utils::network::{
+    get_wifi_icon_for_strength, set_network_icon, set_network_label,
+    spawn_available_wifi_networks_watcher, spawn_network_watcher, spawn_wifi_watcher,
+    spawn_wired_watcher,
+};
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::gtk::{Justification, RevealerTransitionType};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_network::core::access_point::{AccessPoint, Ssid};
 
 pub(crate) struct NetworkRevealedContentModel {
-    active_network_button: Controller<RevealerButtonModel<RevealerButtonIconLabelModel, DisconnectButtonModel>>,
+    active_network_button:
+        Controller<RevealerButtonModel<RevealerButtonIconLabelModel, DisconnectButtonModel>>,
     available_networks_dynamic_box_controller: Controller<DynamicBoxModel<Arc<AccessPoint>, Ssid>>,
     wifi_watcher_token: WatcherToken,
     wired_watcher_token: WatcherToken,
@@ -111,7 +127,6 @@ impl Component for NetworkRevealedContentModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         spawn_network_watcher(
             &sender,
             || NetworkRevealedContentCommandOutput::StateChanged,
@@ -127,9 +142,7 @@ impl Component for NetworkRevealedContentModel {
             })
             .detach();
 
-        let active_network_revealed_content = DisconnectButtonModel::builder()
-            .launch(())
-            .detach();
+        let active_network_revealed_content = DisconnectButtonModel::builder().launch(()).detach();
 
         let active_network_button = RevealerButtonModel::builder()
             .launch(RevealerButtonInit {
@@ -150,11 +163,10 @@ impl Component for NetworkRevealedContentModel {
                     .detach();
 
                 let access_point = item.clone();
-                let available_network_revealed_content = AvailableNetworkRevealedContentModel::builder()
-                    .launch(AvailableNetworkRevealedContentInit {
-                        access_point,
-                    })
-                    .detach();
+                let available_network_revealed_content =
+                    AvailableNetworkRevealedContentModel::builder()
+                        .launch(AvailableNetworkRevealedContentInit { access_point })
+                        .detach();
 
                 let available_network_button = RevealerButtonModel::builder()
                     .launch(RevealerButtonInit {
@@ -168,19 +180,20 @@ impl Component for NetworkRevealedContentModel {
             update: None,
         };
 
-        let available_networks_dynamic_box_controller: Controller<DynamicBoxModel<Arc<AccessPoint>, Ssid>> =
-            DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
-                    factory: available_networks_dynamic_box_factory,
-                    orientation: gtk::Orientation::Vertical,
-                    spacing: 0,
-                    transition_type: RevealerTransitionType::SlideDown,
-                    transition_duration_ms: 200,
-                    reverse: false,
-                    retain_entries: false,
-                    allow_drag_and_drop: false,
-                })
-                .detach();
+        let available_networks_dynamic_box_controller: Controller<
+            DynamicBoxModel<Arc<AccessPoint>, Ssid>,
+        > = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory: available_networks_dynamic_box_factory,
+                orientation: gtk::Orientation::Vertical,
+                spacing: 0,
+                transition_type: RevealerTransitionType::SlideDown,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: false,
+            })
+            .detach();
 
         let model = NetworkRevealedContentModel {
             active_network_button,
@@ -210,41 +223,56 @@ impl Component for NetworkRevealedContentModel {
                 let wifi_exists = wifi.is_some();
                 let has_ssid = wifi.map(|w| w.ssid.get().is_some()).unwrap_or(false);
 
-                widgets.active_network_container.set_visible(wifi_exists && has_ssid);
+                widgets
+                    .active_network_container
+                    .set_visible(wifi_exists && has_ssid);
                 set_network_label(&self.active_network_button.model().content.widgets().label);
                 set_network_icon(&self.active_network_button.model().content.widgets().image);
 
-                widgets.available_networks_container.set_visible(wifi_exists);
+                widgets
+                    .available_networks_container
+                    .set_visible(wifi_exists);
             }
             NetworkRevealedContentInput::UpdateAvailableNetworks => {
                 let network = network_service();
 
                 if let Some(wifi) = network.wifi.get() {
-                    let access_points: Vec<Arc<AccessPoint>> = wifi.access_points.get()
+                    let access_points: Vec<Arc<AccessPoint>> = wifi
+                        .access_points
+                        .get()
                         .iter()
-                        .filter(|a| a.ssid.get().to_string() != wifi.ssid.get().unwrap_or("".to_string()))
+                        .filter(|a| {
+                            a.ssid.get().to_string() != wifi.ssid.get().unwrap_or("".to_string())
+                        })
                         .cloned()
                         .collect();
 
                     self.available_network_count = access_points.len() as i16;
-                    self.available_networks_dynamic_box_controller.emit(DynamicBoxInput::SetItems(access_points))
+                    self.available_networks_dynamic_box_controller
+                        .emit(DynamicBoxInput::SetItems(access_points))
                 }
             }
             NetworkRevealedContentInput::SetScanning(scanning) => {
                 self.scanning = scanning;
             }
             NetworkRevealedContentInput::Reset => {
-                self.active_network_button.emit(RevealerButtonInput::SetRevealed(false));
-                self.available_networks_dynamic_box_controller.model().for_each_entry(|_, entry| {
-                    if let Some(ctrl) = entry
-                        .controller
-                        .as_ref()
-                        .downcast_ref::<Controller<RevealerButtonModel<RevealerButtonIconLabelModel, AvailableNetworkRevealedContentModel>>>()
-                    {
-                        ctrl.emit(RevealerButtonInput::SetRevealed(false));
-                        ctrl.model().revealed_content.emit(AvailableNetworkRevealedContentInput::Reset);
-                    }
-                })
+                self.active_network_button
+                    .emit(RevealerButtonInput::SetRevealed(false));
+                self.available_networks_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|_, entry| {
+                        if let Some(ctrl) = entry.controller.as_ref().downcast_ref::<Controller<
+                            RevealerButtonModel<
+                                RevealerButtonIconLabelModel,
+                                AvailableNetworkRevealedContentModel,
+                            >,
+                        >>() {
+                            ctrl.emit(RevealerButtonInput::SetRevealed(false));
+                            ctrl.model()
+                                .revealed_content
+                                .emit(AvailableNetworkRevealedContentInput::Reset);
+                        }
+                    })
             }
         }
 
@@ -268,25 +296,19 @@ impl Component for NetworkRevealedContentModel {
             NetworkRevealedContentCommandOutput::WifiChanged => {
                 let token = self.wifi_watcher_token.reset();
                 let token_clone = token.clone();
-                spawn_wifi_watcher(
-                    &sender,
-                    token_clone,
-                    || NetworkRevealedContentCommandOutput::StateChanged
-                );
+                spawn_wifi_watcher(&sender, token_clone, || {
+                    NetworkRevealedContentCommandOutput::StateChanged
+                });
                 let token_clone = token.clone();
-                spawn_available_wifi_networks_watcher(
-                    &sender,
-                    token_clone,
-                    || NetworkRevealedContentCommandOutput::AvailableNetworksChanged
-                );
+                spawn_available_wifi_networks_watcher(&sender, token_clone, || {
+                    NetworkRevealedContentCommandOutput::AvailableNetworksChanged
+                });
             }
             NetworkRevealedContentCommandOutput::WiredChanged => {
                 let token = self.wired_watcher_token.reset();
-                spawn_wired_watcher(
-                    &sender,
-                    token,
-                    || NetworkRevealedContentCommandOutput::StateChanged
-                );
+                spawn_wired_watcher(&sender, token, || {
+                    NetworkRevealedContentCommandOutput::StateChanged
+                });
             }
         }
     }

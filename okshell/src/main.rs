@@ -16,7 +16,7 @@ struct Args {}
 
 fn main() -> Result<(), Box<dyn Error>> {
     let _args = Args::parse();
-    
+
     okshell_logging::init("okshell");
 
     okshell_core::run()?;

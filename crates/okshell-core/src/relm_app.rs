@@ -1,24 +1,26 @@
+use crate::ipc::init_ipc_shell_service;
+use crate::monitors;
 use gtk4_layer_shell::{Layer, LayerShell};
-use relm4::{gtk::{prelude::*}, main_application, prelude::*};
-use std::collections::HashMap;
-use std::fmt::{Debug, Formatter};
-use reactive_graph::effect::Effect;
-use reactive_graph::traits::{Get, GetUntracked};
-use relm4::gtk::gdk::Monitor;
-use tracing::{info};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{BarsStoreFields, ConfigStoreFields, FrameStoreFields};
 use okshell_frame::frame::{Frame, FrameInit, FrameInput};
 use okshell_lockscreen::lock_screen_manager::{LockScreenManagerInit, LockScreenManagerModel};
-use okshell_notification_popups::popup_notifications::{PopupNotificationsInit, PopupNotificationsModel};
+use okshell_notification_popups::popup_notifications::{
+    PopupNotificationsInit, PopupNotificationsModel,
+};
 use okshell_osd::brightness_osd::{BrightnessOsdInit, BrightnessOsdModel};
 use okshell_osd::sound_alerts::SoundAlertsModel;
 use okshell_osd::volume_osd::{VolumeOsdInit, VolumeOsdModel};
 use okshell_polkit::PolkitPromptModel;
 use okshell_style::style_manager::{StyleManagerModel, StyleManagerOutput};
 use okshell_wallpaper::wallpaper::{WallpaperInit, WallpaperModel};
-use crate::ipc::init_ipc_shell_service;
-use crate::monitors;
+use reactive_graph::effect::Effect;
+use reactive_graph::traits::{Get, GetUntracked};
+use relm4::gtk::gdk::Monitor;
+use relm4::{gtk::prelude::*, main_application, prelude::*};
+use std::collections::HashMap;
+use std::fmt::{Debug, Formatter};
+use tracing::info;
 
 pub(crate) struct WindowGroup {
     pub monitor: Monitor,
@@ -55,11 +57,7 @@ pub(crate) enum ShellInput {
     ToggleScreenshotMenu(Option<String>),
     ToggleWallpaperMenu(Option<String>),
     CloseAllMenus,
-    ToggleScreenshareMenu(
-        Option<String>,
-        tokio::sync::oneshot::Sender<String>,
-        String,
-    ),
+    ToggleScreenshareMenu(Option<String>, tokio::sync::oneshot::Sender<String>, String),
     QueueFrameRedraw,
     BarToggleTop(Option<String>),
     BarToggleBottom(Option<String>),
@@ -71,9 +69,7 @@ pub(crate) enum ShellInput {
 }
 
 #[derive(Debug)]
-pub enum ShellCommandOutput {
-
-}
+pub enum ShellCommandOutput {}
 
 #[relm4::component(pub(crate))]
 impl Component for Shell {
@@ -94,7 +90,6 @@ impl Component for Shell {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let icon_theme = gtk::IconTheme::for_display(&gtk::gdk::Display::default().unwrap());
         icon_theme.add_search_path(dirs::home_dir().unwrap().join(".config/okshell/icons"));
 
@@ -108,34 +103,37 @@ impl Component for Shell {
         let window_groups = HashMap::new();
 
         let lock_screen_manager = LockScreenManagerModel::builder()
-            .launch(LockScreenManagerInit{})
+            .launch(LockScreenManagerInit {})
             .detach();
 
-        let polkit = PolkitPromptModel::builder()
-            .launch(())
-            .detach();
+        let polkit = PolkitPromptModel::builder().launch(()).detach();
 
-        let sound_alerts = SoundAlertsModel::builder()
-            .launch(())
-            .detach();
+        let sound_alerts = SoundAlertsModel::builder().launch(()).detach();
 
-        let style_manager = StyleManagerModel::builder()
-            .launch(())
-            .forward(sender.input_sender(), |msg| {
-                match msg {
-                    StyleManagerOutput::QueueFrameRedraw => {
-                        ShellInput::QueueFrameRedraw
-                    }
-                }
-            });
+        let style_manager = StyleManagerModel::builder().launch(()).forward(
+            sender.input_sender(),
+            |msg| match msg {
+                StyleManagerOutput::QueueFrameRedraw => ShellInput::QueueFrameRedraw,
+            },
+        );
 
         let sender_clone = sender.clone();
         Effect::new(move |_| {
-            let monitors = config_manager().config().bars().frame().monitor_filter().get();
+            let monitors = config_manager()
+                .config()
+                .bars()
+                .frame()
+                .monitor_filter()
+                .get();
             sender_clone.input(ShellInput::MonitorFilterUpdated(monitors));
         });
 
-        let monitor_filter = config_manager().config().bars().frame().monitor_filter().get_untracked();
+        let monitor_filter = config_manager()
+            .config()
+            .bars()
+            .frame()
+            .monitor_filter()
+            .get_untracked();
 
         init_ipc_shell_service(&sender);
 
@@ -154,12 +152,7 @@ impl Component for Shell {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-        _root: &Self::Root
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>, _root: &Self::Root) {
         match message {
             ShellInput::SyncMonitors => {
                 monitors::sync_monitors(&self.window_groups, &sender);
@@ -168,8 +161,8 @@ impl Component for Shell {
                 self.monitor_filter = monitors;
 
                 for (name, group) in self.window_groups.iter_mut() {
-                    let should_have_frame = self.monitor_filter.is_empty()
-                        || self.monitor_filter.contains(name);
+                    let should_have_frame =
+                        self.monitor_filter.is_empty() || self.monitor_filter.contains(name);
 
                     if should_have_frame && group.frame.is_none() {
                         group.frame = Some(
@@ -177,7 +170,7 @@ impl Component for Shell {
                                 .launch(FrameInit {
                                     monitor: group.monitor.clone(),
                                 })
-                                .detach()
+                                .detach(),
                         );
                     } else if !should_have_frame {
                         if let Some(frame) = group.frame.take() {
@@ -193,11 +186,11 @@ impl Component for Shell {
                         .launch(WallpaperInit {
                             monitor: monitor.clone(),
                         })
-                        .detach()
+                        .detach(),
                 );
 
-                let create_frame = self.monitor_filter.is_empty()
-                    || self.monitor_filter.contains(&name);
+                let create_frame =
+                    self.monitor_filter.is_empty() || self.monitor_filter.contains(&name);
 
                 let frame = if create_frame {
                     Some(
@@ -205,7 +198,7 @@ impl Component for Shell {
                             .launch(FrameInit {
                                 monitor: monitor.clone(),
                             })
-                            .detach()
+                            .detach(),
                     )
                 } else {
                     None
@@ -216,7 +209,7 @@ impl Component for Shell {
                         .launch(PopupNotificationsInit {
                             monitor: monitor.clone(),
                         })
-                        .detach()
+                        .detach(),
                 );
 
                 let volume_osd = Some(
@@ -224,7 +217,7 @@ impl Component for Shell {
                         .launch(VolumeOsdInit {
                             monitor: monitor.clone(),
                         })
-                        .detach()
+                        .detach(),
                 );
 
                 let brightness_osd = Some(
@@ -232,7 +225,7 @@ impl Component for Shell {
                         .launch(BrightnessOsdInit {
                             monitor: monitor.clone(),
                         })
-                        .detach()
+                        .detach(),
                 );
 
                 let window_group = WindowGroup {
@@ -376,7 +369,6 @@ fn resolve_frame<'a>(
 
 impl Debug for WindowGroup {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("WindowGroup")
-            .finish()
+        f.debug_struct("WindowGroup").finish()
     }
 }

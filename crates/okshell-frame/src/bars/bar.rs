@@ -1,44 +1,50 @@
-use std::{fmt::Debug, time::Duration};
-use relm4::{
-    gtk::{
-        self,
-        prelude::*,
-        Orientation,
-    },
-    Component,
-    ComponentParts,
-    ComponentSender
-};
-use reactive_graph::traits::*;
-use okshell_common::scoped_effects::EffectScope;
-use okshell_config::schema::bar_widgets::BarWidget;
-use okshell_config::schema::config::{BarsStoreFields, ConfigStoreFields, HorizontalBarStoreFields, VerticalBarStoreFields};
-use tokio::time::sleep;
 use crate::bars::bar_widgets::audio_input::{AudioInputInit, AudioInputModel};
 use crate::bars::bar_widgets::audio_output::{AudioOutputInit, AudioOutputModel};
 use crate::bars::bar_widgets::battery::{BatteryInit, BatteryModel};
 use crate::bars::bar_widgets::bluetooth::{BluetoothInit, BluetoothModel};
 use crate::bars::bar_widgets::clipboard::{ClipboardInit, ClipboardModel, ClipboardOutput};
-use okshell_utils::clear_box::clear_box;
 use crate::bars::bar_widgets::clock::{ClockInit, ClockModel, ClockOutput};
 use crate::bars::bar_widgets::hypr_picker::{HyprPickerInit, HyprPickerModel};
-use crate::bars::bar_widgets::hyprland_dock::{HyprlandDockInit, HyprlandDockModel, HyprlandDockOutput};
-use crate::bars::bar_widgets::hyprland_workspaces::{HyprlandWorkspacesInit, HyprlandWorkspacesModel};
+use crate::bars::bar_widgets::hyprland_dock::{
+    HyprlandDockInit, HyprlandDockModel, HyprlandDockOutput,
+};
+use crate::bars::bar_widgets::hyprland_workspaces::{
+    HyprlandWorkspacesInit, HyprlandWorkspacesModel,
+};
 use crate::bars::bar_widgets::lock::{LockInit, LockModel, LockOutput};
 use crate::bars::bar_widgets::logout::{LogoutInit, LogoutModel};
-use crate::bars::bar_widgets::quick_settings::{QuickSettingsInit, QuickSettingsModel, QuickSettingOutput};
 use crate::bars::bar_widgets::network::{NetworkInit, NetworkModel};
-use crate::bars::bar_widgets::notifications::{NotificationsInit, NotificationsModel, NotificationsOutput};
+use crate::bars::bar_widgets::notifications::{
+    NotificationsInit, NotificationsModel, NotificationsOutput,
+};
 use crate::bars::bar_widgets::power_profile::{PowerProfileInit, PowerProfileModel};
+use crate::bars::bar_widgets::quick_settings::{
+    QuickSettingOutput, QuickSettingsInit, QuickSettingsModel,
+};
 use crate::bars::bar_widgets::reboot::{RebootInit, RebootModel};
-use crate::bars::bar_widgets::recording_indicator::{RecordingIndicatorInit, RecordingIndicatorModel};
+use crate::bars::bar_widgets::recording_indicator::{
+    RecordingIndicatorInit, RecordingIndicatorModel,
+};
 use crate::bars::bar_widgets::screenshot::{ScreenshotInit, ScreenshotModel, ScreenshotOutput};
 use crate::bars::bar_widgets::shutdown::{ShutdownInit, ShutdownModel};
 use crate::bars::bar_widgets::system_tray::{SystemTrayInit, SystemTrayModel};
 use crate::bars::bar_widgets::vpn_indicator::{VpnIndicatorInit, VpnIndicatorModel};
-use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
-use okshell_config::config_manager::config_manager;
 use crate::bars::bar_widgets::wallpaper::{WallpaperInit, WallpaperModel, WallpaperOutput};
+use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
+use okshell_common::scoped_effects::EffectScope;
+use okshell_config::config_manager::config_manager;
+use okshell_config::schema::bar_widgets::BarWidget;
+use okshell_config::schema::config::{
+    BarsStoreFields, ConfigStoreFields, HorizontalBarStoreFields, VerticalBarStoreFields,
+};
+use okshell_utils::clear_box::clear_box;
+use reactive_graph::traits::*;
+use relm4::{
+    Component, ComponentParts, ComponentSender,
+    gtk::{self, Orientation, prelude::*},
+};
+use std::{fmt::Debug, time::Duration};
+use tokio::time::sleep;
 
 #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Clone, Copy)]
 pub(crate) enum BarType {
@@ -159,7 +165,6 @@ impl Component for BarModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let base_config = config_manager().config();
 
         let orientation: Orientation;
@@ -171,7 +176,7 @@ impl Component for BarModel {
         let hover_strip_width: i32;
         let hover_strip_height: i32;
         let reveal_by_default: bool;
-        let mut effects= EffectScope::new();
+        let mut effects = EffectScope::new();
 
         match params.bar_type {
             BarType::Top => {
@@ -182,11 +187,21 @@ impl Component for BarModel {
                 transition_type = gtk::RevealerTransitionType::SlideDown;
                 hover_strip_width = -1;
                 hover_strip_height = 1;
-                reveal_by_default = config_manager().config().bars().top_bar().reveal_by_default().get_untracked();
+                reveal_by_default = config_manager()
+                    .config()
+                    .bars()
+                    .top_bar()
+                    .reveal_by_default()
+                    .get_untracked();
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
-                    let min = config_manager().config().bars().top_bar().minimum_height().get();
+                    let min = config_manager()
+                        .config()
+                        .bars()
+                        .top_bar()
+                        .minimum_height()
+                        .get();
                     sender_clone.input(BarInput::SetMinHeight(min));
                 });
 
@@ -222,11 +237,21 @@ impl Component for BarModel {
                 transition_type = gtk::RevealerTransitionType::SlideUp;
                 hover_strip_width = -1;
                 hover_strip_height = 1;
-                reveal_by_default = config_manager().config().bars().bottom_bar().reveal_by_default().get_untracked();
+                reveal_by_default = config_manager()
+                    .config()
+                    .bars()
+                    .bottom_bar()
+                    .reveal_by_default()
+                    .get_untracked();
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
-                    let min = config_manager().config().bars().bottom_bar().minimum_height().get();
+                    let min = config_manager()
+                        .config()
+                        .bars()
+                        .bottom_bar()
+                        .minimum_height()
+                        .get();
                     sender_clone.input(BarInput::SetMinHeight(min));
                 });
 
@@ -262,11 +287,21 @@ impl Component for BarModel {
                 transition_type = gtk::RevealerTransitionType::SlideRight;
                 hover_strip_width = 1;
                 hover_strip_height = -1;
-                reveal_by_default = config_manager().config().bars().left_bar().reveal_by_default().get_untracked();
+                reveal_by_default = config_manager()
+                    .config()
+                    .bars()
+                    .left_bar()
+                    .reveal_by_default()
+                    .get_untracked();
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
-                    let min = config_manager().config().bars().left_bar().minimum_width().get();
+                    let min = config_manager()
+                        .config()
+                        .bars()
+                        .left_bar()
+                        .minimum_width()
+                        .get();
                     sender_clone.input(BarInput::SetMinWidth(min));
                 });
 
@@ -302,11 +337,21 @@ impl Component for BarModel {
                 transition_type = gtk::RevealerTransitionType::SlideLeft;
                 hover_strip_width = 1;
                 hover_strip_height = -1;
-                reveal_by_default = config_manager().config().bars().right_bar().reveal_by_default().get_untracked();
+                reveal_by_default = config_manager()
+                    .config()
+                    .bars()
+                    .right_bar()
+                    .reveal_by_default()
+                    .get_untracked();
 
                 let sender_clone = sender.clone();
                 effects.push(move |_| {
-                    let min = config_manager().config().bars().right_bar().minimum_width().get();
+                    let min = config_manager()
+                        .config()
+                        .bars()
+                        .right_bar()
+                        .minimum_width()
+                        .get();
                     sender_clone.input(BarInput::SetMinWidth(min));
                 });
 
@@ -369,19 +414,15 @@ impl Component for BarModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             BarInput::SetStartWidgets(bar_widgets) => {
                 clear_box(&widgets.start_container);
                 self.start_widgets.clear();
                 for item in bar_widgets {
-                    let controller = BarModel::build_widget(
-                        self.orientation,
-                        self.bar_type,
-                        &item,
-                        &sender,
-                    );
+                    let controller =
+                        BarModel::build_widget(self.orientation, self.bar_type, &item, &sender);
                     widgets.start_container.append(&controller.root_widget());
                     self.start_widgets.push(controller);
                 }
@@ -390,12 +431,8 @@ impl Component for BarModel {
                 clear_box(&widgets.end_container);
                 self.end_widgets.clear();
                 for item in bar_widgets {
-                    let controller = BarModel::build_widget(
-                        self.orientation,
-                        self.bar_type,
-                        &item,
-                        &sender,
-                    );
+                    let controller =
+                        BarModel::build_widget(self.orientation, self.bar_type, &item, &sender);
                     widgets.end_container.append(&controller.root_widget());
                     self.end_widgets.push(controller);
                 }
@@ -404,12 +441,8 @@ impl Component for BarModel {
                 clear_box(&widgets.center_container);
                 self.center_widgets.clear();
                 for item in bar_widgets {
-                    let controller = BarModel::build_widget(
-                        self.orientation,
-                        self.bar_type,
-                        &item,
-                        &sender,
-                    );
+                    let controller =
+                        BarModel::build_widget(self.orientation, self.bar_type, &item, &sender);
                     widgets.center_container.append(&controller.root_widget());
                     self.center_widgets.push(controller);
                 }
@@ -442,223 +475,125 @@ impl BarModel {
         sender: &ComponentSender<Self>,
     ) -> Box<dyn GenericWidgetController> {
         match widget {
-            BarWidget::AudioInput => {
-                Box::new(
-                    AudioInputModel::builder()
-                        .launch(AudioInputInit{})
-                        .detach()
-                )
-            }
-            BarWidget::AudioOutput => {
-                Box::new(
-                    AudioOutputModel::builder()
-                        .launch(AudioOutputInit{})
-                        .detach()
-                )
-            }
-            BarWidget::Battery => {
-                Box::new(
-                    BatteryModel::builder()
-                        .launch(BatteryInit{})
-                        .detach()
-                )
-            }
+            BarWidget::AudioInput => Box::new(
+                AudioInputModel::builder()
+                    .launch(AudioInputInit {})
+                    .detach(),
+            ),
+            BarWidget::AudioOutput => Box::new(
+                AudioOutputModel::builder()
+                    .launch(AudioOutputInit {})
+                    .detach(),
+            ),
+            BarWidget::Battery => Box::new(BatteryModel::builder().launch(BatteryInit {}).detach()),
             BarWidget::Bluetooth => {
-                Box::new(
-                    BluetoothModel::builder()
-                        .launch(BluetoothInit{})
-                        .detach()
-                )
+                Box::new(BluetoothModel::builder().launch(BluetoothInit {}).detach())
             }
-            BarWidget::Clipboard => {
-                Box::new(
-                    ClipboardModel::builder()
-                        .launch(ClipboardInit{
-                            orientation,
-                        })
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { ClipboardOutput::Clicked => {
-                                BarOutput::ClipboardClicked
-                            } }
-                        })
-                )
-            }
-            BarWidget::Clock => {
-                Box::new(
-                    ClockModel::builder()
-                        .launch(ClockInit{
-                            orientation,
-                        })
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { ClockOutput::Clicked => {
-                                BarOutput::ClockClicked
-                            } }
-                        })
-                )
-            }
-            BarWidget::HyprlandDock => {
-                Box::new(
-                    HyprlandDockModel::builder()
-                        .launch(HyprlandDockInit{
-                            orientation,
-                            bar_type,
-                        })
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { HyprlandDockOutput::AppLauncherClicked => {
-                                BarOutput::AppLauncherClicked
-                            } }
-                        })
-                )
-            }
-            BarWidget::HyprlandWorkspaces => {
-                Box::new(
-                    HyprlandWorkspacesModel::builder()
-                        .launch(HyprlandWorkspacesInit{
-                            orientation,
-                        })
-                        .detach()
-                )
-            }
-            BarWidget::HyprPicker => {
-                Box::new(
-                    HyprPickerModel::builder()
-                        .launch(HyprPickerInit {
-                            orientation,
-                        })
-                        .detach()
-                )
-            }
-            BarWidget::Lock => {
-                Box::new(
-                    LockModel::builder()
-                        .launch(LockInit{
-                            orientation,
-                        })
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { LockOutput::CloseMenu => {
-                                BarOutput::CloseMenu
-                            } }
-                        })
-                )
-            }
-            BarWidget::Logout => {
-                Box::new(
-                    LogoutModel::builder()
-                        .launch(LogoutInit{
-                            orientation,
-                        })
-                        .detach()
-                )
-            }
-            BarWidget::QuickSettings => {
-                Box::new(
-                    QuickSettingsModel::builder()
-                        .launch(QuickSettingsInit {
-                            orientation,
-                        })
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { QuickSettingOutput::Clicked => {
-                                BarOutput::MainMenuClicked
-                            } }
-                        })
-                )
-            }
-            BarWidget::Network => {
-                Box::new(
-                    NetworkModel::builder()
-                        .launch(NetworkInit{})
-                        .detach()
-                )
-            }
-            BarWidget::Notifications => {
-                Box::new(
-                    NotificationsModel::builder()
-                        .launch(NotificationsInit{
-                            orientation,
-                        })
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { NotificationsOutput::Clicked => {
-                                BarOutput::NotificationsClicked
-                            } }
-                        })
-                )
-            }
-            BarWidget::PowerProfile => {
-                Box::new(
-                    PowerProfileModel::builder()
-                        .launch(PowerProfileInit{})
-                        .detach()
-                )
-            }
-            BarWidget::Reboot => {
-                Box::new(
-                    RebootModel::builder()
-                        .launch(RebootInit{
-                            orientation,
-                        })
-                        .detach()
-                )
-            }
-            BarWidget::RecordingIndicator => {
-                Box::new(
-                    RecordingIndicatorModel::builder()
-                        .launch(RecordingIndicatorInit{
-                            orientation,
-                        })
-                        .detach()
-                )
-            }
-            BarWidget::Screenshot => {
-                Box::new(
-                    ScreenshotModel::builder()
-                        .launch(ScreenshotInit{
-                            orientation,
-                        })
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { ScreenshotOutput::Clicked => {
-                                BarOutput::ScreenshotClicked
-                            } }
-                        })
-                )
-            }
-            BarWidget::Shutdown => {
-                Box::new(
-                    ShutdownModel::builder()
-                        .launch(ShutdownInit{
-                            orientation,
-                        })
-                        .detach()
-                )
-            }
-            BarWidget::Tray => {
-                Box::new(
-                    SystemTrayModel::builder()
-                        .launch(SystemTrayInit{
-                            orientation,
-                        })
-                        .detach()
-                )
-            }
-            BarWidget::VpnIndicator => {
-                Box::new(
-                    VpnIndicatorModel::builder()
-                        .launch(VpnIndicatorInit{})
-                        .detach()
-                )
-            }
-            BarWidget::Wallpaper => {
-                Box::new(
-                    WallpaperModel::builder()
-                        .launch(WallpaperInit{
-                            orientation,
-                        })
-                        .forward(sender.output_sender(), |msg| {
-                            match msg { WallpaperOutput::Clicked => {
-                                BarOutput::WallpaperClicked
-                            } }
-                        })
-                )
-            }
+            BarWidget::Clipboard => Box::new(
+                ClipboardModel::builder()
+                    .launch(ClipboardInit { orientation })
+                    .forward(sender.output_sender(), |msg| match msg {
+                        ClipboardOutput::Clicked => BarOutput::ClipboardClicked,
+                    }),
+            ),
+            BarWidget::Clock => Box::new(
+                ClockModel::builder()
+                    .launch(ClockInit { orientation })
+                    .forward(sender.output_sender(), |msg| match msg {
+                        ClockOutput::Clicked => BarOutput::ClockClicked,
+                    }),
+            ),
+            BarWidget::HyprlandDock => Box::new(
+                HyprlandDockModel::builder()
+                    .launch(HyprlandDockInit {
+                        orientation,
+                        bar_type,
+                    })
+                    .forward(sender.output_sender(), |msg| match msg {
+                        HyprlandDockOutput::AppLauncherClicked => BarOutput::AppLauncherClicked,
+                    }),
+            ),
+            BarWidget::HyprlandWorkspaces => Box::new(
+                HyprlandWorkspacesModel::builder()
+                    .launch(HyprlandWorkspacesInit { orientation })
+                    .detach(),
+            ),
+            BarWidget::HyprPicker => Box::new(
+                HyprPickerModel::builder()
+                    .launch(HyprPickerInit { orientation })
+                    .detach(),
+            ),
+            BarWidget::Lock => Box::new(
+                LockModel::builder()
+                    .launch(LockInit { orientation })
+                    .forward(sender.output_sender(), |msg| match msg {
+                        LockOutput::CloseMenu => BarOutput::CloseMenu,
+                    }),
+            ),
+            BarWidget::Logout => Box::new(
+                LogoutModel::builder()
+                    .launch(LogoutInit { orientation })
+                    .detach(),
+            ),
+            BarWidget::QuickSettings => Box::new(
+                QuickSettingsModel::builder()
+                    .launch(QuickSettingsInit { orientation })
+                    .forward(sender.output_sender(), |msg| match msg {
+                        QuickSettingOutput::Clicked => BarOutput::MainMenuClicked,
+                    }),
+            ),
+            BarWidget::Network => Box::new(NetworkModel::builder().launch(NetworkInit {}).detach()),
+            BarWidget::Notifications => Box::new(
+                NotificationsModel::builder()
+                    .launch(NotificationsInit { orientation })
+                    .forward(sender.output_sender(), |msg| match msg {
+                        NotificationsOutput::Clicked => BarOutput::NotificationsClicked,
+                    }),
+            ),
+            BarWidget::PowerProfile => Box::new(
+                PowerProfileModel::builder()
+                    .launch(PowerProfileInit {})
+                    .detach(),
+            ),
+            BarWidget::Reboot => Box::new(
+                RebootModel::builder()
+                    .launch(RebootInit { orientation })
+                    .detach(),
+            ),
+            BarWidget::RecordingIndicator => Box::new(
+                RecordingIndicatorModel::builder()
+                    .launch(RecordingIndicatorInit { orientation })
+                    .detach(),
+            ),
+            BarWidget::Screenshot => Box::new(
+                ScreenshotModel::builder()
+                    .launch(ScreenshotInit { orientation })
+                    .forward(sender.output_sender(), |msg| match msg {
+                        ScreenshotOutput::Clicked => BarOutput::ScreenshotClicked,
+                    }),
+            ),
+            BarWidget::Shutdown => Box::new(
+                ShutdownModel::builder()
+                    .launch(ShutdownInit { orientation })
+                    .detach(),
+            ),
+            BarWidget::Tray => Box::new(
+                SystemTrayModel::builder()
+                    .launch(SystemTrayInit { orientation })
+                    .detach(),
+            ),
+            BarWidget::VpnIndicator => Box::new(
+                VpnIndicatorModel::builder()
+                    .launch(VpnIndicatorInit {})
+                    .detach(),
+            ),
+            BarWidget::Wallpaper => Box::new(
+                WallpaperModel::builder()
+                    .launch(WallpaperInit { orientation })
+                    .forward(sender.output_sender(), |msg| match msg {
+                        WallpaperOutput::Clicked => BarOutput::WallpaperClicked,
+                    }),
+            ),
         }
     }
 }

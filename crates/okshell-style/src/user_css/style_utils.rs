@@ -1,21 +1,18 @@
-use std::{
-    fs,
-    io,
-    path::PathBuf,
-    sync::{
-        mpsc,
-    },
-    time::{Duration, Instant},
-};
-use std::ops::Not;
-use notify::{Event, EventKind};
-use reactive_graph::prelude::GetUntracked;
-use reactive_stores::{ArcStore, Patch};
-use tracing::info;
-use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
 use crate::user_css::paths::{style_path, styles_dir};
 use crate::user_css::style::Style;
+use notify::{Event, EventKind};
+use okshell_config::config_manager::config_manager;
+use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
+use reactive_graph::prelude::GetUntracked;
+use reactive_stores::{ArcStore, Patch};
+use std::ops::Not;
+use std::{
+    fs, io,
+    path::PathBuf,
+    sync::mpsc,
+    time::{Duration, Instant},
+};
+use tracing::info;
 
 pub(crate) fn load_style(active_style: String) -> Result<Style, io::Error> {
     if active_style.is_empty().not() {
@@ -30,7 +27,9 @@ pub fn list_available_styles() -> Vec<String> {
     let dir = styles_dir();
     let mut out = Vec::new();
 
-    let Ok(rd) = fs::read_dir(dir) else { return out };
+    let Ok(rd) = fs::read_dir(dir) else {
+        return out;
+    };
     for ent in rd.flatten() {
         let path = ent.path();
         if path.extension().and_then(|s| s.to_str()) != Some("css") {
@@ -44,10 +43,7 @@ pub fn list_available_styles() -> Vec<String> {
     out
 }
 
-pub(crate) fn watch_style_loop(
-    rx: mpsc::Receiver<notify::Result<Event>>,
-    style: ArcStore<Style>,
-) {
+pub(crate) fn watch_style_loop(rx: mpsc::Receiver<notify::Result<Event>>, style: ArcStore<Style>) {
     let mut pending = false;
     let mut last_event_at = Instant::now();
     const DEBOUNCE_MS: u64 = 200;
@@ -84,10 +80,7 @@ pub(crate) fn watch_style_loop(
     }
 }
 
-pub(crate) fn is_relevant_style_event(
-    event: &Event,
-    active_style_path: &PathBuf,
-) -> bool {
+pub(crate) fn is_relevant_style_event(event: &Event, active_style_path: &PathBuf) -> bool {
     // Only respond to writes/creates/removes/renames (not Access/Other)
     match event.kind {
         EventKind::Modify(_) | EventKind::Create(_) | EventKind::Remove(_) => {}

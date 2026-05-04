@@ -1,23 +1,24 @@
-use std::sync::Arc;
-use futures::StreamExt;
-use relm4::{
-    gtk,
-    gtk::prelude::*,
-    Component,
-    ComponentController,
-    ComponentParts,
-    ComponentSender,
-    Controller
+use crate::bars::bar_widgets::hyprland_workspace::{
+    HyprlandWorkspaceInput, HyprlandWorkspaceModel,
 };
-use relm4::gtk::{Orientation, RevealerTransitionType};
-use wayle_hyprland::{HyprlandEvent, MonitorId, Workspace, WorkspaceId};
-use okshell_services::hyprland_service;
-use crate::bars::bar_widgets::hyprland_workspace::{HyprlandWorkspaceInput, HyprlandWorkspaceModel};
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
-use okshell_common::dynamic_box::generic_widget_controller::{GenericWidgetController, GenericWidgetControllerExtSafe};
+use futures::StreamExt;
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
+};
+use okshell_common::dynamic_box::generic_widget_controller::{
+    GenericWidgetController, GenericWidgetControllerExtSafe,
+};
 use okshell_common::dynamic_box::simple_widget_controller::SimpleWidgetController;
+use okshell_services::hyprland_service;
 use okshell_utils::hover_scroll::attach_hover_scroll;
 use okshell_utils::hyprland::{get_active_workspaces, go_down_workspace, go_up_workspace};
+use relm4::gtk::{Orientation, RevealerTransitionType};
+use relm4::{
+    Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk,
+    gtk::prelude::*,
+};
+use std::sync::Arc;
+use wayle_hyprland::{HyprlandEvent, MonitorId, Workspace, WorkspaceId};
 
 #[derive(Clone, Debug)]
 pub enum WsRow {
@@ -112,19 +113,18 @@ impl Component for HyprlandWorkspacesModel {
             RevealerTransitionType::SwingUp
         };
 
-        let dynamic: Controller<DynamicBoxModel<WsRow, WsRowKey>> =
-            DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
-                    factory,
-                    orientation: params.orientation,
-                    spacing: 0,
-                    transition_type,
-                    transition_duration_ms: 200,
-                    reverse: false,
-                    retain_entries: false,
-                    allow_drag_and_drop: false,
-                })
-                .detach();
+        let dynamic: Controller<DynamicBoxModel<WsRow, WsRowKey>> = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory,
+                orientation: params.orientation,
+                spacing: 0,
+                transition_type,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: false,
+            })
+            .detach();
 
         let model = HyprlandWorkspacesModel {
             dynamic_box: dynamic,
@@ -140,7 +140,11 @@ impl Component for HyprlandWorkspacesModel {
 
         let workspaces = Self::workspaces_with_dividers(workspaces);
 
-        model.dynamic_box.sender().send(DynamicBoxInput::SetItems(workspaces)).unwrap();
+        model
+            .dynamic_box
+            .sender()
+            .send(DynamicBoxInput::SetItems(workspaces))
+            .unwrap();
 
         let _handles = attach_hover_scroll(&widgets.workspace_box, move |_dx, dy, _hovered, _| {
             if dy < 0.0 {
@@ -167,7 +171,10 @@ impl Component for HyprlandWorkspacesModel {
 
                 let workspaces = Self::workspaces_with_dividers(workspaces);
 
-                self.dynamic_box.sender().send(DynamicBoxInput::SetItems(workspaces)).unwrap();
+                self.dynamic_box
+                    .sender()
+                    .send(DynamicBoxInput::SetItems(workspaces))
+                    .unwrap();
             }
             HyprlandWorkspacesCommandOutput::ActiveWorkspaceChanged => {
                 let active_workspaces = get_active_workspaces();
@@ -178,9 +185,9 @@ impl Component for HyprlandWorkspacesModel {
                         .as_ref()
                         .downcast_ref::<Controller<HyprlandWorkspaceModel>>()
                     {
-                        let _ = ctrl
-                            .sender()
-                            .send(HyprlandWorkspaceInput::ActiveUpdate(active_workspaces.clone()));
+                        let _ = ctrl.sender().send(HyprlandWorkspaceInput::ActiveUpdate(
+                            active_workspaces.clone(),
+                        ));
                     }
                 })
             }
@@ -189,9 +196,7 @@ impl Component for HyprlandWorkspacesModel {
 }
 
 impl HyprlandWorkspacesModel {
-    fn spawn_main_watcher(
-        sender: &ComponentSender<Self>,
-    ) {
+    fn spawn_main_watcher(sender: &ComponentSender<Self>) {
         sender.command(move |out, shutdown| {
             async move {
                 let hyprland = hyprland_service();

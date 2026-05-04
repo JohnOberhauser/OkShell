@@ -1,12 +1,17 @@
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use crate::menu_settings::menu_widget_list::{
+    MenuWidgetListInit, MenuWidgetListInput, MenuWidgetListModel, MenuWidgetListOutput,
+};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, MenuStoreFields, MenusStoreFields, ScreenshareMenuStoreFields, VerticalMenuExpansion};
+use okshell_config::schema::config::{
+    ConfigStoreFields, MenuStoreFields, MenusStoreFields, ScreenshareMenuStoreFields,
+    VerticalMenuExpansion,
+};
 use okshell_config::schema::menu_widgets::MenuWidget;
 use okshell_config::schema::position::Position;
-use crate::menu_settings::menu_widget_list::{MenuWidgetListInit, MenuWidgetListInput, MenuWidgetListModel, MenuWidgetListOutput};
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 
 #[derive(Debug)]
 pub(crate) struct MenuSettingsModel {
@@ -120,13 +125,13 @@ impl Component for MenuSettingsModel {
                 set_orientation: gtk::Orientation::Vertical,
                 set_hexpand: true,
                 set_spacing: 16,
-                
+
                 gtk::Label {
                     add_css_class: "label-large-bold",
                     set_label: "Menu Expansion",
                     set_halign: gtk::Align::Start,
                 },
-                
+
                 gtk::Box {
                     set_orientation: gtk::Orientation::Horizontal,
                     set_spacing: 20,
@@ -166,7 +171,7 @@ impl Component for MenuSettingsModel {
                         } @left_expansion_handler,
                     },
                 },
-                
+
                 gtk::Box {
                     set_orientation: gtk::Orientation::Horizontal,
                     set_spacing: 20,
@@ -206,7 +211,7 @@ impl Component for MenuSettingsModel {
                         } @right_expansion_handler,
                     },
                 },
-                
+
                 gtk::Separator {},
 
                 gtk::Label {
@@ -872,7 +877,6 @@ impl Component for MenuSettingsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut effects = EffectScope::new();
 
         let sender_clone = sender.clone();
@@ -1045,106 +1049,224 @@ impl Component for MenuSettingsModel {
 
         let quick_settings_widget_list_controller = MenuWidgetListModel::builder()
             .launch(MenuWidgetListInit {
-                widgets: config_manager().config().menus().quick_settings_menu().widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .menus()
+                    .quick_settings_menu()
+                    .widgets()
+                    .get_untracked(),
                 draw_border: true,
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { MenuWidgetListOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                MenuWidgetListOutput::Changed(widgets) => {
                     MenuSettingsInput::QuickSettingsWidgetListChanged(widgets)
-                } }
+                }
             });
 
         let clock_widget_list_controller = MenuWidgetListModel::builder()
             .launch(MenuWidgetListInit {
-                widgets: config_manager().config().menus().clock_menu().widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .menus()
+                    .clock_menu()
+                    .widgets()
+                    .get_untracked(),
                 draw_border: true,
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { MenuWidgetListOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                MenuWidgetListOutput::Changed(widgets) => {
                     MenuSettingsInput::ClockWidgetListChanged(widgets)
-                } }
+                }
             });
 
         let clipboard_widget_list_controller = MenuWidgetListModel::builder()
             .launch(MenuWidgetListInit {
-                widgets: config_manager().config().menus().clipboard_menu().widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .menus()
+                    .clipboard_menu()
+                    .widgets()
+                    .get_untracked(),
                 draw_border: true,
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { MenuWidgetListOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                MenuWidgetListOutput::Changed(widgets) => {
                     MenuSettingsInput::ClipboardWidgetListChanged(widgets)
-                } }
+                }
             });
 
         let screenshot_widget_list_controller = MenuWidgetListModel::builder()
             .launch(MenuWidgetListInit {
-                widgets: config_manager().config().menus().screenshot_menu().widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .menus()
+                    .screenshot_menu()
+                    .widgets()
+                    .get_untracked(),
                 draw_border: true,
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { MenuWidgetListOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                MenuWidgetListOutput::Changed(widgets) => {
                     MenuSettingsInput::ScreenshotWidgetListChanged(widgets)
-                } }
+                }
             });
 
         let notifications_widget_list_controller = MenuWidgetListModel::builder()
             .launch(MenuWidgetListInit {
-                widgets: config_manager().config().menus().notification_menu().widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .menus()
+                    .notification_menu()
+                    .widgets()
+                    .get_untracked(),
                 draw_border: true,
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { MenuWidgetListOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                MenuWidgetListOutput::Changed(widgets) => {
                     MenuSettingsInput::NotificationsWidgetListChanged(widgets)
-                } }
+                }
             });
 
         let app_launcher_widget_list_controller = MenuWidgetListModel::builder()
             .launch(MenuWidgetListInit {
-                widgets: config_manager().config().menus().app_launcher_menu().widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .menus()
+                    .app_launcher_menu()
+                    .widgets()
+                    .get_untracked(),
                 draw_border: true,
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { MenuWidgetListOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                MenuWidgetListOutput::Changed(widgets) => {
                     MenuSettingsInput::AppLauncherWidgetListChanged(widgets)
-                } }
+                }
             });
 
         let wallpaper_widget_list_controller = MenuWidgetListModel::builder()
             .launch(MenuWidgetListInit {
-                widgets: config_manager().config().menus().wallpaper_menu().widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .menus()
+                    .wallpaper_menu()
+                    .widgets()
+                    .get_untracked(),
                 draw_border: true,
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { MenuWidgetListOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                MenuWidgetListOutput::Changed(widgets) => {
                     MenuSettingsInput::WallpaperWidgetListChanged(widgets)
-                } }
+                }
             });
 
         let model = MenuSettingsModel {
             quick_settings_widget_list_controller,
-            quick_settings_position: config_manager().config().menus().quick_settings_menu().position().get_untracked(),
-            quick_settings_min_width: config_manager().config().menus().quick_settings_menu().minimum_width().get_untracked(),
+            quick_settings_position: config_manager()
+                .config()
+                .menus()
+                .quick_settings_menu()
+                .position()
+                .get_untracked(),
+            quick_settings_min_width: config_manager()
+                .config()
+                .menus()
+                .quick_settings_menu()
+                .minimum_width()
+                .get_untracked(),
             clock_widget_list_controller,
-            clock_position: config_manager().config().menus().clock_menu().position().get_untracked(),
-            clock_min_width: config_manager().config().menus().clock_menu().minimum_width().get_untracked(),
+            clock_position: config_manager()
+                .config()
+                .menus()
+                .clock_menu()
+                .position()
+                .get_untracked(),
+            clock_min_width: config_manager()
+                .config()
+                .menus()
+                .clock_menu()
+                .minimum_width()
+                .get_untracked(),
             clipboard_widget_list_controller,
-            clipboard_position: config_manager().config().menus().clipboard_menu().position().get_untracked(),
-            clipboard_min_width: config_manager().config().menus().clipboard_menu().minimum_width().get_untracked(),
+            clipboard_position: config_manager()
+                .config()
+                .menus()
+                .clipboard_menu()
+                .position()
+                .get_untracked(),
+            clipboard_min_width: config_manager()
+                .config()
+                .menus()
+                .clipboard_menu()
+                .minimum_width()
+                .get_untracked(),
             screenshot_widget_list_controller,
-            screenshot_position: config_manager().config().menus().screenshot_menu().position().get_untracked(),
-            screenshot_min_width: config_manager().config().menus().screenshot_menu().minimum_width().get_untracked(),
+            screenshot_position: config_manager()
+                .config()
+                .menus()
+                .screenshot_menu()
+                .position()
+                .get_untracked(),
+            screenshot_min_width: config_manager()
+                .config()
+                .menus()
+                .screenshot_menu()
+                .minimum_width()
+                .get_untracked(),
             notifications_widget_list_controller,
-            notifications_position: config_manager().config().menus().notification_menu().position().get_untracked(),
-            notifications_min_width: config_manager().config().menus().notification_menu().minimum_width().get_untracked(),
+            notifications_position: config_manager()
+                .config()
+                .menus()
+                .notification_menu()
+                .position()
+                .get_untracked(),
+            notifications_min_width: config_manager()
+                .config()
+                .menus()
+                .notification_menu()
+                .minimum_width()
+                .get_untracked(),
             app_launcher_widget_list_controller,
-            app_launcher_position: config_manager().config().menus().app_launcher_menu().position().get_untracked(),
-            app_launcher_min_width: config_manager().config().menus().app_launcher_menu().minimum_width().get_untracked(),
+            app_launcher_position: config_manager()
+                .config()
+                .menus()
+                .app_launcher_menu()
+                .position()
+                .get_untracked(),
+            app_launcher_min_width: config_manager()
+                .config()
+                .menus()
+                .app_launcher_menu()
+                .minimum_width()
+                .get_untracked(),
             wallpaper_widget_list_controller,
-            wallpaper_position: config_manager().config().menus().wallpaper_menu().position().get_untracked(),
-            wallpaper_min_width: config_manager().config().menus().wallpaper_menu().minimum_width().get_untracked(),
-            screenshare_position: config_manager().config().menus().screenshare_menu().position().get_untracked(),
-            left_menu_expansion_type: config_manager().config().menus().left_menu_expansion_type().get_untracked(),
-            right_menu_expansion_type: config_manager().config().menus().right_menu_expansion_type().get_untracked(),
+            wallpaper_position: config_manager()
+                .config()
+                .menus()
+                .wallpaper_menu()
+                .position()
+                .get_untracked(),
+            wallpaper_min_width: config_manager()
+                .config()
+                .menus()
+                .wallpaper_menu()
+                .minimum_width()
+                .get_untracked(),
+            screenshare_position: config_manager()
+                .config()
+                .menus()
+                .screenshare_menu()
+                .position()
+                .get_untracked(),
+            left_menu_expansion_type: config_manager()
+                .config()
+                .menus()
+                .left_menu_expansion_type()
+                .get_untracked(),
+            right_menu_expansion_type: config_manager()
+                .config()
+                .menus()
+                .right_menu_expansion_type()
+                .get_untracked(),
             _effects: effects,
         };
 
@@ -1305,7 +1427,8 @@ impl Component for MenuSettingsModel {
                 });
             }
             MenuSettingsInput::QuickSettingsWidgetListEffect(widgets) => {
-                self.quick_settings_widget_list_controller.emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
+                self.quick_settings_widget_list_controller
+                    .emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
             }
             MenuSettingsInput::QuickSettingsPositionEffect(position) => {
                 self.quick_settings_position = position;
@@ -1314,7 +1437,8 @@ impl Component for MenuSettingsModel {
                 self.quick_settings_min_width = width;
             }
             MenuSettingsInput::ClockWidgetListEffect(widgets) => {
-                self.clock_widget_list_controller.emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
+                self.clock_widget_list_controller
+                    .emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
             }
             MenuSettingsInput::ClockPositionEffect(position) => {
                 self.clock_position = position;
@@ -1323,7 +1447,8 @@ impl Component for MenuSettingsModel {
                 self.clock_min_width = width;
             }
             MenuSettingsInput::ClipboardWidgetListEffect(widgets) => {
-                self.clipboard_widget_list_controller.emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
+                self.clipboard_widget_list_controller
+                    .emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
             }
             MenuSettingsInput::ClipboardPositionEffect(position) => {
                 self.clipboard_position = position;
@@ -1332,7 +1457,8 @@ impl Component for MenuSettingsModel {
                 self.clipboard_min_width = width;
             }
             MenuSettingsInput::ScreenshotWidgetListEffect(widgets) => {
-                self.screenshot_widget_list_controller.emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
+                self.screenshot_widget_list_controller
+                    .emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
             }
             MenuSettingsInput::ScreenshotPositionEffect(position) => {
                 self.screenshot_position = position;
@@ -1341,7 +1467,8 @@ impl Component for MenuSettingsModel {
                 self.screenshot_min_width = width;
             }
             MenuSettingsInput::NotificationsWidgetListEffect(widgets) => {
-                self.notifications_widget_list_controller.emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
+                self.notifications_widget_list_controller
+                    .emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
             }
             MenuSettingsInput::NotificationsPositionEffect(position) => {
                 self.notifications_position = position;
@@ -1350,7 +1477,8 @@ impl Component for MenuSettingsModel {
                 self.notifications_min_width = width;
             }
             MenuSettingsInput::AppLauncherWidgetListEffect(widgets) => {
-                self.app_launcher_widget_list_controller.emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
+                self.app_launcher_widget_list_controller
+                    .emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
             }
             MenuSettingsInput::AppLauncherPositionEffect(position) => {
                 self.app_launcher_position = position;
@@ -1359,7 +1487,8 @@ impl Component for MenuSettingsModel {
                 self.app_launcher_min_width = width;
             }
             MenuSettingsInput::WallpaperWidgetListEffect(widgets) => {
-                self.wallpaper_widget_list_controller.emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
+                self.wallpaper_widget_list_controller
+                    .emit(MenuWidgetListInput::SetWidgetsEffect(widgets));
             }
             MenuSettingsInput::WallpaperPositionEffect(position) => {
                 self.wallpaper_position = position;

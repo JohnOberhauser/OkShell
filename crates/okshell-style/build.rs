@@ -1,8 +1,4 @@
-use std::{
-    env,
-    fs,
-    path::PathBuf,
-};
+use std::{env, fs, path::PathBuf};
 
 fn main() {
     println!("cargo:rerun-if-changed=scss");
@@ -18,8 +14,8 @@ fn main() {
         .unwrap_or_else(|e| panic!("Failed to read {}: {e}", entry.display()));
     let mut opts = grass::Options::default();
     opts = opts.load_path("scss");
-    let css = grass::from_string(scss, &opts)
-        .unwrap_or_else(|e| panic!("SCSS compile failed: {e}"));
+    let css =
+        grass::from_string(scss, &opts).unwrap_or_else(|e| panic!("SCSS compile failed: {e}"));
     fs::write(&css_out, css)
         .unwrap_or_else(|e| panic!("Failed to write {}: {e}", css_out.display()));
 }

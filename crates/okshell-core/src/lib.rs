@@ -1,22 +1,24 @@
-mod relm_app;
-mod monitors;
 mod ipc;
+mod monitors;
+mod relm_app;
 
-use std::cell::Cell;
-use relm4::prelude::*;
-use std::error::Error;
-use std::sync::OnceLock;
+use crate::relm_app::{Shell, ShellInit};
 use any_spawner::Executor;
+use okshell_config::schema::config::{
+    ConfigStoreFields, GeneralStoreFields, IconsStoreFields, ThemeStoreFields,
+};
+use okshell_idle::inhibitor::IdleInhibitor;
+use okshell_services::weather_service;
 use reactive_graph::effect::Effect;
 use reactive_graph::traits::{Get, GetUntracked};
+use relm4::prelude::*;
+use std::cell::Cell;
+use std::error::Error;
+use std::sync::OnceLock;
 use tokio::runtime::Runtime;
 use tracing;
 use tracing::info;
 use wayle_weather::{LocationQuery, TemperatureUnit};
-use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields, IconsStoreFields, ThemeStoreFields};
-use okshell_idle::inhibitor::IdleInhibitor;
-use okshell_services::weather_service;
-use crate::relm_app::{Shell, ShellInit};
 
 static TOKIO_RT: OnceLock<Runtime> = OnceLock::new();
 
@@ -36,26 +38,36 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let _ = okshell_cache::wallpaper::wallpaper_store();
 
     let location_query = LocationQuery::from(
-        config_manager.config().general().weather_location_query().get_untracked()
+        config_manager
+            .config()
+            .general()
+            .weather_location_query()
+            .get_untracked(),
     );
 
     let temperature_units = TemperatureUnit::from(
-        config_manager.config().general().temperature_unit().get_untracked()
+        config_manager
+            .config()
+            .general()
+            .temperature_unit()
+            .get_untracked(),
     );
 
     tokio_rt().block_on(async {
-        okshell_services::init_services(
-            location_query,
-            temperature_units,
-        ).await
+        okshell_services::init_services(location_query, temperature_units).await
     })?;
 
     tokio_rt().spawn(async move {
         let _ = IdleInhibitor::global().init().await;
     });
-    
+
     Effect::new(move |_| {
-        let theme = config_manager.config().theme().icons().shell_icon_theme().get();
+        let theme = config_manager
+            .config()
+            .theme()
+            .icons()
+            .shell_icon_theme()
+            .get();
         gtk::Settings::default()
             .unwrap()
             .set_gtk_icon_theme_name(Some(theme.as_str()));
@@ -64,7 +76,11 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     // skip first run
     let initialized = Cell::new(false);
     Effect::new(move |_| {
-        let location_query = config_manager.config().general().weather_location_query().get();
+        let location_query = config_manager
+            .config()
+            .general()
+            .weather_location_query()
+            .get();
         if !initialized.get() {
             initialized.set(true);
             return;

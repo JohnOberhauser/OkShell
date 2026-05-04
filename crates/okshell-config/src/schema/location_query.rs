@@ -1,7 +1,7 @@
-use std::hash::{Hash, Hasher};
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 use wayle_weather::LocationQuery;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
@@ -14,12 +14,14 @@ pub enum LocationQueryConfig {
 impl From<LocationQueryConfig> for LocationQuery {
     fn from(c: LocationQueryConfig) -> Self {
         match c {
-            LocationQueryConfig::Coordinates { lat, lon } => {
-                LocationQuery::Coordinates { lat: lat.0, lon: lon.0 }
-            }
-            LocationQueryConfig::City { name, country } => {
-                LocationQuery::City { name, country: Some(country) }
-            }
+            LocationQueryConfig::Coordinates { lat, lon } => LocationQuery::Coordinates {
+                lat: lat.0,
+                lon: lon.0,
+            },
+            LocationQueryConfig::City { name, country } => LocationQuery::City {
+                name,
+                country: Some(country),
+            },
         }
     }
 }

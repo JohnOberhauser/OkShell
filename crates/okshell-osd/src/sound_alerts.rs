@@ -1,11 +1,11 @@
 use gtk4::glib;
 use gtk4::prelude::{GtkWindowExt, WidgetExt};
 use gtk4_layer_shell::{Layer, LayerShell};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use wayle_battery::types::{DeviceState};
 use okshell_services::{battery_service, line_power_service};
 use okshell_sounds::{play_battery_low, play_power_plug_sound, play_power_unplug_sound};
 use okshell_utils::battery::{spawn_battery_online_watcher, spawn_battery_watcher};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use wayle_battery::types::DeviceState;
 
 #[derive(Debug)]
 pub struct SoundAlertsModel {
@@ -48,20 +48,13 @@ impl Component for SoundAlertsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         root.init_layer_shell();
         root.set_layer(Layer::Background);
         root.set_exclusive_zone(-1);
 
-        spawn_battery_watcher(
-            &sender,
-            ||SoundAlertsCommandOutput::BatteryChanged,
-        );
+        spawn_battery_watcher(&sender, || SoundAlertsCommandOutput::BatteryChanged);
 
-        spawn_battery_online_watcher(
-            &sender,
-            ||SoundAlertsCommandOutput::BatteryTypeChanged,
-        );
+        spawn_battery_online_watcher(&sender, || SoundAlertsCommandOutput::BatteryTypeChanged);
 
         let model = SoundAlertsModel {
             battery_sound_tick_source: None,
@@ -85,7 +78,7 @@ impl Component for SoundAlertsModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             SoundAlertsCommandOutput::BatteryChanged => {

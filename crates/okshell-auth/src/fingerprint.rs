@@ -95,11 +95,11 @@ impl FingerprintAuth {
 
             let event = match args.result {
                 "verify-match" => FingerprintEvent::Match,
-                "verify-no-match" |
-                "verify-retry-scan" |
-                "verify-swipe-too-short" |
-                "verify-finger-not-centered" |
-                "verify-remove-and-retry" => FingerprintEvent::NoMatch,
+                "verify-no-match"
+                | "verify-retry-scan"
+                | "verify-swipe-too-short"
+                | "verify-finger-not-centered"
+                | "verify-remove-and-retry" => FingerprintEvent::NoMatch,
                 "verify-unknown-error" => FingerprintEvent::UnknownError,
                 "verify-disconnected" => FingerprintEvent::Error("Device disconnected".into()),
                 other => FingerprintEvent::Error(format!("Unexpected: {other}")),

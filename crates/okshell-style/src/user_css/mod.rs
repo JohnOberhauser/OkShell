@@ -1,4 +1,4 @@
-pub mod user_style_manager;
+mod paths;
 pub mod style;
 pub mod style_utils;
-mod paths;
+pub mod user_style_manager;

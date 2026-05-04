@@ -1,11 +1,11 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
+use crate::common::*;
+use crate::utils::find_gdk_monitor;
 use gtk4::prelude::*;
 use gtk4::{cairo, gdk, glib};
 use gtk4_layer_shell::LayerShell;
-use crate::utils::find_gdk_monitor;
-use crate::common::*;
 
 struct OverlayInfo {
     window: gtk4::Window,
@@ -87,9 +87,7 @@ where
     for output in outputs {
         let gdk_monitor = find_gdk_monitor(&monitors, output);
         let (window, _) = create_monitor_overlay(output, gdk_monitor.as_ref(), &state);
-        state.overlays.borrow_mut().push(OverlayInfo {
-            window,
-        });
+        state.overlays.borrow_mut().push(OverlayInfo { window });
     }
 
     for info in state.overlays.borrow().iter() {
@@ -138,11 +136,7 @@ fn create_monitor_overlay(
     let da_for_draw = drawing_area.clone();
     drawing_area.set_draw_func(move |_area, cr, width, height| {
         let color = da_for_draw.color();
-        let is_hovered = state_draw
-            .hovered
-            .borrow()
-            .as_deref()
-            == Some(output_name_draw.as_str());
+        let is_hovered = state_draw.hovered.borrow().as_deref() == Some(output_name_draw.as_str());
         draw_monitor_overlay(cr, width, height, is_hovered, &color);
     });
 
@@ -155,11 +149,8 @@ fn create_monitor_overlay(
         // First real mouse movement activates the motion tracking.
         state_motion.activated.set(true);
 
-        let needs_update = state_motion
-            .hovered
-            .borrow()
-            .as_deref()
-            != Some(output_name_motion.as_str());
+        let needs_update =
+            state_motion.hovered.borrow().as_deref() != Some(output_name_motion.as_str());
         if needs_update {
             *state_motion.hovered.borrow_mut() = Some(output_name_motion.clone());
             state_motion.redraw_all();

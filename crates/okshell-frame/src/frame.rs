@@ -1,22 +1,20 @@
+use crate::bars::bar::{BarInit, BarInput, BarModel, BarOutput, BarType};
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
-use relm4::prelude::*;
-use relm4::gtk::{self, gdk, prelude::*, glib, Widget};
-use reactive_graph::traits::*;
-use relm4::RelmRemoveAllExt;
-use tracing::info;
 use okshell_common::box_with_resize::BoxWithResize;
 use okshell_common::scoped_effects::EffectScope;
-use okshell_config::{
-    schema::config::*
-};
 use okshell_config::config_manager::config_manager;
+use okshell_config::schema::config::*;
 use okshell_config::schema::position::Position;
-use crate::bars::bar::{BarInit, BarInput, BarModel, BarOutput, BarType};
+use reactive_graph::traits::*;
+use relm4::RelmRemoveAllExt;
+use relm4::gtk::{self, Widget, gdk, glib, prelude::*};
+use relm4::prelude::*;
+use tracing::info;
 
 use crate::frame_draw_widget::FrameDrawWidget;
 use crate::frame_spacer::{FrameSpacerInit, FrameSpacerInput, FrameSpacerModel};
-use crate::menus::menu::{MenuInit, MenuInput, MenuModel, MenuOutput, MenuType};
 use crate::menus::menu::MenuInput::ForwardHyprlandScreenshareReply;
+use crate::menus::menu::{MenuInit, MenuInput, MenuModel, MenuOutput, MenuType};
 
 const CLOCK_MENU: &str = "clock";
 const CLIPBOARD_MENU: &str = "clipboard";
@@ -63,7 +61,16 @@ pub enum FrameInput {
     QueueFrameRedraw,
     SetLeftMenuExpansionType(VerticalMenuExpansion),
     SetRightMenuExpansionType(VerticalMenuExpansion),
-    RepositionMenus(Position, Position, Position, Position, Position, Position, Position, Position),
+    RepositionMenus(
+        Position,
+        Position,
+        Position,
+        Position,
+        Position,
+        Position,
+        Position,
+        Position,
+    ),
     ToggleClockMenu,
     ToggleClipboardMenu,
     ToggleQuickSettingsMenu,
@@ -568,7 +575,8 @@ impl Component for Frame {
             let config = menu_config.clone();
             let clipboard_menu_position = config.menus().clipboard_menu().position().get();
             let config = menu_config.clone();
-            let quick_settings_menu_position = config.menus().quick_settings_menu().position().get();
+            let quick_settings_menu_position =
+                config.menus().quick_settings_menu().position().get();
             let config = menu_config.clone();
             let notification_menu_position = config.menus().notification_menu().position().get();
             let config = menu_config.clone();
@@ -593,28 +601,28 @@ impl Component for Frame {
 
         let monitor_clone = params.monitor.clone();
         let top_spacer = FrameSpacerModel::builder()
-            .launch(FrameSpacerInit{
+            .launch(FrameSpacerInit {
                 bar_type: BarType::Top,
                 monitor: monitor_clone,
             })
             .detach();
         let monitor_clone = params.monitor.clone();
         let bottom_spacer = FrameSpacerModel::builder()
-            .launch(FrameSpacerInit{
+            .launch(FrameSpacerInit {
                 bar_type: BarType::Bottom,
                 monitor: monitor_clone,
             })
             .detach();
         let monitor_clone = params.monitor.clone();
         let left_spacer = FrameSpacerModel::builder()
-            .launch(FrameSpacerInit{
+            .launch(FrameSpacerInit {
                 bar_type: BarType::Left,
                 monitor: monitor_clone,
             })
             .detach();
         let monitor_clone = params.monitor.clone();
         let right_spacer = FrameSpacerModel::builder()
-            .launch(FrameSpacerInit{
+            .launch(FrameSpacerInit {
                 bar_type: BarType::Right,
                 monitor: monitor_clone,
             })
@@ -625,7 +633,13 @@ impl Component for Frame {
         let left_sender = left_spacer.sender().clone();
         let right_sender = right_spacer.sender().clone();
         effects.push(move |_| {
-            let border_width = config_manager().config().theme().attributes().sizing().border_width().get();
+            let border_width = config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .sizing()
+                .border_width()
+                .get();
             top_sender.emit(FrameSpacerInput::BorderHeightUpdated(border_width));
             bottom_sender.emit(FrameSpacerInput::BorderHeightUpdated(border_width));
             left_sender.emit(FrameSpacerInput::BorderWidthUpdated(border_width));
@@ -674,11 +688,13 @@ impl Component for Frame {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             FrameInput::SetDrawFrame(draw_frame) => {
-                widgets.frame_draw_widget.update_style(|s| s.draw_frame = draw_frame);
+                widgets
+                    .frame_draw_widget
+                    .update_style(|s| s.draw_frame = draw_frame);
             }
             FrameInput::QueueFrameRedraw => {
                 widgets.frame_draw_widget.queue_draw();
@@ -713,53 +729,30 @@ impl Component for Frame {
                 );
             }
             FrameInput::ToggleClockMenu => {
-                self.toggle_menu(
-                    CLOCK_MENU,
-                    widgets,
-                );
+                self.toggle_menu(CLOCK_MENU, widgets);
             }
             FrameInput::ToggleClipboardMenu => {
-                self.toggle_menu(
-                    CLIPBOARD_MENU,
-                    widgets,
-                );
+                self.toggle_menu(CLIPBOARD_MENU, widgets);
             }
             FrameInput::ToggleQuickSettingsMenu => {
-                self.toggle_menu(
-                    QUICK_SETTINGS_MENU,
-                    widgets,
-                );
+                self.toggle_menu(QUICK_SETTINGS_MENU, widgets);
             }
             FrameInput::ToggleNotificationMenu => {
-                self.toggle_menu(
-                    NOTIFICATION_MENU,
-                    widgets,
-                );
+                self.toggle_menu(NOTIFICATION_MENU, widgets);
             }
             FrameInput::ToggleScreenshotMenu => {
-                self.toggle_menu(
-                    SCREENSHOT_MENU,
-                    widgets,
-                );
+                self.toggle_menu(SCREENSHOT_MENU, widgets);
             }
             FrameInput::ToggleAppLauncherMenu => {
-                self.toggle_menu(
-                    APP_LAUNCHER_MENU,
-                    widgets,
-                );
+                self.toggle_menu(APP_LAUNCHER_MENU, widgets);
             }
             FrameInput::ToggleWallpaperMenu => {
-                self.toggle_menu(
-                    WALLPAPER_MENU,
-                    widgets,
-                );
+                self.toggle_menu(WALLPAPER_MENU, widgets);
             }
             FrameInput::ToggleScreenshareMenu(reply, payload) => {
-                self.screenshare_menu.emit(ForwardHyprlandScreenshareReply(reply, payload));
-                self.toggle_menu(
-                    SCREENSHARE_MENU,
-                    widgets,
-                );
+                self.screenshare_menu
+                    .emit(ForwardHyprlandScreenshareReply(reply, payload));
+                self.toggle_menu(SCREENSHARE_MENU, widgets);
             }
             FrameInput::CloseMenus => {
                 self.right_revealed = false;
@@ -847,11 +840,7 @@ impl Component for Frame {
 }
 
 impl Frame {
-    fn toggle_menu(
-        &mut self,
-        name: &str,
-        widgets: &mut FrameWidgets,
-    ) {
+    fn toggle_menu(&mut self, name: &str, widgets: &mut FrameWidgets) {
         let mut now_visible = true;
         let in_left = widgets.left_stack.child_by_name(name).is_some();
         let in_right = widgets.right_stack.child_by_name(name).is_some();
@@ -964,9 +953,7 @@ impl Frame {
 
         self.clock_menu
             .sender()
-            .send(MenuInput::RevealChanged(
-                name == CLOCK_MENU && now_visible,
-            ))
+            .send(MenuInput::RevealChanged(name == CLOCK_MENU && now_visible))
             .unwrap_or_default();
 
         self.clipboard_menu
@@ -1021,35 +1008,28 @@ impl Frame {
 
     // Can't use sender for this.  Must queue redraw in the callback.  Otherwise, there is a slight
     // delay and the frame isn't draw immediately.
-    fn attach_resize_listeners(
-        &self,
-        widgets: &FrameWidgets,
-    ) {
+    fn attach_resize_listeners(&self, widgets: &FrameWidgets) {
         let frame_widget = widgets.frame_draw_widget.clone();
         let top_sender = self.top_spacer.sender().clone();
-        widgets.top_bar_container.connect_local(
-            "resized",
-            false,
-            move |values| {
+        widgets
+            .top_bar_container
+            .connect_local("resized", false, move |values| {
                 let height = values[2].get::<i32>().expect("height i32");
                 frame_widget.update_style(|s| s.top_thickness = height as f64);
                 let _ = top_sender.send(FrameSpacerInput::HeightUpdated(height));
                 None
-            },
-        );
+            });
 
         let frame_widget = widgets.frame_draw_widget.clone();
         let bottom_sender = self.bottom_spacer.sender().clone();
-        widgets.bottom_bar_container.connect_local(
-            "resized",
-            false,
-            move |values| {
+        widgets
+            .bottom_bar_container
+            .connect_local("resized", false, move |values| {
                 let height = values[2].get::<i32>().expect("height i32");
                 frame_widget.update_style(|s| s.bottom_thickness = height as f64);
                 let _ = bottom_sender.send(FrameSpacerInput::HeightUpdated(height));
                 None
-            },
-        );
+            });
 
         let frame_widget = widgets.frame_draw_widget.clone();
         widgets.left_bar_and_menu_container.connect_local(
@@ -1062,15 +1042,13 @@ impl Frame {
             },
         );
         let left_sender = self.left_spacer.sender().clone();
-        widgets.left_bar_container.connect_local(
-            "resized",
-            false,
-            move |values| {
+        widgets
+            .left_bar_container
+            .connect_local("resized", false, move |values| {
                 let width = values[1].get::<i32>().expect("width i32");
                 let _ = left_sender.send(FrameSpacerInput::WidthUpdated(width));
                 None
-            },
-        );
+            });
 
         let frame_widget = widgets.frame_draw_widget.clone();
         widgets.right_bar_and_menu_container.connect_local(
@@ -1083,15 +1061,13 @@ impl Frame {
             },
         );
         let right_sender = self.right_spacer.sender().clone();
-        widgets.right_bar_container.connect_local(
-            "resized",
-            false,
-            move |values| {
+        widgets
+            .right_bar_container
+            .connect_local("resized", false, move |values| {
                 let width = values[1].get::<i32>().expect("width i32");
                 let _ = right_sender.send(FrameSpacerInput::WidthUpdated(width));
                 None
-            },
-        );
+            });
 
         let frame_widget = widgets.frame_draw_widget.clone();
         widgets.top_left_expander.connect_local(
@@ -1173,7 +1149,8 @@ impl Frame {
             move |values: &[glib::Value]| {
                 let width = values[1].get::<i32>().expect("width i32");
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.top_left_revealer_size = (width as f64, height as f64));
+                frame_widget
+                    .update_style(|s| s.top_left_revealer_size = (width as f64, height as f64));
                 None
             },
         );
@@ -1185,7 +1162,8 @@ impl Frame {
             move |values: &[glib::Value]| {
                 let width = values[1].get::<i32>().expect("width i32");
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.top_right_revealer_size = (width as f64, height as f64));
+                frame_widget
+                    .update_style(|s| s.top_right_revealer_size = (width as f64, height as f64));
                 None
             },
         );
@@ -1197,7 +1175,8 @@ impl Frame {
             move |values: &[glib::Value]| {
                 let width = values[1].get::<i32>().expect("width i32");
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.bottom_revealer_size = (width as f64, height as f64));
+                frame_widget
+                    .update_style(|s| s.bottom_revealer_size = (width as f64, height as f64));
                 None
             },
         );
@@ -1209,7 +1188,8 @@ impl Frame {
             move |values: &[glib::Value]| {
                 let width = values[1].get::<i32>().expect("width i32");
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.bottom_left_revealer_size = (width as f64, height as f64));
+                frame_widget
+                    .update_style(|s| s.bottom_left_revealer_size = (width as f64, height as f64));
                 None
             },
         );
@@ -1221,7 +1201,8 @@ impl Frame {
             move |values: &[glib::Value]| {
                 let width = values[1].get::<i32>().expect("width i32");
                 let height = values[2].get::<i32>().expect("height i32");
-                frame_widget.update_style(|s| s.bottom_right_revealer_size = (width as f64, height as f64));
+                frame_widget
+                    .update_style(|s| s.bottom_right_revealer_size = (width as f64, height as f64));
                 None
             },
         );
@@ -1258,21 +1239,51 @@ impl Frame {
         widgets.bottom_right_stack.remove_all();
 
         Self::add_to_stack(widgets, &clock_widget, CLOCK_MENU, &clock_menu_position);
-        Self::add_to_stack(widgets, &clipboard_widget, CLIPBOARD_MENU, &clipboard_menu_position);
-        Self::add_to_stack(widgets, &quick_settings_widget, QUICK_SETTINGS_MENU, &quick_settings_position);
-        Self::add_to_stack(widgets, &notification_menu_widget, NOTIFICATION_MENU, &notification_menu_position);
-        Self::add_to_stack(widgets, &screenshot_menu_widget, SCREENSHOT_MENU, &screenshot_menu_position);
-        Self::add_to_stack(widgets, &app_launcher_menu_widget, APP_LAUNCHER_MENU, &app_launcher_menu_position);
-        Self::add_to_stack(widgets, &wallpaper_menu_widget, WALLPAPER_MENU, &wallpaper_menu_position);
-        Self::add_to_stack(widgets, &screenshare_menu_widget, SCREENSHARE_MENU, &screenshare_menu_position);
+        Self::add_to_stack(
+            widgets,
+            &clipboard_widget,
+            CLIPBOARD_MENU,
+            &clipboard_menu_position,
+        );
+        Self::add_to_stack(
+            widgets,
+            &quick_settings_widget,
+            QUICK_SETTINGS_MENU,
+            &quick_settings_position,
+        );
+        Self::add_to_stack(
+            widgets,
+            &notification_menu_widget,
+            NOTIFICATION_MENU,
+            &notification_menu_position,
+        );
+        Self::add_to_stack(
+            widgets,
+            &screenshot_menu_widget,
+            SCREENSHOT_MENU,
+            &screenshot_menu_position,
+        );
+        Self::add_to_stack(
+            widgets,
+            &app_launcher_menu_widget,
+            APP_LAUNCHER_MENU,
+            &app_launcher_menu_position,
+        );
+        Self::add_to_stack(
+            widgets,
+            &wallpaper_menu_widget,
+            WALLPAPER_MENU,
+            &wallpaper_menu_position,
+        );
+        Self::add_to_stack(
+            widgets,
+            &screenshare_menu_widget,
+            SCREENSHARE_MENU,
+            &screenshare_menu_position,
+        );
     }
 
-    fn add_to_stack(
-        widgets: &FrameWidgets,
-        widget: &Widget,
-        name: &str,
-        position: &Position,
-    ) {
+    fn add_to_stack(widgets: &FrameWidgets, widget: &Widget, name: &str, position: &Position) {
         match position {
             Position::Top => {
                 widgets.top_stack.add_named(widget, Some(name));
@@ -1301,58 +1312,26 @@ impl Frame {
         }
     }
 
-    fn build_bar(
-        sender: &ComponentSender<Self>,
-        bar_type: BarType,
-    ) -> Controller<BarModel> {
+    fn build_bar(sender: &ComponentSender<Self>, bar_type: BarType) -> Controller<BarModel> {
         BarModel::builder()
-            .launch(BarInit {
-                bar_type,
-            })
-            .forward(sender.input_sender(), |msg| {
-                match msg {
-                    BarOutput::ClockClicked => {
-                        FrameInput::ToggleClockMenu
-                    }
-                    BarOutput::ClipboardClicked => {
-                        FrameInput::ToggleClipboardMenu
-                    }
-                    BarOutput::MainMenuClicked => {
-                        FrameInput::ToggleQuickSettingsMenu
-                    }
-                    BarOutput::NotificationsClicked => {
-                        FrameInput::ToggleNotificationMenu
-                    }
-                    BarOutput::ScreenshotClicked => {
-                        FrameInput::ToggleScreenshotMenu
-                    }
-                    BarOutput::AppLauncherClicked => {
-                        FrameInput::ToggleAppLauncherMenu
-                    }
-                    BarOutput::WallpaperClicked => {
-                        FrameInput::ToggleWallpaperMenu
-                    }
-                    BarOutput::CloseMenu => {
-                        FrameInput::CloseMenus
-                    }
-                }
+            .launch(BarInit { bar_type })
+            .forward(sender.input_sender(), |msg| match msg {
+                BarOutput::ClockClicked => FrameInput::ToggleClockMenu,
+                BarOutput::ClipboardClicked => FrameInput::ToggleClipboardMenu,
+                BarOutput::MainMenuClicked => FrameInput::ToggleQuickSettingsMenu,
+                BarOutput::NotificationsClicked => FrameInput::ToggleNotificationMenu,
+                BarOutput::ScreenshotClicked => FrameInput::ToggleScreenshotMenu,
+                BarOutput::AppLauncherClicked => FrameInput::ToggleAppLauncherMenu,
+                BarOutput::WallpaperClicked => FrameInput::ToggleWallpaperMenu,
+                BarOutput::CloseMenu => FrameInput::CloseMenus,
             })
     }
 
-    fn build_menu(
-        sender: &ComponentSender<Self>,
-        menu_type: MenuType,
-    ) -> Controller<MenuModel> {
+    fn build_menu(sender: &ComponentSender<Self>, menu_type: MenuType) -> Controller<MenuModel> {
         MenuModel::builder()
-            .launch(MenuInit {
-                menu_type,
-            })
-            .forward(sender.input_sender(), |msg| {
-                match msg {
-                    MenuOutput::CloseMenu => {
-                        FrameInput::CloseMenus
-                    }
-                }
+            .launch(MenuInit { menu_type })
+            .forward(sender.input_sender(), |msg| match msg {
+                MenuOutput::CloseMenu => FrameInput::CloseMenus,
             })
     }
 }

@@ -1,6 +1,6 @@
-use relm4::{Component, ComponentSender};
 use okshell_common::watch;
 use okshell_services::brightness_service;
+use relm4::{Component, ComponentSender};
 
 pub fn get_brightness_icon(percentage: f64) -> &'static str {
     if percentage > 66f64 {
@@ -15,8 +15,7 @@ pub fn get_brightness_icon(percentage: f64) -> &'static str {
 pub fn spawn_brightness_watcher<C>(
     sender: &ComponentSender<C>,
     map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
@@ -26,15 +25,9 @@ where
         if let Some(device) = device {
             let brightness = device.brightness.clone();
 
-            watch!(
-                sender,
-                [
-                    brightness.watch(),
-                ],
-                |out| {
-                    let _ = out.send(map_state());
-                }
-            );
+            watch!(sender, [brightness.watch(),], |out| {
+                let _ = out.send(map_state());
+            });
         }
     }
 }

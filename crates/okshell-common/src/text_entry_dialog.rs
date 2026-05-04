@@ -1,6 +1,6 @@
-use gtk4_layer_shell::{KeyboardMode, LayerShell};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use gtk::prelude::*;
+use gtk4_layer_shell::{KeyboardMode, LayerShell};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 pub struct TextEntryDialogModel {
     message: String,
@@ -149,16 +149,14 @@ impl Component for TextEntryDialogModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        root: &Self::Root
+        root: &Self::Root,
     ) {
         match message {
             TextEntryDialogInput::PositiveClicked => {
-                let _ = sender.output(
-                    TextEntryDialogOutput::PositiveSelected(
-                        widgets.entry.text().to_string(),
-                        widgets.entry2.text().to_string(),
-                    )
-                );
+                let _ = sender.output(TextEntryDialogOutput::PositiveSelected(
+                    widgets.entry.text().to_string(),
+                    widgets.entry2.text().to_string(),
+                ));
                 sender.input(TextEntryDialogInput::Close);
             }
             TextEntryDialogInput::Close => {

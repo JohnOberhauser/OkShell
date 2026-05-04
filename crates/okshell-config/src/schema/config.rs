@@ -1,14 +1,18 @@
-use reactive_stores::{KeyMap, Patch, PatchField, Store, StorePath};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 use crate::schema::bar_widgets::BarWidget;
 use crate::schema::content_fit::ContentFit;
 use crate::schema::location_query::{LocationQueryConfig, OrdF64};
-use crate::schema::menu_widgets::{MenuWidget, QuickActionWidget, QuickActionsConfig, SpacerConfig};
+use crate::schema::menu_widgets::{
+    MenuWidget, QuickActionWidget, QuickActionsConfig, SpacerConfig,
+};
 use crate::schema::position::{NotificationPosition, Position};
 use crate::schema::temperature::TemperatureUnitConfig;
-use crate::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
+use crate::schema::themes::{
+    MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity,
+};
 use crate::schema::wallpaper::{ContrastFilterStrength, ThemeFilterStrength};
+use reactive_stores::{KeyMap, Patch, PatchField, Store, StorePath};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, Patch, JsonSchema)]
 #[serde(default)]
@@ -188,19 +192,14 @@ pub struct Bars {
 impl Default for Bars {
     fn default() -> Self {
         Self {
-            frame: Frame::default() ,
+            frame: Frame::default(),
             top_bar: HorizontalBar::default(),
             bottom_bar: HorizontalBar::default(),
             left_bar: VerticalBar {
                 minimum_width: 0,
                 reveal_by_default: true,
-                top_widgets: vec![
-                    BarWidget::QuickSettings,
-                    BarWidget::HyprlandWorkspaces,
-                ],
-                center_widgets: vec![
-                    BarWidget::HyprlandDock,
-                ],
+                top_widgets: vec![BarWidget::QuickSettings, BarWidget::HyprlandWorkspaces],
+                center_widgets: vec![BarWidget::HyprlandDock],
                 bottom_widgets: vec![
                     BarWidget::RecordingIndicator,
                     BarWidget::Tray,
@@ -243,9 +242,7 @@ impl Default for Menus {
                 position: Position::Left,
                 widgets: vec![
                     MenuWidget::Calendar,
-                    MenuWidget::Spacer(SpacerConfig {
-                        size: 20,
-                    }),
+                    MenuWidget::Spacer(SpacerConfig { size: 20 }),
                     MenuWidget::Weather,
                 ],
                 minimum_width: 410,
@@ -265,36 +262,24 @@ impl Default for Menus {
                     MenuWidget::AudioInput,
                     MenuWidget::PowerProfiles,
                     MenuWidget::MediaPlayer,
-                    MenuWidget::Spacer(
-                        SpacerConfig {
-                            size: 20,
-                        }
-                    ),
-                    MenuWidget::QuickActions(
-                        QuickActionsConfig {
-                            widgets: vec![
-                                QuickActionWidget::AirplaneMode,
-                                QuickActionWidget::Nightlight,
-                                QuickActionWidget::HyprPicker,
-                                QuickActionWidget::Settings,
-                            ]
-                        }
-                    ),
-                    MenuWidget::Spacer(
-                        SpacerConfig {
-                            size: 20,
-                        }
-                    ),
-                    MenuWidget::QuickActions(
-                        QuickActionsConfig {
-                            widgets: vec![
-                                QuickActionWidget::Logout,
-                                QuickActionWidget::Lock,
-                                QuickActionWidget::Reboot,
-                                QuickActionWidget::Shutdown,
-                            ]
-                        }
-                    ),
+                    MenuWidget::Spacer(SpacerConfig { size: 20 }),
+                    MenuWidget::QuickActions(QuickActionsConfig {
+                        widgets: vec![
+                            QuickActionWidget::AirplaneMode,
+                            QuickActionWidget::Nightlight,
+                            QuickActionWidget::HyprPicker,
+                            QuickActionWidget::Settings,
+                        ],
+                    }),
+                    MenuWidget::Spacer(SpacerConfig { size: 20 }),
+                    MenuWidget::QuickActions(QuickActionsConfig {
+                        widgets: vec![
+                            QuickActionWidget::Logout,
+                            QuickActionWidget::Lock,
+                            QuickActionWidget::Reboot,
+                            QuickActionWidget::Shutdown,
+                        ],
+                    }),
                 ],
                 minimum_width: 410,
             },
@@ -305,7 +290,11 @@ impl Default for Menus {
             },
             screenshot_menu: Menu {
                 position: Position::Left,
-                widgets: vec![MenuWidget::Screenshots, MenuWidget::Divider, MenuWidget::ScreenRecording],
+                widgets: vec![
+                    MenuWidget::Screenshots,
+                    MenuWidget::Divider,
+                    MenuWidget::ScreenRecording,
+                ],
                 minimum_width: 410,
             },
             app_launcher_menu: Menu {
@@ -467,7 +456,7 @@ impl PatchField for VerticalMenuExpansion {
         new: Self,
         path: &StorePath,
         notify: &mut dyn FnMut(&StorePath),
-        _keys: Option<&KeyMap>
+        _keys: Option<&KeyMap>,
     ) {
         if *self != new {
             *self = new;

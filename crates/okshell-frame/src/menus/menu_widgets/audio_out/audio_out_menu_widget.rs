@@ -1,17 +1,26 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::prelude::WidgetExt;
-use wayle_audio::core::device::output::OutputDevice;
-use wayle_audio::volume::types::Volume;
+use crate::common_widgets::revealer_row::revealer_row::{
+    RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput,
+};
+use crate::common_widgets::revealer_row::revealer_row_slider::{
+    RevealerRowSliderInit, RevealerRowSliderInput, RevealerRowSliderModel, RevealerRowSliderOutput,
+};
+use crate::menus::menu_widgets::audio_out::audio_out_revealed_content::{
+    AudioOutRevealedContentInit, AudioOutRevealedContentInput, AudioOutRevealedContentModel,
+};
 use okshell_common::WatcherToken;
 use okshell_services::audio_service;
-use crate::common_widgets::revealer_row::revealer_row::{RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput};
-use crate::common_widgets::revealer_row::revealer_row_slider::{RevealerRowSliderInit, RevealerRowSliderInput, RevealerRowSliderModel, RevealerRowSliderOutput};
-use crate::menus::menu_widgets::audio_out::audio_out_revealed_content::{AudioOutRevealedContentInit, AudioOutRevealedContentInput, AudioOutRevealedContentModel};
-use okshell_utils::audio::{get_audio_out_icon, spawn_default_output_watcher, spawn_output_device_volume_mute_watcher};
+use okshell_utils::audio::{
+    get_audio_out_icon, spawn_default_output_watcher, spawn_output_device_volume_mute_watcher,
+};
+use relm4::gtk::prelude::WidgetExt;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_audio::core::device::output::OutputDevice;
+use wayle_audio::volume::types::Volume;
 
 pub(crate) struct AudioOutMenuWidgetModel {
-    revealer_row: Controller<RevealerRowModel<RevealerRowSliderModel, AudioOutRevealedContentModel>>,
+    revealer_row:
+        Controller<RevealerRowModel<RevealerRowSliderModel, AudioOutRevealedContentModel>>,
     active_device_watcher_token: WatcherToken,
 }
 
@@ -57,47 +66,37 @@ impl Component for AudioOutMenuWidgetModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
-        spawn_default_output_watcher(
-            &sender,
-            None,
-            || AudioOutMenuWidgetCommandOutput::DeviceChanged,
-        );
+        spawn_default_output_watcher(&sender, None, || {
+            AudioOutMenuWidgetCommandOutput::DeviceChanged
+        });
 
         let row_content = RevealerRowSliderModel::builder()
-            .launch(RevealerRowSliderInit{})
-            .forward(sender.input_sender(), |msg| {
-                match msg {
-                    RevealerRowSliderOutput::ValueChanged(value) => {
-                        AudioOutMenuWidgetInput::SetVolume(value)
-                    }
+            .launch(RevealerRowSliderInit {})
+            .forward(sender.input_sender(), |msg| match msg {
+                RevealerRowSliderOutput::ValueChanged(value) => {
+                    AudioOutMenuWidgetInput::SetVolume(value)
                 }
             });
 
         let revealed_content = AudioOutRevealedContentModel::builder()
-            .launch(AudioOutRevealedContentInit{})
+            .launch(AudioOutRevealedContentInit {})
             .detach();
 
-        let revealer_row = RevealerRowModel::<RevealerRowSliderModel, AudioOutRevealedContentModel>::builder()
-            .launch(RevealerRowInit {
-                icon_name: "audio-volume-medium-symbolic".into(),
-                action_button_sensitive: true,
-                content: row_content,
-                revealed_content,
-            })
-            .forward(sender.input_sender(), |msg| {
-                match msg {
+        let revealer_row =
+            RevealerRowModel::<RevealerRowSliderModel, AudioOutRevealedContentModel>::builder()
+                .launch(RevealerRowInit {
+                    icon_name: "audio-volume-medium-symbolic".into(),
+                    action_button_sensitive: true,
+                    content: row_content,
+                    revealed_content,
+                })
+                .forward(sender.input_sender(), |msg| match msg {
                     RevealerRowOutput::ActionButtonClicked => {
                         AudioOutMenuWidgetInput::ActionButtonClicked
                     }
-                    RevealerRowOutput::Revealed => {
-                        AudioOutMenuWidgetInput::RevealerRowRevealed
-                    }
-                    RevealerRowOutput::Hidden => {
-                        AudioOutMenuWidgetInput::RevealerRowHidden
-                    }
-                }
-            });
+                    RevealerRowOutput::Revealed => AudioOutMenuWidgetInput::RevealerRowRevealed,
+                    RevealerRowOutput::Hidden => AudioOutMenuWidgetInput::RevealerRowHidden,
+                });
 
         let model = AudioOutMenuWidgetModel {
             revealer_row,
@@ -126,10 +125,16 @@ impl Component for AudioOutMenuWidgetModel {
                 }
             }
             AudioOutMenuWidgetInput::RevealerRowRevealed => {
-                self.revealer_row.model().revealed_content.emit(AudioOutRevealedContentInput::Revealed);
+                self.revealer_row
+                    .model()
+                    .revealed_content
+                    .emit(AudioOutRevealedContentInput::Revealed);
             }
             AudioOutMenuWidgetInput::RevealerRowHidden => {
-                self.revealer_row.model().revealed_content.emit(AudioOutRevealedContentInput::Hidden);
+                self.revealer_row
+                    .model()
+                    .revealed_content
+                    .emit(AudioOutRevealedContentInput::Hidden);
             }
             AudioOutMenuWidgetInput::ParentRevealChanged(revealed) => {
                 if !revealed {
@@ -137,27 +142,28 @@ impl Component for AudioOutMenuWidgetModel {
                 }
             }
             AudioOutMenuWidgetInput::UpdateDevice(device) => {
-                self.revealer_row.emit(RevealerRowInput::UpdateActionIconName(
-                    get_audio_out_icon(&device).to_string()
-                ));
-                self.revealer_row.model().content.emit(RevealerRowSliderInput::SetValue(
-                    device.volume.get().average()
-                ))
+                self.revealer_row
+                    .emit(RevealerRowInput::UpdateActionIconName(
+                        get_audio_out_icon(&device).to_string(),
+                    ));
+                self.revealer_row
+                    .model()
+                    .content
+                    .emit(RevealerRowSliderInput::SetValue(
+                        device.volume.get().average(),
+                    ))
             }
             AudioOutMenuWidgetInput::SetVolume(volume) => {
                 if let Some(default_output) = audio_service().default_output.get() {
                     tokio::spawn(async move {
-                        let _ = default_output.set_volume(
-                            Volume::stereo(
-                                volume,
-                                volume,
-                            )
-                        ).await;
+                        let _ = default_output
+                            .set_volume(Volume::stereo(volume, volume))
+                            .await;
                     });
                 }
             }
         }
-        
+
         self.update_view(widgets, sender);
     }
 
@@ -165,7 +171,7 @@ impl Component for AudioOutMenuWidgetModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             AudioOutMenuWidgetCommandOutput::DeviceChanged => {
@@ -175,12 +181,9 @@ impl Component for AudioOutMenuWidgetModel {
 
                     let token = self.active_device_watcher_token.reset();
 
-                    spawn_output_device_volume_mute_watcher(
-                        &audio_device,
-                        token,
-                        &sender,
-                        ||AudioOutMenuWidgetCommandOutput::VolumeChanged
-                    );
+                    spawn_output_device_volume_mute_watcher(&audio_device, token, &sender, || {
+                        AudioOutMenuWidgetCommandOutput::VolumeChanged
+                    });
                 }
             }
             AudioOutMenuWidgetCommandOutput::VolumeChanged => {

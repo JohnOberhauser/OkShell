@@ -1,6 +1,6 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::WidgetExt;
 use okshell_utils::power_profile::{get_active_power_profile_icon, spawn_active_profile_watcher};
+use relm4::gtk::prelude::WidgetExt;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct PowerProfileModel {}
@@ -47,11 +47,7 @@ impl Component for PowerProfileModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        spawn_active_profile_watcher(
-            &sender,
-            None,
-            ||PowerProfileCommandOutput::ProfileChanged,
-        );
+        spawn_active_profile_watcher(&sender, None, || PowerProfileCommandOutput::ProfileChanged);
 
         let model = PowerProfileModel {};
 
@@ -65,11 +61,13 @@ impl Component for PowerProfileModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         _sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             PowerProfileCommandOutput::ProfileChanged => {
-                widgets.image.set_icon_name(Some(get_active_power_profile_icon()));
+                widgets
+                    .image
+                    .set_icon_name(Some(get_active_power_profile_icon()));
             }
         }
     }

@@ -1,10 +1,10 @@
-use gtk4::{gdk};
+use gtk4::gdk;
 use gtk4::prelude::{BoxExt, GtkWindowExt, OrientableExt, RangeExt, WidgetExt};
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
 use okshell_common::WatcherToken;
-use okshell_services::{brightness_service};
+use okshell_services::brightness_service;
 use okshell_utils::brightness::{get_brightness_icon, spawn_brightness_watcher};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug)]
 pub struct BrightnessOsdModel {
@@ -79,7 +79,6 @@ impl Component for BrightnessOsdModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         root.init_layer_shell();
         root.set_monitor(Some(&params.monitor));
         root.set_namespace(Some("okshell-osd"));
@@ -87,10 +86,7 @@ impl Component for BrightnessOsdModel {
         root.set_exclusive_zone(0);
         root.set_anchor(Edge::Bottom, true);
 
-        spawn_brightness_watcher(
-            &sender,
-            ||BrightnessOsdCommandOutput::BrightnessChanged,
-        );
+        spawn_brightness_watcher(&sender, || BrightnessOsdCommandOutput::BrightnessChanged);
 
         let model = BrightnessOsdModel {
             hide_token: WatcherToken::new(),
@@ -124,12 +120,14 @@ impl Component for BrightnessOsdModel {
 
                         let token = self.hide_token.reset();
                         sender.command(|out, shutdown| {
-                            shutdown.register(async move {
-                                tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-                                if !token.is_cancelled() {
-                                    out.send(BrightnessOsdCommandOutput::Hide).ok();
-                                }
-                            }).drop_on_shutdown()
+                            shutdown
+                                .register(async move {
+                                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                                    if !token.is_cancelled() {
+                                        out.send(BrightnessOsdCommandOutput::Hide).ok();
+                                    }
+                                })
+                                .drop_on_shutdown()
                         });
                     }
                 }
@@ -153,7 +151,7 @@ impl Component for BrightnessOsdModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             BrightnessOsdCommandOutput::BrightnessChanged => {

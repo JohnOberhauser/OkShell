@@ -1,12 +1,12 @@
-use std::ops::Not;
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::Justification;
-use relm4::gtk::prelude::*;
-use relm4::gtk::glib;
-use wayle_network::core::access_point::{AccessPoint, SecurityType};
 use okshell_services::network_service;
 use okshell_utils::key_mode::wire_entry_focus;
+use relm4::gtk::Justification;
+use relm4::gtk::glib;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use std::ops::Not;
+use std::sync::Arc;
+use wayle_network::core::access_point::{AccessPoint, SecurityType};
 
 #[derive(Debug, Clone)]
 pub(crate) struct AvailableNetworkRevealedContentModel {
@@ -145,7 +145,9 @@ impl Component for AvailableNetworkRevealedContentModel {
     ) {
         match message {
             AvailableNetworkRevealedContentInput::Connect => {
-                if self.connecting { return; }
+                if self.connecting {
+                    return;
+                }
                 let network = network_service();
                 if let Some(wifi) = network.wifi.get() {
                     let password = if !self.show_password_entry {
@@ -158,16 +160,15 @@ impl Component for AvailableNetworkRevealedContentModel {
                     self.connecting = true;
                     self.error = false;
                     tokio::spawn(async move {
-                        match wifi.connect(
-                            object_path,
-                            password,
-                        ).await {
+                        match wifi.connect(object_path, password).await {
                             Ok(_) => {
                                 // this widget should be removed upon success, so do nothing here
                             }
                             Err(_) => {
                                 glib::idle_add_once(move || {
-                                    sender_clone.input(AvailableNetworkRevealedContentInput::ErrorConnecting);
+                                    sender_clone.input(
+                                        AvailableNetworkRevealedContentInput::ErrorConnecting,
+                                    );
                                 });
                             }
                         }

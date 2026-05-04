@@ -1,13 +1,20 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::RevealerTransitionType;
-use wayle_audio::core::device::output::OutputDevice;
+use crate::menus::menu_widgets::audio_out::output_device_revealer_button::{
+    OutputDeviceRevealerButtonInit, OutputDeviceRevealerButtonInput,
+    OutputDeviceRevealerButtonModel,
+};
 use okshell_common::WatcherToken;
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
+};
+use okshell_common::dynamic_box::generic_widget_controller::{
+    GenericWidgetController, GenericWidgetControllerExtSafe,
+};
 use okshell_services::audio_service;
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
-use okshell_common::dynamic_box::generic_widget_controller::{GenericWidgetController, GenericWidgetControllerExtSafe};
-use crate::menus::menu_widgets::audio_out::output_device_revealer_button::{OutputDeviceRevealerButtonInit, OutputDeviceRevealerButtonInput, OutputDeviceRevealerButtonModel};
 use okshell_utils::audio::spawn_output_devices_watcher;
+use relm4::gtk::RevealerTransitionType;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_audio::core::device::output::OutputDevice;
 
 pub(crate) struct AudioOutRevealedContentModel {
     devices_dynamic_box_controller: Controller<DynamicBoxModel<Arc<OutputDevice>, String>>,
@@ -50,16 +57,13 @@ impl Component for AudioOutRevealedContentModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut watcher_token = WatcherToken::new();
 
         let token = watcher_token.reset();
 
-        spawn_output_devices_watcher(
-            &sender,
-            token,
-            ||AudioOutRevealedContentCommandOutput::DevicesUpdated,
-        );
+        spawn_output_devices_watcher(&sender, token, || {
+            AudioOutRevealedContentCommandOutput::DevicesUpdated
+        });
 
         let devices_dynamic_box_factory = DynamicBoxFactory::<Arc<OutputDevice>, String> {
             id: Box::new(|item| item.name.get()),
@@ -78,7 +82,7 @@ impl Component for AudioOutRevealedContentModel {
 
         let devices_dynamic_box_controller: Controller<DynamicBoxModel<Arc<OutputDevice>, String>> =
             DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
+                .launch(DynamicBoxInit {
                     factory: devices_dynamic_box_factory,
                     orientation: gtk::Orientation::Vertical,
                     spacing: 0,
@@ -111,39 +115,42 @@ impl Component for AudioOutRevealedContentModel {
             AudioOutRevealedContentInput::UpdateDevices => {
                 let audio = audio_service();
                 let devices = audio.output_devices.get();
-                self.devices_dynamic_box_controller.emit(DynamicBoxInput::SetItems(devices))
+                self.devices_dynamic_box_controller
+                    .emit(DynamicBoxInput::SetItems(devices))
             }
             AudioOutRevealedContentInput::Revealed => {
                 let token = self.watcher_token.reset();
 
-                spawn_output_devices_watcher(
-                    &sender,
-                    token,
-                    ||AudioOutRevealedContentCommandOutput::DevicesUpdated,
-                );
-
-                self.devices_dynamic_box_controller.model().for_each_entry(|_, entry| {
-                    if let Some(ctrl) = entry
-                        .controller
-                        .as_ref()
-                        .downcast_ref::<Controller<OutputDeviceRevealerButtonModel>>()
-                    {
-                        ctrl.emit(OutputDeviceRevealerButtonInput::Revealed);
-                    }
+                spawn_output_devices_watcher(&sender, token, || {
+                    AudioOutRevealedContentCommandOutput::DevicesUpdated
                 });
+
+                self.devices_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|_, entry| {
+                        if let Some(ctrl) = entry
+                            .controller
+                            .as_ref()
+                            .downcast_ref::<Controller<OutputDeviceRevealerButtonModel>>()
+                        {
+                            ctrl.emit(OutputDeviceRevealerButtonInput::Revealed);
+                        }
+                    });
             }
             AudioOutRevealedContentInput::Hidden => {
                 self.watcher_token.reset();
 
-                self.devices_dynamic_box_controller.model().for_each_entry(|_, entry| {
-                    if let Some(ctrl) = entry
-                        .controller
-                        .as_ref()
-                        .downcast_ref::<Controller<OutputDeviceRevealerButtonModel>>()
-                    {
-                        ctrl.emit(OutputDeviceRevealerButtonInput::Hidden);
-                    }
-                });
+                self.devices_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|_, entry| {
+                        if let Some(ctrl) = entry
+                            .controller
+                            .as_ref()
+                            .downcast_ref::<Controller<OutputDeviceRevealerButtonModel>>()
+                        {
+                            ctrl.emit(OutputDeviceRevealerButtonInput::Hidden);
+                        }
+                    });
             }
         }
 

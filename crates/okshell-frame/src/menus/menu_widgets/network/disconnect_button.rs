@@ -1,12 +1,7 @@
-use relm4::{
-    gtk,
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-};
+use okshell_services::network_service;
 use relm4::gtk::Justification;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
-use okshell_services::network_service;
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct DisconnectButtonModel {}
@@ -33,7 +28,7 @@ impl SimpleComponent for DisconnectButtonModel {
             connect_clicked[sender] => move |_| {
                 sender.input(DisconnectButtonInput::DisconnectClicked);
             },
-            
+
             gtk::Label {
                 add_css_class: "label-medium-bold-primary",
                 set_label: "Disconnect",
@@ -55,11 +50,7 @@ impl SimpleComponent for DisconnectButtonModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        _sender: ComponentSender<Self>,
-    ) {
+    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
         match message {
             DisconnectButtonInput::DisconnectClicked => {
                 if let Some(wifi) = network_service().wifi.get() {

@@ -1,15 +1,17 @@
 use gtk4::prelude::Cast;
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::gdk;
-use relm4::gtk::glib;
-use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
-use okshell_cache::wallpaper::{current_wallpaper_image, wallpaper_store, WallpaperImage, WallpaperStateStoreFields};
+use okshell_cache::wallpaper::{
+    WallpaperImage, WallpaperStateStoreFields, current_wallpaper_image, wallpaper_store,
+};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, WallpaperStoreFields};
 use okshell_config::schema::content_fit::ContentFit;
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::gdk;
+use relm4::gtk::glib;
+use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 const TRANSITION_DURATION_MS: u32 = 200;
 
@@ -87,7 +89,11 @@ impl Component for WallpaperModel {
         });
 
         let model = WallpaperModel {
-            content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
+            content_fit: config_manager()
+                .config()
+                .wallpaper()
+                .content_fit()
+                .get_untracked(),
             _effects: effects,
         };
 
@@ -155,10 +161,7 @@ fn transition_stack(stack: &gtk::Stack, new_name: &str, old_child: Option<gtk::W
     });
 }
 
-fn make_wallpaper_widget(
-    image: &WallpaperImage,
-    content_fit: gtk::ContentFit,
-) -> gtk::Widget {
+fn make_wallpaper_widget(image: &WallpaperImage, content_fit: gtk::ContentFit) -> gtk::Widget {
     let bytes = glib::Bytes::from(&*image.buf);
     let texture = gdk::MemoryTexture::new(
         image.width as i32,

@@ -1,8 +1,10 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller};
+use crate::common_widgets::confirmation_dialog::{
+    ConfirmationDialogInit, ConfirmationDialogModel, ConfirmationDialogOutput,
+};
+use okshell_utils::reboot::reboot;
 use relm4::gtk::Orientation;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
-use crate::common_widgets::confirmation_dialog::{ConfirmationDialogInit, ConfirmationDialogModel, ConfirmationDialogOutput};
-use okshell_utils::reboot::reboot;
+use relm4::{Component, ComponentParts, ComponentSender, Controller, gtk};
 
 pub(crate) struct RebootModel {
     dialog: Option<Controller<ConfirmationDialogModel>>,
@@ -39,7 +41,7 @@ impl Component for RebootModel {
             set_vexpand: model.orientation == Orientation::Horizontal,
             set_halign: gtk::Align::Center,
             set_valign: gtk::Align::Center,
-            
+
             gtk::Button {
                 set_css_classes: &["ok-button-surface", "ok-bar-widget"],
                 set_hexpand: false,
@@ -80,7 +82,7 @@ impl Component for RebootModel {
         _widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             RebootInput::Clicked => {
@@ -90,15 +92,9 @@ impl Component for RebootModel {
                         negative_label: "Cancel".to_string(),
                         positive_label: "Reboot".to_string(),
                     })
-                    .forward(sender.input_sender(), |msg| {
-                        match msg {
-                            ConfirmationDialogOutput::PositiveClicked => {
-                                RebootInput::ConfirmClicked
-                            }
-                            ConfirmationDialogOutput::NegativeClicked => {
-                                RebootInput::CancelClicked
-                            }
-                        }
+                    .forward(sender.input_sender(), |msg| match msg {
+                        ConfirmationDialogOutput::PositiveClicked => RebootInput::ConfirmClicked,
+                        ConfirmationDialogOutput::NegativeClicked => RebootInput::CancelClicked,
                     });
 
                 self.dialog = Some(dialog);

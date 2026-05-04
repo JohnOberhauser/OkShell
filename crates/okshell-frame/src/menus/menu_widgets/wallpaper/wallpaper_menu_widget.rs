@@ -1,28 +1,35 @@
-use std::collections::HashMap;
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
+use crate::menus::menu_widgets::wallpaper::parallelogram::ParallelogramPaintable;
 use gtk4_layer_shell::{KeyboardMode, LayerShell};
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt};
-use relm4::gtk::{gdk, gio, glib, gdk_pixbuf};
-use relm4::gtk::prelude::*;
-use tracing::info;
 use okshell_cache::wallpaper::set_wallpaper;
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, MatugenStoreFields, ThemeStoreFields, WallpaperStoreFields};
+use okshell_config::schema::config::{
+    ConfigStoreFields, MatugenStoreFields, ThemeStoreFields, WallpaperStoreFields,
+};
 use okshell_config::schema::content_fit::ContentFit;
-use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes};
+use okshell_config::schema::themes::{
+    MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes,
+};
 use okshell_config::schema::wallpaper::ThemeFilterStrength;
 use okshell_utils::scroll_extensions::wire_vertical_to_horizontal;
-use crate::menus::menu_widgets::wallpaper::parallelogram::ParallelogramPaintable;
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::prelude::*;
+use relm4::gtk::{gdk, gdk_pixbuf, gio, glib};
+use relm4::{Component, ComponentParts, ComponentSender, RelmWidgetExt, gtk};
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
+use tracing::info;
 
 fn is_image_file(path: &std::path::Path) -> bool {
     path.extension()
         .and_then(|e| e.to_str())
-        .is_some_and(|ext| matches!(ext.to_lowercase().as_str(),
-            "png" | "jpg" | "jpeg" | "webp" | "bmp" | "svg" | "tiff" | "tif"
-        ))
+        .is_some_and(|ext| {
+            matches!(
+                ext.to_lowercase().as_str(),
+                "png" | "jpg" | "jpeg" | "webp" | "bmp" | "svg" | "tiff" | "tif"
+            )
+        })
 }
 
 #[derive(Debug, Clone)]
@@ -407,7 +414,8 @@ impl Component for WallpaperMenuWidgetModel {
     ) -> ComponentParts<Self> {
         let list_store = gio::ListStore::new::<gtk::StringObject>();
         let filter = gtk::CustomFilter::new(|_| true);
-        let filter_model = gtk::FilterListModel::new(Some(list_store.clone()), Some(filter.clone()));
+        let filter_model =
+            gtk::FilterListModel::new(Some(list_store.clone()), Some(filter.clone()));
         let selection = gtk::SingleSelection::new(Some(filter_model.clone()));
         selection.set_autoselect(false);
         selection.set_can_unselect(true);
@@ -427,13 +435,12 @@ impl Component for WallpaperMenuWidgetModel {
         let cache = texture_cache.clone();
         factory.connect_bind(move |_, list_item| {
             let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
-            let string_obj = list_item.item()
+            let string_obj = list_item
+                .item()
                 .and_downcast::<gtk::StringObject>()
                 .unwrap();
             let path_str = string_obj.string().to_string();
-            let picture = list_item.child()
-                .and_downcast::<gtk::Picture>()
-                .unwrap();
+            let picture = list_item.child().and_downcast::<gtk::Picture>().unwrap();
 
             // Clear any previous texture while we load
             picture.set_paintable(gdk::Paintable::NONE);
@@ -456,31 +463,38 @@ impl Component for WallpaperMenuWidgetModel {
             }
 
             // Spawn thumbnail decode on a background thread.
-            let (tx, rx) = std::sync::mpsc::channel::<(String, Option<(glib::Bytes, i32, i32, i32, bool)>)>();
+            let (tx, rx) =
+                std::sync::mpsc::channel::<(String, Option<(glib::Bytes, i32, i32, i32, bool)>)>();
 
             std::thread::spawn(move || {
                 let result = gdk_pixbuf::Pixbuf::from_file_at_scale(
-                    &path_str, -1, params.thumbnail_height, true,
+                    &path_str,
+                    -1,
+                    params.thumbnail_height,
+                    true,
                 )
-                    .ok()
-                    .map(|pixbuf: gdk_pixbuf::Pixbuf| {
-                        let width = pixbuf.width();
-                        let height = pixbuf.height();
-                        let rowstride = pixbuf.rowstride();
-                        let has_alpha = pixbuf.has_alpha();
-                        let bytes = pixbuf.pixel_bytes().unwrap();
-                        (bytes, width, height, rowstride, has_alpha)
-                    });
+                .ok()
+                .map(|pixbuf: gdk_pixbuf::Pixbuf| {
+                    let width = pixbuf.width();
+                    let height = pixbuf.height();
+                    let rowstride = pixbuf.rowstride();
+                    let has_alpha = pixbuf.has_alpha();
+                    let bytes = pixbuf.pixel_bytes().unwrap();
+                    (bytes, width, height, rowstride, has_alpha)
+                });
                 let _ = tx.send((path_str, result));
             });
 
             // Poll the channel from the main loop
             let cache_insert = cache.clone();
             glib::idle_add_local_once(move || {
-                let Ok((path_str, result)) = rx.recv() else { return };
+                let Ok((path_str, result)) = rx.recv() else {
+                    return;
+                };
 
                 let still_current = unsafe {
-                    picture.data::<String>("loading-path")
+                    picture
+                        .data::<String>("loading-path")
                         .map(|p| p.as_ref() == &path_str)
                         .unwrap_or(false)
                 };
@@ -500,7 +514,9 @@ impl Component for WallpaperMenuWidgetModel {
                             rowstride as usize,
                         );
 
-                        cache_insert.lock().unwrap()
+                        cache_insert
+                            .lock()
+                            .unwrap()
                             .insert(path_str, texture.clone());
 
                         let paintable = ParallelogramPaintable::new(
@@ -516,9 +532,7 @@ impl Component for WallpaperMenuWidgetModel {
 
         factory.connect_unbind(|_, list_item| {
             let list_item = list_item.downcast_ref::<gtk::ListItem>().unwrap();
-            let picture = list_item.child()
-                .and_downcast::<gtk::Picture>()
-                .unwrap();
+            let picture = list_item.child().and_downcast::<gtk::Picture>().unwrap();
             if let Some(paintable) = picture.paintable().and_downcast::<ParallelogramPaintable>() {
                 paintable.set_texture(None);
             }
@@ -531,21 +545,21 @@ impl Component for WallpaperMenuWidgetModel {
             &MatugenPreference::all()
                 .iter()
                 .map(|p| p.label())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
         );
 
         let matugen_types = gtk::StringList::new(
             &MatugenType::all()
                 .iter()
                 .map(|p| p.label())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
         );
 
         let matugen_modes = gtk::StringList::new(
             &MatugenMode::all()
                 .iter()
                 .map(|p| p.label())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
         );
 
         let mut effects = EffectScope::new();
@@ -564,13 +578,21 @@ impl Component for WallpaperMenuWidgetModel {
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let value = config_manager().config().wallpaper().apply_theme_filter().get();
+            let value = config_manager()
+                .config()
+                .wallpaper()
+                .apply_theme_filter()
+                .get();
             sender_clone.input(WallpaperMenuWidgetInput::ThemeFilterEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let value = config_manager().config().wallpaper().theme_filter_strength().get();
+            let value = config_manager()
+                .config()
+                .wallpaper()
+                .theme_filter_strength()
+                .get();
             sender_clone.input(WallpaperMenuWidgetInput::FilterStrengthEffect(value.get()));
         });
 
@@ -619,19 +641,53 @@ impl Component for WallpaperMenuWidgetModel {
             filter,
 
             wallpaper_directory: "".to_string(),
-            content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
+            content_fit: config_manager()
+                .config()
+                .wallpaper()
+                .content_fit()
+                .get_untracked(),
 
             settings_visible_child: "none".to_string(),
-            apply_theme_filter: config_manager().config().wallpaper().apply_theme_filter().get_untracked(),
-            filter_strength: config_manager().config().wallpaper().theme_filter_strength().get_untracked().get(),
+            apply_theme_filter: config_manager()
+                .config()
+                .wallpaper()
+                .apply_theme_filter()
+                .get_untracked(),
+            filter_strength: config_manager()
+                .config()
+                .wallpaper()
+                .theme_filter_strength()
+                .get_untracked()
+                .get(),
 
             matugen_preferences,
-            active_matugen_preference: config_manager().config().theme().matugen().preference().get_untracked(),
+            active_matugen_preference: config_manager()
+                .config()
+                .theme()
+                .matugen()
+                .preference()
+                .get_untracked(),
             matugen_types,
-            active_matugen_type: config_manager().config().theme().matugen().scheme_type().get_untracked(),
+            active_matugen_type: config_manager()
+                .config()
+                .theme()
+                .matugen()
+                .scheme_type()
+                .get_untracked(),
             matugen_modes,
-            active_matugen_mode: config_manager().config().theme().matugen().mode().get_untracked(),
-            matugen_contrast: config_manager().config().theme().matugen().contrast().get_untracked().get(),
+            active_matugen_mode: config_manager()
+                .config()
+                .theme()
+                .matugen()
+                .mode()
+                .get_untracked(),
+            matugen_contrast: config_manager()
+                .config()
+                .theme()
+                .matugen()
+                .contrast()
+                .get_untracked()
+                .get(),
 
             _effects: effects,
         };
@@ -652,10 +708,7 @@ impl Component for WallpaperMenuWidgetModel {
             }
         });
 
-        wire_vertical_to_horizontal(
-            &widgets.scroll_window,
-            64.0,
-        );
+        wire_vertical_to_horizontal(&widgets.scroll_window, 64.0);
 
         ComponentParts { model, widgets }
     }
@@ -685,7 +738,7 @@ impl Component for WallpaperMenuWidgetModel {
                         std::time::Duration::from_millis(200),
                         move || {
                             entry_widget.set_text("");
-                        }
+                        },
                     );
                 }
                 self.is_revealed = revealed;
@@ -712,10 +765,9 @@ impl Component for WallpaperMenuWidgetModel {
                         }
                     }
 
-                    if let Ok(monitor) = dir.monitor_directory(
-                        gio::FileMonitorFlags::NONE,
-                        gio::Cancellable::NONE,
-                    ) {
+                    if let Ok(monitor) =
+                        dir.monitor_directory(gio::FileMonitorFlags::NONE, gio::Cancellable::NONE)
+                    {
                         let sender = sender.clone();
                         monitor.connect_changed(move |_, file, _, event| {
                             let path = file.path().unwrap();
@@ -777,9 +829,7 @@ impl Component for WallpaperMenuWidgetModel {
                 let mut sorted: Vec<_> = self.files.iter().collect();
                 sorted.sort();
                 for file_path in sorted {
-                    let string_obj = gtk::StringObject::new(
-                        &file_path.to_string_lossy()
-                    );
+                    let string_obj = gtk::StringObject::new(&file_path.to_string_lossy());
                     self.list_store.append(&string_obj);
                 }
             }
@@ -792,19 +842,15 @@ impl Component for WallpaperMenuWidgetModel {
                     .modal(true)
                     .build();
 
-                dialog.select_folder(
-                    gtk::Window::NONE,
-                    gio::Cancellable::NONE,
-                    move |result| {
-                        if let Ok(file) = result {
-                            if let Some(path) = file.path() {
-                                config_manager().update_config(|config| {
-                                    config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
-                                });
-                            }
+                dialog.select_folder(gtk::Window::NONE, gio::Cancellable::NONE, move |result| {
+                    if let Ok(file) = result {
+                        if let Some(path) = file.path() {
+                            config_manager().update_config(|config| {
+                                config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
+                            });
                         }
-                    },
-                );
+                    }
+                });
             }
             WallpaperMenuWidgetInput::ClearSearch => {
                 widgets.search_entry.set_text("");
@@ -819,11 +865,10 @@ impl Component for WallpaperMenuWidgetModel {
                     config.wallpaper.apply_theme_filter = apply;
                 })
             }
-            WallpaperMenuWidgetInput::FilterStrengthChanged(strength) => {
-                config_manager().update_config(|config| {
+            WallpaperMenuWidgetInput::FilterStrengthChanged(strength) => config_manager()
+                .update_config(|config| {
                     config.wallpaper.theme_filter_strength = ThemeFilterStrength::new(strength)
-                })
-            }
+                }),
             WallpaperMenuWidgetInput::MatugenPreferenceSelected(preference) => {
                 config_manager().update_config(|config| {
                     config.theme.matugen.preference = preference;
@@ -854,9 +899,7 @@ impl Component for WallpaperMenuWidgetModel {
             WallpaperMenuWidgetInput::FilterStrengthEffect(filter) => {
                 self.filter_strength = filter;
             }
-            WallpaperMenuWidgetInput::SearchFilterActivate => {
-
-            }
+            WallpaperMenuWidgetInput::SearchFilterActivate => {}
             WallpaperMenuWidgetInput::SearchFilterChanged(text) => {
                 let text_lower = text.to_lowercase();
                 self.filter.set_filter_func(move |obj| {

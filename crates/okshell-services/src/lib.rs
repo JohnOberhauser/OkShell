@@ -13,8 +13,8 @@ use wayle_power_profiles::PowerProfilesService;
 use wayle_sysinfo::SysinfoService;
 use wayle_systray::SystemTrayService;
 use wayle_weather::{LocationQuery, TemperatureUnit, WeatherService, WeatherServiceBuilder};
-use zbus::{Connection, Error};
 use zbus::zvariant::OwnedObjectPath;
+use zbus::{Connection, Error};
 
 pub async fn init_services(
     location_query: LocationQuery,
@@ -39,11 +39,11 @@ pub async fn init_services(
         .build();
 
     if let Some(path) = find_line_power_path().await? {
-        let line_power = BatteryService::builder()
-            .device_path(path)
-            .build();
+        let line_power = BatteryService::builder().device_path(path).build();
 
-        LINE_POWER_SERVICE.set(Some(Arc::new(line_power.await?))).ok();
+        LINE_POWER_SERVICE
+            .set(Some(Arc::new(line_power.await?)))
+            .ok();
     } else {
         LINE_POWER_SERVICE.set(None).ok();
     }
@@ -81,83 +81,124 @@ pub async fn find_line_power_path() -> Result<Option<OwnedObjectPath>, Error> {
 
     let devices: Vec<OwnedObjectPath> = reply.body().deserialize()?;
 
-    Ok(devices.into_iter().find(|p| p.as_str().contains("line_power")))
+    Ok(devices
+        .into_iter()
+        .find(|p| p.as_str().contains("line_power")))
 }
 
 static AUDIO_SERVICE: OnceLock<Arc<AudioService>> = OnceLock::new();
 
 pub fn audio_service() -> Arc<AudioService> {
-    AUDIO_SERVICE.get().expect("AudioService not initialized").clone()
+    AUDIO_SERVICE
+        .get()
+        .expect("AudioService not initialized")
+        .clone()
 }
 
 static BATTERY_SERVICE: OnceLock<Arc<BatteryService>> = OnceLock::new();
 
 pub fn battery_service() -> Arc<BatteryService> {
-    BATTERY_SERVICE.get().expect("BatteryService not initialized").clone()
+    BATTERY_SERVICE
+        .get()
+        .expect("BatteryService not initialized")
+        .clone()
 }
 
 static BLUETOOTH_SERVICE: OnceLock<Arc<BluetoothService>> = OnceLock::new();
 
 pub fn bluetooth_service() -> Arc<BluetoothService> {
-    BLUETOOTH_SERVICE.get().expect("BluetoothService not initialized").clone()
+    BLUETOOTH_SERVICE
+        .get()
+        .expect("BluetoothService not initialized")
+        .clone()
 }
 
 static BRIGHTNESS_SERVICE: OnceLock<Option<Arc<BrightnessService>>> = OnceLock::new();
 
 pub fn brightness_service() -> Option<Arc<BrightnessService>> {
-    BRIGHTNESS_SERVICE.get().expect("BrightnessService not initialized").clone()
+    BRIGHTNESS_SERVICE
+        .get()
+        .expect("BrightnessService not initialized")
+        .clone()
 }
 
 static HYPRLAND_SERVICE: OnceLock<Arc<HyprlandService>> = OnceLock::new();
 
 pub fn hyprland_service() -> Arc<HyprlandService> {
-    HYPRLAND_SERVICE.get().expect("HyprlandService not initialized").clone()
+    HYPRLAND_SERVICE
+        .get()
+        .expect("HyprlandService not initialized")
+        .clone()
 }
 
 static LINE_POWER_SERVICE: OnceLock<Option<Arc<BatteryService>>> = OnceLock::new();
 
 pub fn line_power_service() -> Option<Arc<BatteryService>> {
-    LINE_POWER_SERVICE.get().expect("LinePower not initialized").clone()
+    LINE_POWER_SERVICE
+        .get()
+        .expect("LinePower not initialized")
+        .clone()
 }
 
 static MEDIA_SERVICE: OnceLock<Arc<MediaService>> = OnceLock::new();
 
 pub fn media_service() -> Arc<MediaService> {
-    MEDIA_SERVICE.get().expect("MediaService not initialized").clone()
+    MEDIA_SERVICE
+        .get()
+        .expect("MediaService not initialized")
+        .clone()
 }
 
 static NETWORK_SERVICE: OnceLock<Arc<NetworkService>> = OnceLock::new();
 
 pub fn network_service() -> Arc<NetworkService> {
-    NETWORK_SERVICE.get().expect("NetworkService not initialized").clone()
+    NETWORK_SERVICE
+        .get()
+        .expect("NetworkService not initialized")
+        .clone()
 }
 
 static NOTIFICATION_SERVICE: OnceLock<Arc<NotificationService>> = OnceLock::new();
 
 pub fn notification_service() -> Arc<NotificationService> {
-    NOTIFICATION_SERVICE.get().expect("NotificationService not initialized").clone()
+    NOTIFICATION_SERVICE
+        .get()
+        .expect("NotificationService not initialized")
+        .clone()
 }
 
 static POWER_PROFILE_SERVICE: OnceLock<Arc<PowerProfilesService>> = OnceLock::new();
 
 pub fn power_profile_service() -> Arc<PowerProfilesService> {
-    POWER_PROFILE_SERVICE.get().expect("PowerProfilesService not initialized").clone()
+    POWER_PROFILE_SERVICE
+        .get()
+        .expect("PowerProfilesService not initialized")
+        .clone()
 }
 
 static SYS_INFO_SERVICE: OnceLock<Arc<SysinfoService>> = OnceLock::new();
 
 pub fn sys_info_service() -> Arc<SysinfoService> {
-    SYS_INFO_SERVICE.get().expect("SysinfoService not initialized").clone()
+    SYS_INFO_SERVICE
+        .get()
+        .expect("SysinfoService not initialized")
+        .clone()
 }
 
 static SYS_TRAY_SERVICE: OnceLock<Arc<SystemTrayService>> = OnceLock::new();
 
 pub fn sys_tray_service() -> Arc<SystemTrayService> {
-    SYS_TRAY_SERVICE.get().expect("SystemTrayService not initialized").clone()
+    SYS_TRAY_SERVICE
+        .get()
+        .expect("SystemTrayService not initialized")
+        .clone()
 }
 
 static WEATHER_SERVICE: OnceLock<Arc<WeatherService>> = OnceLock::new();
 
 pub fn weather_service() -> Arc<WeatherService> {
-    WEATHER_SERVICE.get().expect("WeatherService not initialized").clone()
+    WEATHER_SERVICE
+        .get()
+        .expect("WeatherService not initialized")
+        .clone()
 }

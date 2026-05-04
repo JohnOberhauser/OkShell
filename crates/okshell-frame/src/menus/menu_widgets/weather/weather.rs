@@ -1,13 +1,13 @@
-use std::ops::Not;
-use std::time::Duration;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
-use wayle_weather::{WeatherErrorKind, WeatherStatus};
-use okshell_services::weather_service;
 use crate::menus::menu_widgets::weather::current::{CurrentInit, CurrentInput, CurrentModel};
 use crate::menus::menu_widgets::weather::daily::{DailyInit, DailyInput, DailyModel};
 use crate::menus::menu_widgets::weather::hourly::{HourlyInit, HourlyInput, HourlyModel};
-use okshell_utils::weather::{spawn_weather_watcher};
+use okshell_services::weather_service;
+use okshell_utils::weather::spawn_weather_watcher;
+use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::ops::Not;
+use std::time::Duration;
+use wayle_weather::{WeatherErrorKind, WeatherStatus};
 
 const PAGE_CURRENT: &str = "current";
 const PAGE_HOURLY: &str = "hourly";
@@ -194,11 +194,7 @@ impl Component for WeatherModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
-        spawn_weather_watcher(
-            &sender,
-            || WeatherCommandOutput::WeatherChanged,
-        );
+        spawn_weather_watcher(&sender, || WeatherCommandOutput::WeatherChanged);
 
         let model = WeatherModel {
             current_weather_controller: None,
@@ -227,28 +223,16 @@ impl Component for WeatherModel {
         match message {
             WeatherInput::PreviousClicked => {
                 self.current_page = match self.current_page {
-                    WeatherPage::Current => {
-                        WeatherPage::Current
-                    }
-                    WeatherPage::Hourly => {
-                        WeatherPage::Current
-                    }
-                    WeatherPage::Daily => {
-                        WeatherPage::Hourly
-                    }
+                    WeatherPage::Current => WeatherPage::Current,
+                    WeatherPage::Hourly => WeatherPage::Current,
+                    WeatherPage::Daily => WeatherPage::Hourly,
                 };
             }
             WeatherInput::NextClicked => {
                 self.current_page = match self.current_page {
-                    WeatherPage::Current => {
-                        WeatherPage::Hourly
-                    }
-                    WeatherPage::Hourly => {
-                        WeatherPage::Daily
-                    }
-                    WeatherPage::Daily => {
-                        WeatherPage::Daily
-                    }
+                    WeatherPage::Current => WeatherPage::Hourly,
+                    WeatherPage::Hourly => WeatherPage::Daily,
+                    WeatherPage::Daily => WeatherPage::Daily,
                 };
             }
             WeatherInput::RetryClicked => {
@@ -267,16 +251,14 @@ impl Component for WeatherModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             WeatherCommandOutput::WeatherChanged => {
                 let service = weather_service();
 
                 match service.status.get() {
-                    WeatherStatus::Loading => {
-                        self.loading_state = LoadingState::Loading
-                    }
+                    WeatherStatus::Loading => self.loading_state = LoadingState::Loading,
                     WeatherStatus::Loaded => {
                         if let Some(weather) = service.weather.get() {
                             if self.current_weather_controller.is_some() {
@@ -363,16 +345,20 @@ impl Component for WeatherModel {
                         self.loading_state = LoadingState::Error;
                         match error {
                             WeatherErrorKind::Network => {
-                                self.error_msg = "Error loading weather. Check network.".to_string();
+                                self.error_msg =
+                                    "Error loading weather. Check network.".to_string();
                             }
                             WeatherErrorKind::ApiKeyMissing { provider: _ } => {
-                                self.error_msg = "Error loading weather. Api key missing.".to_string();
+                                self.error_msg =
+                                    "Error loading weather. Api key missing.".to_string();
                             }
                             WeatherErrorKind::LocationNotFound { query: _ } => {
-                                self.error_msg = "Error loading weather. Location not found.".to_string();
+                                self.error_msg =
+                                    "Error loading weather. Location not found.".to_string();
                             }
                             WeatherErrorKind::RateLimited => {
-                                self.error_msg = "Error loading weather. Too many requests.".to_string();
+                                self.error_msg =
+                                    "Error loading weather. Too many requests.".to_string();
                             }
                             WeatherErrorKind::Other => {
                                 self.error_msg = "Error loading weather.".to_string();

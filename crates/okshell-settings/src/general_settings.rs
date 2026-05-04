@@ -1,15 +1,15 @@
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::{
-    glib,
-};
-use relm4::gtk::prelude::{BoxExt, ButtonExt, CastNone, ListModelExt, OrientableExt, WidgetExt};
 use okshell_common::scoped_effects::EffectScope;
-use okshell_common::text_entry_dialog::{TextEntryDialogInit, TextEntryDialogModel, TextEntryDialogOutput};
+use okshell_common::text_entry_dialog::{
+    TextEntryDialogInit, TextEntryDialogModel, TextEntryDialogOutput,
+};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
 use okshell_config::schema::location_query::{LocationQueryConfig, LocationQueryType, OrdF64};
 use okshell_config::schema::temperature::TemperatureUnitConfig;
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::glib;
+use relm4::gtk::prelude::{BoxExt, ButtonExt, CastNone, ListModelExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, Controller, gtk};
 
 pub(crate) struct GeneralSettingsModel {
     active_profile: Option<String>,
@@ -341,7 +341,6 @@ impl Component for GeneralSettingsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut effects = EffectScope::new();
 
         let sender_clone = sender.clone();
@@ -353,7 +352,9 @@ impl Component for GeneralSettingsModel {
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let available_profiles = config_manager().available_profiles().get();
-            sender_clone.input(GeneralSettingsInput::AvailableProfilesEffect(available_profiles));
+            sender_clone.input(GeneralSettingsInput::AvailableProfilesEffect(
+                available_profiles,
+            ));
         });
 
         let sender_clone = sender.clone();
@@ -381,14 +382,14 @@ impl Component for GeneralSettingsModel {
             &LocationQueryType::all()
                 .iter()
                 .map(|p| p.label())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
         );
 
         let weather_unit_types = gtk::StringList::new(
             &TemperatureUnitConfig::all()
                 .iter()
                 .map(|p| p.label())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
         );
 
         let model = GeneralSettingsModel {
@@ -397,13 +398,22 @@ impl Component for GeneralSettingsModel {
             new_profile_dialog: None,
             time_format_24_h: false,
             location_query_types,
-            active_location_query_type: config_manager().config().general().weather_location_query().get_untracked().kind(),
+            active_location_query_type: config_manager()
+                .config()
+                .general()
+                .weather_location_query()
+                .get_untracked()
+                .kind(),
             location_lat_lon: "0.0, 0.0".to_string(),
             location_city: "Nowhere".to_string(),
             lat_lon_dialog: None,
             city_dialog: None,
             weather_unit_types,
-            active_weather_unit_type: config_manager().config().general().temperature_unit().get_untracked(),
+            active_weather_unit_type: config_manager()
+                .config()
+                .general()
+                .temperature_unit()
+                .get_untracked(),
             _effects: effects,
         };
 
@@ -427,7 +437,8 @@ impl Component for GeneralSettingsModel {
                 self.active_profile = profile;
                 let idx = (0..self.available_profiles.n_items())
                     .find(|&i| {
-                        self.available_profiles.string(i).as_deref() == self.active_profile.as_deref()
+                        self.available_profiles.string(i).as_deref()
+                            == self.active_profile.as_deref()
                     })
                     .unwrap_or(0);
                 widgets.profile_dropdown.set_selected(idx);
@@ -443,7 +454,8 @@ impl Component for GeneralSettingsModel {
                 // Re-sync selected index
                 let idx = (0..self.available_profiles.n_items())
                     .find(|&i| {
-                        self.available_profiles.string(i).as_deref() == self.active_profile.as_deref()
+                        self.available_profiles.string(i).as_deref()
+                            == self.active_profile.as_deref()
                     })
                     .unwrap_or(0);
                 widgets.profile_dropdown.set_selected(idx);
@@ -458,14 +470,12 @@ impl Component for GeneralSettingsModel {
                         entry2_placeholder: String::new(),
                         show_second_entry: false,
                     })
-                    .forward(sender.input_sender(), |msg| {
-                        match msg {
-                            TextEntryDialogOutput::PositiveSelected(name, _) => {
-                                GeneralSettingsInput::NewProfileNameChosen(name)
-                            }
-                            TextEntryDialogOutput::NegativeSelected => {
-                                GeneralSettingsInput::DialogCanceled
-                            }
+                    .forward(sender.input_sender(), |msg| match msg {
+                        TextEntryDialogOutput::PositiveSelected(name, _) => {
+                            GeneralSettingsInput::NewProfileNameChosen(name)
+                        }
+                        TextEntryDialogOutput::NegativeSelected => {
+                            GeneralSettingsInput::DialogCanceled
                         }
                     });
 
@@ -494,31 +504,30 @@ impl Component for GeneralSettingsModel {
             GeneralSettingsInput::LocationQueryTypeSelected(query_type) => {
                 let config_manager = config_manager();
                 config_manager.update_config(|config| {
-                    config.general.weather_location_query = if query_type == LocationQueryType::Coordinates {
-                        LocationQueryConfig::Coordinates {
-                            lat: OrdF64(0.0),
-                            lon: OrdF64(0.0),
-                        }
-                    } else {
-                        LocationQueryConfig::City {
-                            name: String::new(),
-                            country: String::new(),
-                        }
-                    };
+                    config.general.weather_location_query =
+                        if query_type == LocationQueryType::Coordinates {
+                            LocationQueryConfig::Coordinates {
+                                lat: OrdF64(0.0),
+                                lon: OrdF64(0.0),
+                            }
+                        } else {
+                            LocationQueryConfig::City {
+                                name: String::new(),
+                                country: String::new(),
+                            }
+                        };
                 });
             }
-            GeneralSettingsInput::LocationQueryEffect(query) => {
-                match query {
-                    LocationQueryConfig::Coordinates { lat, lon } => {
-                        self.location_lat_lon = format!("{}, {}", lat.0, lon.0);
-                        self.active_location_query_type = LocationQueryType::Coordinates;
-                    }
-                    LocationQueryConfig::City { name, country } => {
-                        self.location_city = format!("{}, {}", name, country);
-                        self.active_location_query_type = LocationQueryType::City;
-                    }
+            GeneralSettingsInput::LocationQueryEffect(query) => match query {
+                LocationQueryConfig::Coordinates { lat, lon } => {
+                    self.location_lat_lon = format!("{}, {}", lat.0, lon.0);
+                    self.active_location_query_type = LocationQueryType::Coordinates;
                 }
-            }
+                LocationQueryConfig::City { name, country } => {
+                    self.location_city = format!("{}, {}", name, country);
+                    self.active_location_query_type = LocationQueryType::City;
+                }
+            },
             GeneralSettingsInput::ChangeCoordinatesClicked => {
                 let dialog = TextEntryDialogModel::builder()
                     .launch(TextEntryDialogInit {
@@ -529,14 +538,12 @@ impl Component for GeneralSettingsModel {
                         entry2_placeholder: "lon".to_string(),
                         show_second_entry: true,
                     })
-                    .forward(sender.input_sender(), |msg| {
-                        match msg {
-                            TextEntryDialogOutput::PositiveSelected(lat, lon) => {
-                                GeneralSettingsInput::LatLonChosen(lat, lon)
-                            }
-                            TextEntryDialogOutput::NegativeSelected => {
-                                GeneralSettingsInput::DialogCanceled
-                            }
+                    .forward(sender.input_sender(), |msg| match msg {
+                        TextEntryDialogOutput::PositiveSelected(lat, lon) => {
+                            GeneralSettingsInput::LatLonChosen(lat, lon)
+                        }
+                        TextEntryDialogOutput::NegativeSelected => {
+                            GeneralSettingsInput::DialogCanceled
                         }
                     });
 
@@ -552,14 +559,12 @@ impl Component for GeneralSettingsModel {
                         entry2_placeholder: "Country Code".to_string(),
                         show_second_entry: true,
                     })
-                    .forward(sender.input_sender(), |msg| {
-                        match msg {
-                            TextEntryDialogOutput::PositiveSelected(city, country) => {
-                                GeneralSettingsInput::CityChosen(city, country)
-                            }
-                            TextEntryDialogOutput::NegativeSelected => {
-                                GeneralSettingsInput::DialogCanceled
-                            }
+                    .forward(sender.input_sender(), |msg| match msg {
+                        TextEntryDialogOutput::PositiveSelected(city, country) => {
+                            GeneralSettingsInput::CityChosen(city, country)
+                        }
+                        TextEntryDialogOutput::NegativeSelected => {
+                            GeneralSettingsInput::DialogCanceled
                         }
                     });
 

@@ -1,11 +1,6 @@
-use relm4::{
-    gtk,
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-};
-use relm4::gtk::prelude::WidgetExt;
 use okshell_config::schema::menu_widgets::SpacerConfig;
+use relm4::gtk::prelude::WidgetExt;
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct SpacerModel {

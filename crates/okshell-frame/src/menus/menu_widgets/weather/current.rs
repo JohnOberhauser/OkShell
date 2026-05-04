@@ -1,11 +1,13 @@
-use reactive_graph::traits::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt};
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
-use wayle_weather::{Astronomy, CurrentWeather, TemperatureUnit};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
-use okshell_utils::weather::{get_temperature_string, get_weather_icon_name, get_wind_speed, get_wind_speed_units_string};
+use okshell_utils::weather::{
+    get_temperature_string, get_weather_icon_name, get_wind_speed, get_wind_speed_units_string,
+};
+use reactive_graph::traits::{Get, GetUntracked};
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, RelmWidgetExt, gtk};
+use wayle_weather::{Astronomy, CurrentWeather, TemperatureUnit};
 
 #[derive(Debug, Clone)]
 pub(crate) struct CurrentModel {
@@ -239,9 +241,8 @@ impl Component for CurrentModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        
         let base_config = config_manager().config();
-        
+
         let mut effects = EffectScope::new();
 
         let config = base_config.clone();
@@ -249,7 +250,9 @@ impl Component for CurrentModel {
         effects.push(move |_| {
             let config = config.clone();
             let temperature_unit = config.general().temperature_unit().get();
-            sender_clone.input(CurrentInput::UpdateTemperatureUnit(TemperatureUnit::from(temperature_unit)));
+            sender_clone.input(CurrentInput::UpdateTemperatureUnit(TemperatureUnit::from(
+                temperature_unit,
+            )));
         });
 
         let sender_clone = sender.clone();
@@ -273,11 +276,13 @@ impl Component for CurrentModel {
             sunrise_time = params.astronomy.sunrise.format("%I:%M %p").to_string();
             sunset_time = params.astronomy.sunset.format("%I:%M %p").to_string();
         }
-        
+
         let model = CurrentModel {
             current_weather: params.current_weather,
             astronomy: params.astronomy,
-            temperature_unit: TemperatureUnit::from(base_config.general().temperature_unit().get_untracked()),
+            temperature_unit: TemperatureUnit::from(
+                base_config.general().temperature_unit().get_untracked(),
+            ),
             sunrise_time,
             sunset_time,
             format_24_h,

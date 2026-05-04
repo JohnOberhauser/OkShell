@@ -1,11 +1,11 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
+use crate::common::*;
+use crate::utils::find_gdk_monitor;
 use gtk4::prelude::*;
 use gtk4::{cairo, gdk, glib};
 use gtk4_layer_shell::LayerShell;
-use crate::utils::find_gdk_monitor;
-use crate::common::*;
 
 #[derive(Debug, Clone)]
 pub struct RegionSelection {

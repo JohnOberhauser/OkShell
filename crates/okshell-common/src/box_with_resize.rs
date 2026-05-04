@@ -1,6 +1,6 @@
-use relm4::gtk;
-use gtk::{glib, prelude::*, subclass::prelude::*};
 use crate::notifying_layout::NotifyingLayout;
+use gtk::{glib, prelude::*, subclass::prelude::*};
+use relm4::gtk;
 
 mod box_with_resize {
     use super::*;
@@ -36,9 +36,11 @@ mod box_with_resize {
         fn signals() -> &'static [glib::subclass::Signal] {
             static SIGNALS: OnceLock<Vec<glib::subclass::Signal>> = OnceLock::new();
             SIGNALS.get_or_init(|| {
-                vec![glib::subclass::Signal::builder("resized")
-                    .param_types([i32::static_type(), i32::static_type()])
-                    .build()]
+                vec![
+                    glib::subclass::Signal::builder("resized")
+                        .param_types([i32::static_type(), i32::static_type()])
+                        .build(),
+                ]
             })
         }
     }

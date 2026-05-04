@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use tracing::{debug, error, info};
 use zbus::object_server::SignalEmitter;
-use zbus::{fdo, interface, Connection};
 use zbus::zvariant::OwnedValue;
+use zbus::{Connection, fdo, interface};
 
 use crate::helper::{HelperEvent, PolkitAgentHelper};
 use crate::prompt::PolkitPromptInput;
@@ -45,8 +45,10 @@ impl PolkitAgentObject {
             debug!("[polkit] attempt {attempt}/{max_attempts}");
 
             // Spawn the helper process
-            let (mut helper, mut helper_rx) = PolkitAgentHelper::connect(&username, cookie).await
-                .map_err(|e| fdo::Error::Failed(format!("failed to connect to helper: {e}")))?;
+            let (mut helper, mut helper_rx) =
+                PolkitAgentHelper::connect(&username, cookie)
+                    .await
+                    .map_err(|e| fdo::Error::Failed(format!("failed to connect to helper: {e}")))?;
 
             debug!("[polkit] helper spawned");
             // Channel for the UI to send password/cancel back to us
@@ -139,11 +141,10 @@ fn pick_username(identities: &[(String, HashMap<String, OwnedValue>)]) -> Option
         if kind == "unix-user" {
             if let Some(uid_val) = props.get("uid") {
                 // uid comes as a variant; try to extract u32
-                let uid: u32 = uid_val.try_into().ok()
-                    .or_else(|| {
-                        // Fallback: try downcast to u32 directly
-                        TryInto::<u32>::try_into(uid_val).ok()
-                    })?;
+                let uid: u32 = uid_val.try_into().ok().or_else(|| {
+                    // Fallback: try downcast to u32 directly
+                    TryInto::<u32>::try_into(uid_val).ok()
+                })?;
 
                 // Resolve uid → username via nix or libc
                 #[cfg(target_os = "linux")]
@@ -190,10 +191,13 @@ pub async fn register_polkit_agent(
             &(
                 (
                     "unix-session",
-                    HashMap::from([("session-id", zbus::zvariant::Value::from(session_id.as_str()))]),
+                    HashMap::from([(
+                        "session-id",
+                        zbus::zvariant::Value::from(session_id.as_str()),
+                    )]),
                 ),
-                "en_US.UTF-8",        // locale
-                AGENT_OBJECT_PATH,    // object path
+                "en_US.UTF-8",     // locale
+                AGENT_OBJECT_PATH, // object path
             ),
         )
         .await?;

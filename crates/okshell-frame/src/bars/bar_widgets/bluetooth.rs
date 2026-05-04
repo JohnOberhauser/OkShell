@@ -1,6 +1,6 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::WidgetExt;
 use okshell_utils::bluetooth::{set_bluetooth_icon, spawn_bluetooth_enabled_watcher};
+use relm4::gtk::prelude::WidgetExt;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct BluetoothModel {}
@@ -47,10 +47,7 @@ impl Component for BluetoothModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        spawn_bluetooth_enabled_watcher(
-            &sender,
-            ||BluetoothCommandOutput::StatusChanged
-        );
+        spawn_bluetooth_enabled_watcher(&sender, || BluetoothCommandOutput::StatusChanged);
 
         let model = BluetoothModel {};
 

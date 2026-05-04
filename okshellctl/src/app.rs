@@ -1,15 +1,13 @@
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use clap::{
-    Parser, Subcommand,
-};
 
-use okshell_cli_style;
 use crate::subcommands::audio::AudioCommands;
 use crate::subcommands::bar::BarCommands;
 use crate::subcommands::brightness::BrightnessCommands;
 use crate::subcommands::lock::LockCommands;
 use crate::subcommands::menu::MenuCommands;
 use crate::subcommands::settings::SettingsCommands;
+use okshell_cli_style;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -59,5 +57,5 @@ pub enum Commands {
     Settings {
         #[command(subcommand)]
         command: SettingsCommands,
-    }
+    },
 }

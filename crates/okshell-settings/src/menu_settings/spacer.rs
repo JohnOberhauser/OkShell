@@ -1,6 +1,6 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::*;
 use okshell_config::schema::menu_widgets::SpacerConfig;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug)]
 pub struct SpacerConfigModel {
@@ -54,21 +54,14 @@ impl Component for SpacerConfigModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let model = SpacerConfigModel {
-            size: config.size,
-        };
+        let model = SpacerConfigModel { size: config.size };
 
         let widgets = view_output!();
 
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-        _root: &Self::Root,
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>, _root: &Self::Root) {
         match message {
             SpacerConfigInput::SizeChanged(s) => {
                 self.size = s;

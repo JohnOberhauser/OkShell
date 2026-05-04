@@ -1,6 +1,6 @@
 use relm4::factory::{DynamicIndex, FactoryComponent};
-use relm4::{gtk, FactorySender};
 use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
+use relm4::{FactorySender, gtk};
 
 #[derive(Debug)]
 pub struct MonitorChipModel {
@@ -45,11 +45,7 @@ impl FactoryComponent for MonitorChipModel {
         }
     }
 
-    fn init_model(
-        name: Self::Init,
-        _index: &DynamicIndex,
-        _sender: FactorySender<Self>
-    ) -> Self {
+    fn init_model(name: Self::Init, _index: &DynamicIndex, _sender: FactorySender<Self>) -> Self {
         Self { name }
     }
 }

@@ -1,13 +1,13 @@
-use relm4::gtk::{gdk, gsk, glib, graphene};
 use relm4::gtk::prelude::*;
 use relm4::gtk::subclass::prelude::*;
+use relm4::gtk::{gdk, glib, graphene, gsk};
 
 pub(crate) const SKEW_FRACTION: f32 = 0.12;
 
 mod imp {
     use super::*;
-    use std::cell::{Cell, RefCell};
     use relm4::gtk;
+    use std::cell::{Cell, RefCell};
 
     #[derive(Default)]
     pub struct ParallelogramPaintable {
@@ -26,12 +26,7 @@ mod imp {
     impl ObjectImpl for ParallelogramPaintable {}
 
     impl PaintableImpl for ParallelogramPaintable {
-        fn snapshot(
-            &self,
-            snapshot: &gdk::Snapshot,
-            width: f64,
-            height: f64,
-        ) {
+        fn snapshot(&self, snapshot: &gdk::Snapshot, width: f64, height: f64) {
             let Some(texture) = self.texture.borrow().clone() else {
                 return;
             };
@@ -52,11 +47,7 @@ mod imp {
             path_builder.close();
             let path = path_builder.to_path();
 
-            gtk_snapshot.append_fill(
-                &path,
-                gsk::FillRule::Winding,
-                &gdk::RGBA::WHITE,
-            );
+            gtk_snapshot.append_fill(&path, gsk::FillRule::Winding, &gdk::RGBA::WHITE);
 
             gtk_snapshot.pop();
 
@@ -74,10 +65,7 @@ mod imp {
                 let offset_y = (height - draw_h) / 2.0;
 
                 gtk_snapshot.save();
-                gtk_snapshot.translate(&graphene::Point::new(
-                    offset_x as f32,
-                    offset_y as f32,
-                ));
+                gtk_snapshot.translate(&graphene::Point::new(offset_x as f32, offset_y as f32));
                 texture.snapshot(snapshot, draw_w, draw_h);
                 gtk_snapshot.restore();
             } else {
