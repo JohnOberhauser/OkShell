@@ -1,11 +1,6 @@
-use relm4::{
-    gtk,
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use okshell_session::session_lock::session_lock;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct LockModel {}
@@ -64,11 +59,7 @@ impl SimpleComponent for LockModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
             LockInput::Clicked => {
                 let _ = sender.output(LockOutput::CloseMenu);

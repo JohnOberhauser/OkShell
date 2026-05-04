@@ -1,15 +1,18 @@
-use std::time::Duration;
+use crate::lock_screen::{
+    LOCK_SCREEN_REVEALER_TRANSITION_DURATION, LockScreenInit, LockScreenInput, LockScreenModel,
+    LockScreenOutput,
+};
+use crate::utils::username::current_username;
 use gtk4::glib;
 use gtk4::glib::SignalHandlerId;
 use gtk4::prelude::{GtkWindowExt, MonitorExt, WidgetExt};
 use gtk4_layer_shell::{Layer, LayerShell};
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use tracing::info;
 use okshell_auth::fingerprint::{FingerprintAuth, FingerprintEvent};
 use okshell_idle::inhibitor::IdleInhibitor;
 use okshell_session::session_lock::session_lock;
-use crate::lock_screen::{LockScreenInit, LockScreenInput, LockScreenModel, LockScreenOutput, LOCK_SCREEN_REVEALER_TRANSITION_DURATION};
-use crate::utils::username::current_username;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::time::Duration;
+use tracing::info;
 
 pub struct LockScreenManagerModel {
     lock_screens: Vec<Controller<LockScreenModel>>,
@@ -65,24 +68,23 @@ impl Component for LockScreenManagerModel {
         root.set_visible(false);
 
         let sender_clone = sender.clone();
-        let monitor_added_lock_signal_handler_id = session_lock().connect_monitor(move |_instance, monitor| {
-            info!("Lock monitor signal for {:?}", monitor.connector());
-            let controller = LockScreenModel::builder()
-                .launch(LockScreenInit {
-                    monitor: monitor.clone(),
-                })
-                .forward(sender_clone.input_sender(), |msg| {
-                    match msg {
+        let monitor_added_lock_signal_handler_id =
+            session_lock().connect_monitor(move |_instance, monitor| {
+                info!("Lock monitor signal for {:?}", monitor.connector());
+                let controller = LockScreenModel::builder()
+                    .launch(LockScreenInit {
+                        monitor: monitor.clone(),
+                    })
+                    .forward(sender_clone.input_sender(), |msg| match msg {
                         LockScreenOutput::CancelFingerprint => {
                             LockScreenManagerInput::CancelFingerprint
                         }
                         LockScreenOutput::PasswordAuthSuccess => {
                             LockScreenManagerInput::AuthSuccess
                         }
-                    }
-                });
-            sender_clone.input(LockScreenManagerInput::LockScreenCreated(controller));
-        });
+                    });
+                sender_clone.input(LockScreenManagerInput::LockScreenCreated(controller));
+            });
 
         let sender_clone = sender.clone();
         let lock_signal_handler_id = session_lock().connect_locked(move |_| {
@@ -109,12 +111,7 @@ impl Component for LockScreenManagerModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-        _root: &Self::Root
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>, _root: &Self::Root) {
         match message {
             LockScreenManagerInput::LockScreenCreated(controller) => {
                 if self.fingerprint_active {
@@ -159,9 +156,12 @@ impl Component for LockScreenManagerModel {
                 for ls in &self.lock_screens {
                     ls.emit(LockScreenInput::HideScreen);
                 }
-                glib::timeout_add_local_once(Duration::from_millis(LOCK_SCREEN_REVEALER_TRANSITION_DURATION as u64), || {
-                    session_lock().unlock();
-                });
+                glib::timeout_add_local_once(
+                    Duration::from_millis(LOCK_SCREEN_REVEALER_TRANSITION_DURATION as u64),
+                    || {
+                        session_lock().unlock();
+                    },
+                );
             }
         }
     }
@@ -170,7 +170,7 @@ impl Component for LockScreenManagerModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             LockScreenManagerCommandOutput::FingerprintEvent(event) => {
@@ -185,9 +185,7 @@ impl Component for LockScreenManagerModel {
                             ls.emit(LockScreenInput::FingerprintScanning);
                         }
                     }
-                    FingerprintEvent::Match => {
-                        sender.input(LockScreenManagerInput::AuthSuccess)
-                    }
+                    FingerprintEvent::Match => sender.input(LockScreenManagerInput::AuthSuccess),
                     FingerprintEvent::NoMatch => {
                         for ls in &self.lock_screens {
                             ls.emit(LockScreenInput::FingerprintFailed);
@@ -244,57 +242,57 @@ impl LockScreenManagerModel {
 
             loop {
                 tokio::select! {
-                _ = &mut cancel_rx => {
-                    info!("Fingerprint cancelled");
-                    let _ = auth.stop().await;
-                    return;
-                }
-                result = auth.wait_for_result() => {
-                    match result {
-                        Ok(FingerprintEvent::Match) => {
-                            let _ = auth.stop().await;
-                            let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(
-                                FingerprintEvent::Match,
-                            ));
-                            return;
-                        }
-                        Ok(FingerprintEvent::NoMatch) => {
-                            unknown_error_count = 0;
-                            let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(
-                                FingerprintEvent::NoMatch,
-                            ));
-                            let _ = auth.device.verify_stop().await;
-                            let _ = auth.device.verify_start("any").await;
-                        }
-                        Ok(FingerprintEvent::UnknownError) => {
-                            unknown_error_count += 1;
-                            if unknown_error_count > 3 {
+                    _ = &mut cancel_rx => {
+                        info!("Fingerprint cancelled");
+                        let _ = auth.stop().await;
+                        return;
+                    }
+                    result = auth.wait_for_result() => {
+                        match result {
+                            Ok(FingerprintEvent::Match) => {
                                 let _ = auth.stop().await;
                                 let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(
-                                    FingerprintEvent::Error("Device error".into()),
+                                    FingerprintEvent::Match,
                                 ));
                                 return;
                             }
-                            info!("Unknown error, retrying ({unknown_error_count}/3)");
-                            let _ = auth.device.verify_stop().await;
-                            tokio::time::sleep(Duration::from_secs(2)).await;
-                            let _ = auth.device.verify_start("any").await;
-                        }
-                        Ok(event) => {
-                            let _ = auth.stop().await;
-                            let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(event));
-                            return;
-                        }
-                        Err(e) => {
-                            let _ = auth.stop().await;
-                            let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(
-                                FingerprintEvent::Error(e.to_string()),
-                            ));
-                            return;
+                            Ok(FingerprintEvent::NoMatch) => {
+                                unknown_error_count = 0;
+                                let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(
+                                    FingerprintEvent::NoMatch,
+                                ));
+                                let _ = auth.device.verify_stop().await;
+                                let _ = auth.device.verify_start("any").await;
+                            }
+                            Ok(FingerprintEvent::UnknownError) => {
+                                unknown_error_count += 1;
+                                if unknown_error_count > 3 {
+                                    let _ = auth.stop().await;
+                                    let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(
+                                        FingerprintEvent::Error("Device error".into()),
+                                    ));
+                                    return;
+                                }
+                                info!("Unknown error, retrying ({unknown_error_count}/3)");
+                                let _ = auth.device.verify_stop().await;
+                                tokio::time::sleep(Duration::from_secs(2)).await;
+                                let _ = auth.device.verify_start("any").await;
+                            }
+                            Ok(event) => {
+                                let _ = auth.stop().await;
+                                let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(event));
+                                return;
+                            }
+                            Err(e) => {
+                                let _ = auth.stop().await;
+                                let _ = cmd_sender.send(LockScreenManagerCommandOutput::FingerprintEvent(
+                                    FingerprintEvent::Error(e.to_string()),
+                                ));
+                                return;
+                            }
                         }
                     }
                 }
-            }
             }
         });
     }

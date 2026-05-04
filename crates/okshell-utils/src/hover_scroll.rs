@@ -1,11 +1,4 @@
-use relm4::{
-    gtk::{
-        self,
-        prelude::*,
-        gdk,
-        glib,
-    }
-};
+use relm4::gtk::{self, gdk, glib, prelude::*};
 
 pub struct HoverScrollHandle {
     _motion: gtk::EventControllerMotion,
@@ -61,8 +54,8 @@ where
 
     widget.add_controller(scroll.clone());
 
-    HoverScrollHandle { 
-        _motion: motion, 
-        _scroll: scroll, 
+    HoverScrollHandle {
+        _motion: motion,
+        _scroll: scroll,
     }
 }

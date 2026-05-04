@@ -1,12 +1,12 @@
-use reactive_graph::prelude::GetUntracked;
-use relm4::{gtk, FactorySender};
-use relm4::gtk::gdk;
-use relm4::gtk::prelude::{DrawingAreaExtManual, WidgetExt, BoxExt, OrientableExt};
-use relm4::prelude::FactoryComponent;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::Themes;
 use okshell_matugen::static_theme_mapping::static_theme;
+use reactive_graph::prelude::GetUntracked;
+use relm4::gtk::gdk;
+use relm4::gtk::prelude::{BoxExt, DrawingAreaExtManual, OrientableExt, WidgetExt};
+use relm4::prelude::FactoryComponent;
+use relm4::{FactorySender, gtk};
 
 #[derive(Debug)]
 pub(crate) struct ThemeCardModel {
@@ -121,7 +121,11 @@ impl FactoryComponent for ThemeCardModel {
         }
     }
 
-    fn init_model(theme: Self::Init, _index: &relm4::prelude::DynamicIndex, _sender: FactorySender<Self>) -> Self {
+    fn init_model(
+        theme: Self::Init,
+        _index: &relm4::prelude::DynamicIndex,
+        _sender: FactorySender<Self>,
+    ) -> Self {
         let active_theme = config_manager().config().theme().theme().get_untracked();
         let colors = theme_swatch_colors(&theme);
         Self {
@@ -153,7 +157,7 @@ impl FactoryComponent for ThemeCardModel {
     ) {
         match message {
             ThemeCardInput::Clicked => {
-                sender.output(ThemeCardOutput::Selected(self.theme.clone())).ok();
+                sender.output(ThemeCardOutput::Selected(self.theme)).ok();
             }
             ThemeCardInput::SelectionChanged(active_theme) => {
                 self.is_selected = self.theme == active_theme;
@@ -173,12 +177,29 @@ impl ThemeCardModel {
                     let r = 6.0_f64;
                     let w = w as f64;
                     let h = h as f64;
-                    cr.set_source_rgba(rgba.red() as f64, rgba.green() as f64, rgba.blue() as f64, rgba.alpha() as f64);
+                    cr.set_source_rgba(
+                        rgba.red() as f64,
+                        rgba.green() as f64,
+                        rgba.blue() as f64,
+                        rgba.alpha() as f64,
+                    );
                     cr.new_sub_path();
                     cr.arc(w - r, r, r, -std::f64::consts::FRAC_PI_2, 0.0);
                     cr.arc(w - r, h - r, r, 0.0, std::f64::consts::FRAC_PI_2);
-                    cr.arc(r, h - r, r, std::f64::consts::FRAC_PI_2, std::f64::consts::PI);
-                    cr.arc(r, r, r, std::f64::consts::PI, 3.0 * std::f64::consts::FRAC_PI_2);
+                    cr.arc(
+                        r,
+                        h - r,
+                        r,
+                        std::f64::consts::FRAC_PI_2,
+                        std::f64::consts::PI,
+                    );
+                    cr.arc(
+                        r,
+                        r,
+                        r,
+                        std::f64::consts::PI,
+                        3.0 * std::f64::consts::FRAC_PI_2,
+                    );
                     cr.close_path();
                     let _ = cr.fill();
                 }
@@ -197,7 +218,12 @@ impl ThemeCardModel {
                 let color = color.clone();
                 swatch.set_draw_func(move |_, cr, w, h| {
                     if let Ok(rgba) = gdk::RGBA::parse(&color) {
-                        cr.set_source_rgba(rgba.red() as f64, rgba.green() as f64, rgba.blue() as f64, rgba.alpha() as f64);
+                        cr.set_source_rgba(
+                            rgba.red() as f64,
+                            rgba.green() as f64,
+                            rgba.blue() as f64,
+                            rgba.alpha() as f64,
+                        );
                         cr.rectangle(0.0, 0.0, w as f64, h as f64);
                         let _ = cr.fill();
                     }

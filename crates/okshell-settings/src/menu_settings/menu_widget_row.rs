@@ -1,11 +1,13 @@
-use relm4::{gtk, Component, ComponentController, Controller, FactorySender};
-use relm4::factory::{DynamicIndex, FactoryComponent};
-use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
-use okshell_config::schema::menu_widgets::{ContainerConfig, MenuWidget, QuickActionWidget, QuickActionsConfig, SpacerConfig};
-use okshell_config::schema::position::Orientation;
 use crate::menu_settings::container::{ContainerConfigModel, ContainerConfigOutput};
 use crate::menu_settings::quick_actions_list::{QuickActionListModel, QuickActionListOutput};
 use crate::menu_settings::spacer::{SpacerConfigModel, SpacerConfigOutput};
+use okshell_config::schema::menu_widgets::{
+    ContainerConfig, MenuWidget, QuickActionWidget, QuickActionsConfig, SpacerConfig,
+};
+use okshell_config::schema::position::Orientation;
+use relm4::factory::{DynamicIndex, FactoryComponent};
+use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentController, Controller, FactorySender, gtk};
 
 #[derive(Debug)]
 pub struct MenuWidgetRowModel {
@@ -100,11 +102,7 @@ impl FactoryComponent for MenuWidgetRowModel {
         }
     }
 
-    fn init_model(
-        widget: Self::Init,
-        index: &DynamicIndex,
-        _sender: FactorySender<Self>,
-    ) -> Self {
+    fn init_model(widget: Self::Init, index: &DynamicIndex, _sender: FactorySender<Self>) -> Self {
         Self {
             widget,
             index: index.clone(),
@@ -134,55 +132,67 @@ impl FactoryComponent for MenuWidgetRowModel {
                 if let MenuWidget::Spacer(ref mut config) = self.widget {
                     config.size = h;
                 }
-                sender.output(MenuWidgetRowOutput::WidgetChanged(
-                    self.index.clone(),
-                    self.widget.clone(),
-                )).unwrap();
+                sender
+                    .output(MenuWidgetRowOutput::WidgetChanged(
+                        self.index.clone(),
+                        self.widget.clone(),
+                    ))
+                    .unwrap();
             }
             MenuWidgetRowInput::ContainerOrientationChanged(o) => {
                 if let MenuWidget::Container(ref mut config) = self.widget {
                     config.orientation = o;
                 }
-                sender.output(MenuWidgetRowOutput::WidgetChanged(
-                    self.index.clone(),
-                    self.widget.clone(),
-                )).unwrap();
+                sender
+                    .output(MenuWidgetRowOutput::WidgetChanged(
+                        self.index.clone(),
+                        self.widget.clone(),
+                    ))
+                    .unwrap();
             }
             MenuWidgetRowInput::ContainerSpacingChanged(s) => {
                 if let MenuWidget::Container(ref mut config) = self.widget {
                     config.spacing = s;
                 }
-                sender.output(MenuWidgetRowOutput::WidgetChanged(
-                    self.index.clone(),
-                    self.widget.clone(),
-                )).unwrap();
+                sender
+                    .output(MenuWidgetRowOutput::WidgetChanged(
+                        self.index.clone(),
+                        self.widget.clone(),
+                    ))
+                    .unwrap();
             }
             MenuWidgetRowInput::ContainerMinWidthChanged(w) => {
                 if let MenuWidget::Container(ref mut config) = self.widget {
                     config.minimum_width = w;
                 }
-                sender.output(MenuWidgetRowOutput::WidgetChanged(
-                    self.index.clone(),
-                    self.widget.clone(),
-                )).unwrap();
+                sender
+                    .output(MenuWidgetRowOutput::WidgetChanged(
+                        self.index.clone(),
+                        self.widget.clone(),
+                    ))
+                    .unwrap();
             }
             MenuWidgetRowInput::ContainerWidgetsChanged(w) => {
                 if let MenuWidget::Container(ref mut config) = self.widget {
                     config.widgets = w;
                 }
-                sender.output(MenuWidgetRowOutput::WidgetChanged(
-                    self.index.clone(),
-                    self.widget.clone(),
-                )).unwrap();
+                sender
+                    .output(MenuWidgetRowOutput::WidgetChanged(
+                        self.index.clone(),
+                        self.widget.clone(),
+                    ))
+                    .unwrap();
             }
             MenuWidgetRowInput::QuickActionsChanged(actions) => {
                 if let MenuWidget::QuickActions(ref mut config) = self.widget {
                     config.widgets = actions;
                 }
-                sender.output(MenuWidgetRowOutput::WidgetChanged(
-                    self.index.clone(),
-                    self.widget.clone(),
-                )).unwrap();
+                sender
+                    .output(MenuWidgetRowOutput::WidgetChanged(
+                        self.index.clone(),
+                        self.widget.clone(),
+                    ))
+                    .unwrap();
             }
         }
     }
@@ -224,11 +234,12 @@ impl MenuWidgetRowModel {
         sender: &FactorySender<Self>,
     ) {
         let sender_clone = sender.clone();
-        let spacer = SpacerConfigModel::builder()
-            .launch(config.clone())
-            .forward(sender_clone.input_sender(), |output| match output {
+        let spacer = SpacerConfigModel::builder().launch(config.clone()).forward(
+            sender_clone.input_sender(),
+            |output| match output {
                 SpacerConfigOutput::SizeChanged(s) => MenuWidgetRowInput::SpacerHeightChanged(s),
-            });
+            },
+        );
 
         config_area.append(spacer.widget());
         self.spacer_config = Some(spacer);
@@ -244,10 +255,18 @@ impl MenuWidgetRowModel {
         let container = ContainerConfigModel::builder()
             .launch(config.clone())
             .forward(sender_clone.input_sender(), |output| match output {
-                ContainerConfigOutput::SpacingChanged(s) => MenuWidgetRowInput::ContainerSpacingChanged(s),
-                ContainerConfigOutput::MinWidthChanged(w) => MenuWidgetRowInput::ContainerMinWidthChanged(w),
-                ContainerConfigOutput::OrientationChanged(o) => MenuWidgetRowInput::ContainerOrientationChanged(o),
-                ContainerConfigOutput::WidgetsChanged(w) => MenuWidgetRowInput::ContainerWidgetsChanged(w),
+                ContainerConfigOutput::SpacingChanged(s) => {
+                    MenuWidgetRowInput::ContainerSpacingChanged(s)
+                }
+                ContainerConfigOutput::MinWidthChanged(w) => {
+                    MenuWidgetRowInput::ContainerMinWidthChanged(w)
+                }
+                ContainerConfigOutput::OrientationChanged(o) => {
+                    MenuWidgetRowInput::ContainerOrientationChanged(o)
+                }
+                ContainerConfigOutput::WidgetsChanged(w) => {
+                    MenuWidgetRowInput::ContainerWidgetsChanged(w)
+                }
             });
 
         config_area.append(container.widget());

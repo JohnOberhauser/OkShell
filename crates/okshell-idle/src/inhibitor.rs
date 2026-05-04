@@ -12,13 +12,7 @@ use zbus::{Connection, proxy, zvariant::OwnedFd};
     default_path = "/org/freedesktop/login1"
 )]
 trait LogindManager {
-    fn inhibit(
-        &self,
-        what: &str,
-        who: &str,
-        why: &str,
-        mode: &str,
-    ) -> zbus::Result<OwnedFd>;
+    fn inhibit(&self, what: &str, who: &str, why: &str, mode: &str) -> zbus::Result<OwnedFd>;
 }
 
 static INSTANCE: OnceLock<IdleInhibitor> = OnceLock::new();
@@ -32,7 +26,9 @@ fn cache_path() -> Option<PathBuf> {
 
 /// Read cached state. Returns `false` on any error (missing file, parse failure, etc).
 fn read_cached_state() -> bool {
-    let Some(path) = cache_path() else { return false };
+    let Some(path) = cache_path() else {
+        return false;
+    };
     match std::fs::read_to_string(&path) {
         Ok(s) => s.trim() == "1",
         Err(_) => false,
@@ -53,7 +49,11 @@ fn write_cached_state(enabled: bool) {
     }
     let contents = if enabled { "1" } else { "0" };
     if let Err(e) = std::fs::write(&path, contents) {
-        warn!("failed to write idle inhibitor cache {}: {}", path.display(), e);
+        warn!(
+            "failed to write idle inhibitor cache {}: {}",
+            path.display(),
+            e
+        );
     }
 }
 
@@ -113,7 +113,9 @@ impl IdleInhibitor {
         }
         let conn = Connection::system().await?;
         let proxy = LogindManagerProxy::new(&conn).await?;
-        let fd = proxy.inhibit("idle", &self.who, "User enabled the inhibitor", "block").await?;
+        let fd = proxy
+            .inhibit("idle", &self.who, "User enabled the inhibitor", "block")
+            .await?;
         *guard = Some(fd);
         let _ = self.state_tx.send(true);
         write_cached_state(true);

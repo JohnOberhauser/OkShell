@@ -1,9 +1,8 @@
-use relm4::{gtk::{
-    self,
-    prelude::*,
-    glib,
-}, Component, ComponentParts, ComponentSender, RelmWidgetExt};
-use okshell_clipboard::{clipboard_service, ClipboardEntry, EntryPreview};
+use okshell_clipboard::{ClipboardEntry, EntryPreview, clipboard_service};
+use relm4::{
+    Component, ComponentParts, ComponentSender, RelmWidgetExt,
+    gtk::{self, glib, prelude::*},
+};
 
 #[derive(Debug, Clone)]
 pub(crate) struct ClipboardItemModel {
@@ -41,7 +40,7 @@ impl Component for ClipboardItemModel {
                 set_vexpand: false,
                 set_margin_all: 8,
                 connect_clicked[sender] => move |_| {
-                    let _ = sender.input(ClipboardItemInput::DeleteEntry);
+                    sender.input(ClipboardItemInput::DeleteEntry);
                 },
 
                 #[name="image"]
@@ -57,7 +56,7 @@ impl Component for ClipboardItemModel {
             gtk::Button {
                 add_css_class: "clipboard-copy-button",
                 connect_clicked[sender] => move |_| {
-                    let _ = sender.input(ClipboardItemInput::CopyEntry);
+                    sender.input(ClipboardItemInput::CopyEntry);
                 },
 
                 gtk::Box {
@@ -67,7 +66,7 @@ impl Component for ClipboardItemModel {
 
                     gtk::Label {
                         add_css_class: "clipboard-item-title",
-                        set_label: format!("#{}", model.entry.id.to_string()).as_str(),
+                        set_label: format!("#{}", model.entry.id).as_str(),
                         set_hexpand: true,
                         set_halign: gtk::Align::Start,
                     },
@@ -88,9 +87,7 @@ impl Component for ClipboardItemModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let model = ClipboardItemModel {
-            entry: params,
-        };
+        let model = ClipboardItemModel { entry: params };
         let widgets = view_output!();
 
         // Build the preview content based on entry type.
@@ -108,7 +105,11 @@ impl Component for ClipboardItemModel {
                 label.add_css_class("label-small-bold");
                 widgets.preview_box.append(&label);
             }
-            EntryPreview::Image { rgba, width, height } => {
+            EntryPreview::Image {
+                rgba,
+                width,
+                height,
+            } => {
                 let bytes = glib::Bytes::from(rgba);
                 let texture = gtk::gdk::MemoryTexture::new(
                     *width as i32,
@@ -131,7 +132,7 @@ impl Component for ClipboardItemModel {
             }
             EntryPreview::Binary { mime_type, size } => {
                 let label = gtk::Label::builder()
-                    .label(&format!("{mime_type}  ({})", format_size(*size)))
+                    .label(format!("{mime_type}  ({})", format_size(*size)))
                     .halign(gtk::Align::Start)
                     .build();
                 label.add_css_class("label-small-bold");

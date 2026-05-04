@@ -1,6 +1,4 @@
-use clap::{
-    builder::styling::{AnsiColor, Effects, Styles},
-};
+use clap::builder::styling::{AnsiColor, Effects, Styles};
 
 pub fn get_styles() -> Styles {
     Styles::styled()

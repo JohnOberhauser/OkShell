@@ -8,7 +8,9 @@ use tokio::sync::broadcast;
 use tracing::{debug, error, info, warn};
 use wayland_client::protocol::wl_registry;
 use wayland_client::protocol::wl_seat::WlSeat;
-use wayland_client::{delegate_noop, Connection, Dispatch, EventQueue, QueueHandle, event_created_child};
+use wayland_client::{
+    Connection, Dispatch, EventQueue, QueueHandle, delegate_noop, event_created_child,
+};
 
 use wayland_protocols::ext::data_control::v1::client::{
     ext_data_control_device_v1::{self, ExtDataControlDeviceV1},
@@ -37,12 +39,7 @@ const TEXT_MIME_PRIORITY: &[&str] = &[
 ];
 
 /// preferred mine types in priority order
-const IMAGE_MIME_PRIORITY: &[&str] = &[
-    "image/png",
-    "image/jpeg",
-    "image/bmp",
-    "image/tiff",
-];
+const IMAGE_MIME_PRIORITY: &[&str] = &["image/png", "image/jpeg", "image/bmp", "image/tiff"];
 
 #[derive(Clone, Debug)]
 pub enum ClipboardEvent {
@@ -83,7 +80,11 @@ impl ClipboardWatcher {
                 }
             })?;
 
-        Ok(Self { history, event_tx, command_tx })
+        Ok(Self {
+            history,
+            event_tx,
+            command_tx,
+        })
     }
 
     pub fn history(&self) -> &ClipboardHistory {
@@ -252,7 +253,12 @@ impl Dispatch<wl_registry::WlRegistry, ()> for WatcherState {
         _conn: &Connection,
         qh: &QueueHandle<Self>,
     ) {
-        if let wl_registry::Event::Global { name, interface, version } = event {
+        if let wl_registry::Event::Global {
+            name,
+            interface,
+            version,
+        } = event
+        {
             match interface.as_str() {
                 "ext_data_control_manager_v1" => {
                     let manager = registry.bind::<ExtDataControlManagerV1, _, _>(
@@ -265,12 +271,7 @@ impl Dispatch<wl_registry::WlRegistry, ()> for WatcherState {
                     debug!("Bound ext_data_control_manager_v1");
                 }
                 "wl_seat" => {
-                    let seat = registry.bind::<WlSeat, _, _>(
-                        name,
-                        version.min(1),
-                        qh,
-                        (),
-                    );
+                    let seat = registry.bind::<WlSeat, _, _>(name, version.min(1), qh, ());
                     state.seat = Some(seat);
                     debug!("Bound wl_seat");
                 }
@@ -383,10 +384,10 @@ impl Dispatch<ExtDataControlOfferV1, ()> for WatcherState {
         _conn: &Connection,
         _qh: &QueueHandle<Self>,
     ) {
-        if let ext_data_control_offer_v1::Event::Offer { mime_type } = event {
-            if let Some(pending) = &mut state.pending_offer {
-                pending.mime_types.push(mime_type);
-            }
+        if let ext_data_control_offer_v1::Event::Offer { mime_type } = event
+            && let Some(pending) = &mut state.pending_offer
+        {
+            pending.mime_types.push(mime_type);
         }
     }
 }
@@ -480,7 +481,7 @@ fn read_offer_data(
     // Flush the connection so the compositor sees the receive request
     // and forwards it to the source app. Without this, the read below
     // will block forever waiting for data that was never requested.
-    conn.flush().map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+    conn.flush().map_err(std::io::Error::other)?;
 
     // Close the write end so we get EOF when the source is done.
     drop(write_fd);
@@ -513,9 +514,7 @@ fn nix_pipe() -> Result<(OwnedFd, OwnedFd), std::io::Error> {
     if ret < 0 {
         return Err(std::io::Error::last_os_error());
     }
-    unsafe {
-        Ok((OwnedFd::from_raw_fd(fds[0]), OwnedFd::from_raw_fd(fds[1])))
-    }
+    unsafe { Ok((OwnedFd::from_raw_fd(fds[0]), OwnedFd::from_raw_fd(fds[1]))) }
 }
 
 fn build_entry(mime_type: String, data: Vec<u8>) -> Option<ClipboardEntry> {

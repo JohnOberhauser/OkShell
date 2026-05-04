@@ -1,17 +1,17 @@
+use okshell_config::config_manager::config_manager;
+use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields, WallpaperStoreFields};
+use okshell_config::schema::themes::Themes;
+use okshell_image::lut::apply_theme_filter;
+use reactive_graph::effect::Effect;
+use reactive_graph::prelude::{Get, GetUntracked, Update};
+use reactive_stores::{ArcStore, Store};
+use relm4::gtk::glib;
 use std::fs;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock};
-use reactive_graph::effect::Effect;
-use reactive_graph::prelude::{Get, GetUntracked, Update};
-use reactive_stores::{ArcStore, Store};
-use relm4::gtk::glib;
-use tracing::{info};
-use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields, WallpaperStoreFields};
-use okshell_config::schema::themes::Themes;
-use okshell_image::lut::apply_theme_filter;
+use tracing::info;
 
 // ── Cache paths ──────────────────────────────────────────────────────────────
 
@@ -53,11 +53,8 @@ struct WallpaperInner {
     image: Option<WallpaperImage>,
 }
 
-static WALLPAPER: LazyLock<ArcStore<WallpaperState>> = LazyLock::new(|| {
-    ArcStore::new(WallpaperState {
-        revision: 0,
-    })
-});
+static WALLPAPER: LazyLock<ArcStore<WallpaperState>> =
+    LazyLock::new(|| ArcStore::new(WallpaperState { revision: 0 }));
 
 static WALLPAPER_INNER: LazyLock<std::sync::Mutex<WallpaperInner>> = LazyLock::new(|| {
     // Load persisted image from disk if available
@@ -71,13 +68,21 @@ static WALLPAPER_INNER: LazyLock<std::sync::Mutex<WallpaperInner>> = LazyLock::n
 
     // React to filter toggle
     Effect::new(move |_| {
-        let _apply = config_manager().config().wallpaper().apply_theme_filter().get();
+        let _apply = config_manager()
+            .config()
+            .wallpaper()
+            .apply_theme_filter()
+            .get();
         refilter();
     });
 
     // React to filter strength changes
     Effect::new(move |_| {
-        let _strength = config_manager().config().wallpaper().theme_filter_strength().get();
+        let _strength = config_manager()
+            .config()
+            .wallpaper()
+            .theme_filter_strength()
+            .get();
         refilter();
     });
 
@@ -155,22 +160,30 @@ fn refilter() {
         let cancel_token = new_token;
 
         let theme = config_manager().config().theme().theme().get_untracked();
-        let apply = config_manager().config().wallpaper().apply_theme_filter().get_untracked();
-        let strength = config_manager().config().wallpaper().theme_filter_strength().get_untracked().get();
+        let apply = config_manager()
+            .config()
+            .wallpaper()
+            .apply_theme_filter()
+            .get_untracked();
+        let strength = config_manager()
+            .config()
+            .wallpaper()
+            .theme_filter_strength()
+            .get_untracked()
+            .get();
 
-        let should_filter = apply
-            && strength != 0.0
-            && theme != Themes::Default
-            && theme != Themes::Wallpaper;
+        let should_filter =
+            apply && strength != 0.0 && theme != Themes::Default && theme != Themes::Wallpaper;
 
         std::thread::spawn(move || {
             let result = if should_filter {
-                apply_theme_filter(&source, &theme, strength, 1.0, 0.0, &cancel_token)
-                    .map(|remap| WallpaperImage {
+                apply_theme_filter(&source, &theme, strength, 1.0, 0.0, &cancel_token).map(
+                    |remap| WallpaperImage {
                         buf: Arc::new(remap.buf),
                         width: remap.width,
                         height: remap.height,
-                    })
+                    },
+                )
             } else if !cancel_token.load(Ordering::Relaxed) {
                 decode_source(&source)
             } else {

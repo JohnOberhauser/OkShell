@@ -1,8 +1,8 @@
+use relm4::{
+    Component, ComponentController, Controller,
+    gtk::{self, prelude::*},
+};
 use std::any::Any;
-use relm4::{gtk::{
-    self,
-    prelude::*,
-}, Component, Controller, ComponentController};
 
 pub trait GenericWidgetController {
     fn root_widget(&self) -> gtk::Widget;

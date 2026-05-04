@@ -1,16 +1,18 @@
+use crate::menus::menu_widgets::app_launcher::app_launcher_item::AppLauncherItemOutput::CloseMenu;
 use gtk4_layer_shell::{KeyboardMode, LayerShell};
-use reactive_graph::traits::GetUntracked;
-use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt, Sender};
-use relm4::gtk::gio::DesktopAppInfo;
-use relm4::gtk::{gio, pango};
-use relm4::gtk::glib::GString;
-use relm4::gtk::prelude::{ActionMapExt, AppInfoExt, ButtonExt, OrientableExt, PopoverExt, WidgetExt};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::Themes;
-use crate::menus::menu_widgets::app_launcher::app_launcher_item::AppLauncherItemOutput::CloseMenu;
-use okshell_utils::app_icon::app_icon::{set_icon};
+use okshell_utils::app_icon::app_icon::set_icon;
 use okshell_utils::launch::launch_detached;
+use reactive_graph::traits::GetUntracked;
+use relm4::gtk::gio::DesktopAppInfo;
+use relm4::gtk::glib::GString;
+use relm4::gtk::prelude::{
+    ActionMapExt, AppInfoExt, ButtonExt, OrientableExt, PopoverExt, WidgetExt,
+};
+use relm4::gtk::{gio, pango};
+use relm4::{Component, ComponentParts, ComponentSender, RelmWidgetExt, Sender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct AppLauncherItemModel {
@@ -116,10 +118,33 @@ impl Component for AppLauncherItemModel {
             &widgets.image,
             base_config.theme().icons().app_icon_theme().get_untracked(),
             &config_manager().config().theme().theme().get_untracked(),
-            config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
-            config_manager().config().theme().icons().filter_strength().get_untracked().get(),
-            config_manager().config().theme().icons().monochrome_strength().get_untracked().get(),
-            config_manager().config().theme().icons().contrast_strength().get_untracked().get(),
+            config_manager()
+                .config()
+                .theme()
+                .icons()
+                .apply_theme_filter()
+                .get_untracked(),
+            config_manager()
+                .config()
+                .theme()
+                .icons()
+                .filter_strength()
+                .get_untracked()
+                .get(),
+            config_manager()
+                .config()
+                .theme()
+                .icons()
+                .monochrome_strength()
+                .get_untracked()
+                .get(),
+            config_manager()
+                .config()
+                .theme()
+                .icons()
+                .contrast_strength()
+                .get_untracked()
+                .get(),
         );
 
         ComponentParts { model, widgets }
@@ -136,7 +161,7 @@ impl Component for AppLauncherItemModel {
             AppLauncherItemInput::Clicked => {
                 launch_detached(&self.app_info);
                 let _ = sender.output(CloseMenu);
-            },
+            }
             AppLauncherItemInput::RightClicked => {
                 if let Some(window) = widgets.button.toplevel_window() {
                     window.set_keyboard_mode(KeyboardMode::OnDemand);
@@ -216,11 +241,7 @@ impl Component for AppLauncherItemModel {
         self.update_view(widgets, sender);
     }
 
-    fn shutdown(
-        &mut self,
-        _widgets: &mut Self::Widgets,
-        _output: Sender<Self::Output>
-    ) {
+    fn shutdown(&mut self, _widgets: &mut Self::Widgets, _output: Sender<Self::Output>) {
         if let Some(popover) = self.popover.take() {
             popover.unparent();
         }

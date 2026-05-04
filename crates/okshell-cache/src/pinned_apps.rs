@@ -1,10 +1,10 @@
+use reactive_graph::prelude::{ReadUntracked, Update};
+use reactive_stores::{ArcStore, Patch, Store};
+use relm4::gtk::glib;
 use std::fs;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::sync::LazyLock;
-use reactive_graph::prelude::{ReadUntracked, Update};
-use reactive_stores::{ArcStore, Patch, Store};
-use relm4::gtk::glib;
 
 #[derive(Debug, Clone, PartialEq, Eq, Store)]
 pub struct PinnedAppsState {
@@ -29,7 +29,12 @@ pub fn pinned_apps_store() -> ArcStore<PinnedAppsState> {
 
 pub fn pin_app(app: PinnedApp) {
     let store = pinned_apps_store();
-    if store.read_untracked().apps.iter().any(|a| a.desktop_id == app.desktop_id) {
+    if store
+        .read_untracked()
+        .apps
+        .iter()
+        .any(|a| a.desktop_id == app.desktop_id)
+    {
         return;
     }
     store.update(|s| s.apps.push(app));
@@ -54,7 +59,9 @@ fn persist() {
 }
 
 fn pinned_apps_path() -> PathBuf {
-    glib::user_cache_dir().join("okshell").join("pinned_apps.txt")
+    glib::user_cache_dir()
+        .join("okshell")
+        .join("pinned_apps.txt")
 }
 
 fn load_pinned_apps() -> Vec<PinnedApp> {
@@ -62,7 +69,7 @@ fn load_pinned_apps() -> Vec<PinnedApp> {
     match fs::File::open(&path) {
         Ok(file) => BufReader::new(file)
             .lines()
-            .filter_map(|l| l.ok())
+            .map_while(Result::ok)
             .filter(|l| !l.trim().is_empty())
             .filter_map(|l| PinnedApp::from_line(&l))
             .collect(),
@@ -94,6 +101,9 @@ impl PinnedApp {
         if desktop_id.is_empty() || hyprland_class.is_empty() {
             return None;
         }
-        Some(Self { desktop_id, hyprland_class })
+        Some(Self {
+            desktop_id,
+            hyprland_class,
+        })
     }
 }

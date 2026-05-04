@@ -1,10 +1,12 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::WidgetExt;
-use wayle_audio::core::device::input::InputDevice;
-use okshell_common::{WatcherToken};
+use okshell_common::WatcherToken;
 use okshell_services::audio_service;
-use okshell_utils::audio::{get_audio_in_icon, spawn_default_input_watcher, spawn_input_device_volume_mute_watcher};
+use okshell_utils::audio::{
+    get_audio_in_icon, spawn_default_input_watcher, spawn_input_device_volume_mute_watcher,
+};
+use relm4::gtk::prelude::WidgetExt;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use std::sync::Arc;
+use wayle_audio::core::device::input::InputDevice;
 
 #[derive(Debug)]
 pub(crate) struct AudioInputModel {
@@ -56,11 +58,7 @@ impl Component for AudioInputModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        spawn_default_input_watcher(
-            &sender,
-            None,
-            ||AudioInputCommandOutput::DeviceChanged,
-        );
+        spawn_default_input_watcher(&sender, None, || AudioInputCommandOutput::DeviceChanged);
 
         let model = AudioInputModel {
             active_device_watcher_token: WatcherToken::new(),
@@ -76,11 +74,13 @@ impl Component for AudioInputModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         _sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             AudioInputInput::UpdateDevice(device) => {
-                widgets.image.set_icon_name(Some(get_audio_in_icon(&device)));
+                widgets
+                    .image
+                    .set_icon_name(Some(get_audio_in_icon(&device)));
             }
         }
     }
@@ -89,7 +89,7 @@ impl Component for AudioInputModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             AudioInputCommandOutput::DeviceChanged => {
@@ -99,12 +99,9 @@ impl Component for AudioInputModel {
 
                     let token = self.active_device_watcher_token.reset();
 
-                    spawn_input_device_volume_mute_watcher(
-                        audio_device,
-                        token,
-                        &sender,
-                        ||AudioInputCommandOutput::VolumeChanged
-                    );
+                    spawn_input_device_volume_mute_watcher(audio_device, token, &sender, || {
+                        AudioInputCommandOutput::VolumeChanged
+                    });
                 }
             }
             AudioInputCommandOutput::VolumeChanged => {

@@ -1,10 +1,10 @@
 pub(crate) mod airplane_mode;
+pub(crate) mod do_not_disturb;
+pub(crate) mod hypr_picker;
+pub(crate) mod idle_inhibitor;
 pub(crate) mod lock;
 pub(crate) mod logout;
-pub(crate) mod reboot;
-pub(crate) mod shutdown;
-pub(crate) mod do_not_disturb;
 pub(crate) mod night_light;
-pub(crate) mod hypr_picker;
+pub(crate) mod reboot;
 pub(crate) mod settings;
-pub(crate) mod idle_inhibitor;
+pub(crate) mod shutdown;

@@ -1,15 +1,9 @@
-use relm4::{
-    gtk,
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use okshell_utils::hypr_picker::spawn_color_picker;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 #[derive(Debug, Clone)]
-pub(crate) struct HyprPickerModel {
-}
+pub(crate) struct HyprPickerModel {}
 
 #[derive(Debug)]
 pub(crate) enum HyprPickerInput {
@@ -21,8 +15,7 @@ pub(crate) enum HyprPickerOutput {
     CloseMenu,
 }
 
-pub(crate) struct HyprPickerInit {
-}
+pub(crate) struct HyprPickerInit {}
 
 #[relm4::component(pub)]
 impl SimpleComponent for HyprPickerModel {
@@ -66,11 +59,7 @@ impl SimpleComponent for HyprPickerModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
             HyprPickerInput::Clicked => {
                 let _ = sender.output(HyprPickerOutput::CloseMenu);

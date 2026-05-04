@@ -1,16 +1,13 @@
-use std::sync::Arc;
-use reactive_graph::traits::{
-    GetUntracked,
-    Get,
-};
-use relm4::{gtk, once_cell, Component, ComponentParts, ComponentSender};
+use crate::scoped_effects::EffectScope;
+use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
+use reactive_graph::traits::{Get, GetUntracked};
 use relm4::gtk::pango;
 use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentParts, ComponentSender, gtk, once_cell};
+use std::sync::Arc;
 use time::format_description::parse;
 use time::{OffsetDateTime, UtcOffset};
 use wayle_notification::core::notification::Notification;
-use crate::scoped_effects::EffectScope;
-use okshell_config::schema::config::{ConfigStoreFields, GeneralStoreFields};
 
 static TIME_FORMAT_24: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
@@ -132,14 +129,15 @@ impl Component for NotificationModel {
     ) -> ComponentParts<Self> {
         let base_config = okshell_config::config_manager::config_manager().config();
 
-        let format_24_h = base_config.clone().general().clock_format_24_h().get_untracked();
-
-        let time: String;
+        let format_24_h = base_config
+            .clone()
+            .general()
+            .clock_format_24_h()
+            .get_untracked();
 
         let timestamp = params.notification.timestamp.get();
 
-        let local_offset = UtcOffset::current_local_offset()
-            .unwrap_or(UtcOffset::UTC);
+        let local_offset = UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC);
 
         let odt = OffsetDateTime::from_unix_timestamp(timestamp.timestamp())
             .unwrap()
@@ -147,11 +145,11 @@ impl Component for NotificationModel {
             .unwrap()
             .to_offset(local_offset);
 
-        if format_24_h {
-            time = odt.format(&TIME_FORMAT_24).unwrap();
+        let time = if format_24_h {
+            odt.format(&TIME_FORMAT_24).unwrap()
         } else {
-            time = odt.format(&TIME_FORMAT_12).unwrap();
-        }
+            odt.format(&TIME_FORMAT_12).unwrap()
+        };
 
         let mut effects = EffectScope::new();
 
@@ -211,8 +209,7 @@ impl Component for NotificationModel {
             NotificationInput::ChangeTimeFormat(format_24_h) => {
                 let timestamp = self.notification.timestamp.get();
 
-                let local_offset = UtcOffset::current_local_offset()
-                    .unwrap_or(UtcOffset::UTC);
+                let local_offset = UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC);
 
                 let odt = OffsetDateTime::from_unix_timestamp(timestamp.timestamp())
                     .unwrap()

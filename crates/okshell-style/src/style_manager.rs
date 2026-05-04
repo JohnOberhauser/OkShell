@@ -1,20 +1,23 @@
-use reactive_graph::effect::Effect;
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::{gdk, CssProvider, STYLE_PROVIDER_PRIORITY_USER};
-use tracing::{error};
-use okshell_cache::wallpaper::{source_path, wallpaper_store, WallpaperStateStoreFields};
-use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, Matugen, SizingStoreFields, ThemeAttributes, ThemeAttributesStoreFields, ThemeStoreFields};
-use okshell_config::schema::themes::{Themes};
-use okshell_matugen::json_struct::{Font, MatugenTheme, MatugenThemeCustomOnly, OkShell, Sizing};
-use okshell_matugen::matugen::{apply_matugen_from_image_queued, apply_matugen_from_theme_queued};
-use okshell_matugen::static_theme_mapping::static_theme;
 use crate::compiled_css;
 use crate::style_manager::StyleManagerInput::*;
 use crate::style_manager::StyleManagerOutput::QueueFrameRedraw;
 use crate::user_css::style::StyleStoreFields;
 use crate::user_css::user_style_manager::style_manager;
+use okshell_cache::wallpaper::{WallpaperStateStoreFields, source_path, wallpaper_store};
+use okshell_config::config_manager::config_manager;
+use okshell_config::schema::config::{
+    ConfigStoreFields, FontStoreFields, Matugen, SizingStoreFields, ThemeAttributes,
+    ThemeAttributesStoreFields, ThemeStoreFields,
+};
+use okshell_config::schema::themes::Themes;
+use okshell_matugen::json_struct::{Font, MatugenTheme, MatugenThemeCustomOnly, OkShell, Sizing};
+use okshell_matugen::matugen::{apply_matugen_from_image_queued, apply_matugen_from_theme_queued};
+use okshell_matugen::static_theme_mapping::static_theme;
+use reactive_graph::effect::Effect;
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::{CssProvider, STYLE_PROVIDER_PRIORITY_USER, gdk};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use tracing::error;
 
 pub struct StyleManagerModel {
     user_css_provider: CssProvider,
@@ -29,7 +32,7 @@ pub enum StyleManagerInput {
     WallpaperRevisionChanged,
     SetMatugenCssWithWallpaper(Matugen),
     MatugenUpdate(Matugen),
-    SetMatugenCssWithStaticTheme(MatugenTheme),
+    SetMatugenCssWithStaticTheme(Box<MatugenTheme>),
     MatugenComplete(anyhow::Result<String>),
     AttributesUpdate(ThemeAttributes),
 }
@@ -142,12 +145,7 @@ impl Component for StyleManagerModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-        _root: &Self::Root,
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>, _root: &Self::Root) {
         match message {
             ReloadUserCss(css) => {
                 self.user_css_provider.load_from_string(&css);
@@ -155,14 +153,15 @@ impl Component for StyleManagerModel {
             }
             ReloadTheme(theme) => {
                 if let Some(static_theme) = static_theme(&theme, Some(build_okshell_matugen())) {
-                    sender.input(SetMatugenCssWithStaticTheme(static_theme));
+                    sender.input(SetMatugenCssWithStaticTheme(Box::new(static_theme)));
                 } else {
                     if theme == Themes::Default {
                         self.theme_css_provider.load_from_string("");
                     } else if theme == Themes::Wallpaper {
                         let source = source_path();
                         if source.exists() {
-                            let matugen = config_manager().config().theme().matugen().get_untracked();
+                            let matugen =
+                                config_manager().config().theme().matugen().get_untracked();
                             sender.input(SetMatugenCssWithWallpaper(matugen));
                         } else {
                             self.theme_css_provider.load_from_string("");
@@ -190,7 +189,7 @@ impl Component for StyleManagerModel {
             }
             SetMatugenCssWithStaticTheme(theme) => {
                 let sender = sender.clone();
-                apply_matugen_from_theme_queued(theme, move |result| {
+                apply_matugen_from_theme_queued(*theme, move |result| {
                     sender.input(MatugenComplete(result));
                 });
             }
@@ -199,22 +198,25 @@ impl Component for StyleManagerModel {
                     okshell: build_okshell_matugen(),
                 };
                 let sender = sender.clone();
-                apply_matugen_from_image_queued(source_path(), matugen, theme_overrides, move |result| {
-                    sender.input(MatugenComplete(result));
-                });
+                apply_matugen_from_image_queued(
+                    source_path(),
+                    matugen,
+                    theme_overrides,
+                    move |result| {
+                        sender.input(MatugenComplete(result));
+                    },
+                );
             }
-            MatugenComplete(result) => {
-                match result {
-                    Ok(css) => {
-                        self.theme_css_provider.load_from_string(&css);
+            MatugenComplete(result) => match result {
+                Ok(css) => {
+                    self.theme_css_provider.load_from_string(&css);
 
-                        let _ = sender.output(QueueFrameRedraw);
-                    }
-                    Err(e) => {
-                        error!("Error loading matugen theme: {}", e);
-                    }
+                    let _ = sender.output(QueueFrameRedraw);
                 }
-            }
+                Err(e) => {
+                    error!("Error loading matugen theme: {}", e);
+                }
+            },
             AttributesUpdate(attributes) => {
                 self.attributes_css_provider.load_from_string(&format!(
                     r#":root {{
@@ -226,16 +228,30 @@ impl Component for StyleManagerModel {
                         --radius-window: {}px;
                         --border-width: {}px;
                     }}"#,
-                    if attributes.font.primary.is_empty() { "inherit" } else { &attributes.font.primary },
-                    if attributes.font.secondary.is_empty() { "inherit" } else { &attributes.font.secondary },
-                    if attributes.font.tertiary.is_empty() { "inherit" } else { &attributes.font.tertiary },
+                    if attributes.font.primary.is_empty() {
+                        "inherit"
+                    } else {
+                        &attributes.font.primary
+                    },
+                    if attributes.font.secondary.is_empty() {
+                        "inherit"
+                    } else {
+                        &attributes.font.secondary
+                    },
+                    if attributes.font.tertiary.is_empty() {
+                        "inherit"
+                    } else {
+                        &attributes.font.tertiary
+                    },
                     attributes.window_opacity.get(),
                     attributes.sizing.radius_widget,
                     attributes.sizing.radius_window,
                     attributes.sizing.border_width,
                 ));
 
-                sender.input(ReloadTheme(config_manager().config().theme().theme().get_untracked()));
+                sender.input(ReloadTheme(
+                    config_manager().config().theme().theme().get_untracked(),
+                ));
             }
         }
     }
@@ -244,15 +260,57 @@ impl Component for StyleManagerModel {
 fn build_okshell_matugen() -> OkShell {
     OkShell {
         font: Font {
-            primary: config_manager().config().theme().attributes().font().primary().get_untracked(),
-            secondary: config_manager().config().theme().attributes().font().primary().get_untracked(),
-            tertiary: config_manager().config().theme().attributes().font().primary().get_untracked(),
+            primary: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .font()
+                .primary()
+                .get_untracked(),
+            secondary: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .font()
+                .primary()
+                .get_untracked(),
+            tertiary: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .font()
+                .primary()
+                .get_untracked(),
         },
         sizing: Sizing {
-            radius_widget: config_manager().config().theme().attributes().sizing().radius_widget().get_untracked(),
-            radius_window: config_manager().config().theme().attributes().sizing().radius_window().get_untracked(),
-            border_width: config_manager().config().theme().attributes().sizing().border_width().get_untracked(),
+            radius_widget: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .sizing()
+                .radius_widget()
+                .get_untracked(),
+            radius_window: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .sizing()
+                .radius_window()
+                .get_untracked(),
+            border_width: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .sizing()
+                .border_width()
+                .get_untracked(),
         },
-        opacity: config_manager().config().theme().attributes().window_opacity().get_untracked().get(),
+        opacity: config_manager()
+            .config()
+            .theme()
+            .attributes()
+            .window_opacity()
+            .get_untracked()
+            .get(),
     }
 }

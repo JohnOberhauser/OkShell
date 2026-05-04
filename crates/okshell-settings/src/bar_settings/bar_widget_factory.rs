@@ -1,7 +1,7 @@
-use relm4::factory::{DynamicIndex, FactoryComponent};
-use relm4::{gtk, FactorySender};
-use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
 use okshell_config::schema::bar_widgets::BarWidget;
+use relm4::factory::{DynamicIndex, FactoryComponent};
+use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
+use relm4::{FactorySender, gtk};
 
 #[derive(Debug)]
 pub struct ActiveWidgetModel {
@@ -31,7 +31,7 @@ impl FactoryComponent for ActiveWidgetModel {
         gtk::Box {
             set_orientation: gtk::Orientation::Horizontal,
             set_spacing: 8,
-            
+
             gtk::Label {
                 add_css_class: "label-small",
                 set_hexpand: true,

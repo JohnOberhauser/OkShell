@@ -1,17 +1,17 @@
-use std::{sync::{
-    mpsc,
-    OnceLock,
-}, thread};
+use std::{
+    sync::{OnceLock, mpsc},
+    thread,
+};
 
-use notify::{Config as NotifyConfig, Event, RecommendedWatcher, RecursiveMode, Watcher};
-use reactive_graph::prelude::GetUntracked;
-use reactive_stores::{ArcStore, Patch};
-use tracing::{error, info};
-use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
 use crate::user_css::paths::styles_dir;
 use crate::user_css::style::Style;
 use crate::user_css::style_utils::{load_style, watch_style_loop};
+use notify::{Config as NotifyConfig, Event, RecommendedWatcher, RecursiveMode, Watcher};
+use okshell_config::config_manager::config_manager;
+use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
+use reactive_graph::prelude::GetUntracked;
+use reactive_stores::{ArcStore, Patch};
+use tracing::{error, info};
 
 pub struct UserStyleManager {
     style: ArcStore<Style>,
@@ -20,25 +20,18 @@ pub struct UserStyleManager {
 static STYLE_MANAGER: OnceLock<UserStyleManager> = OnceLock::new();
 
 pub fn style_manager() -> &'static UserStyleManager {
-    STYLE_MANAGER.get_or_init(|| {
-        UserStyleManager::new()
-    })
+    STYLE_MANAGER.get_or_init(UserStyleManager::new)
 }
 
 impl UserStyleManager {
     fn new() -> Self {
         let active_style = config_manager().config().theme().css_file().get_untracked();
-        let style = ArcStore::new(
-            load_style(active_style)
-                .unwrap_or_else(|e| {
-                    error!("Error loading style: {}", e);
-                    Style::default()
-                })
-        );
+        let style = ArcStore::new(load_style(active_style).unwrap_or_else(|e| {
+            error!("Error loading style: {}", e);
+            Style::default()
+        }));
 
-        Self {
-            style,
-        }
+        Self { style }
     }
 
     pub fn style(&self) -> ArcStore<Style> {

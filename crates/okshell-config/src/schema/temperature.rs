@@ -37,10 +37,7 @@ impl From<TemperatureUnitConfig> for TemperatureUnit {
 
 impl TemperatureUnitConfig {
     pub fn all() -> &'static [Self] {
-        &[
-            Self::Metric,
-            Self::Imperial,
-        ]
+        &[Self::Metric, Self::Imperial]
     }
 
     pub fn label(&self) -> &'static str {

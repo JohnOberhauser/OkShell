@@ -1,17 +1,18 @@
-use std::{fs, sync::{
-    mpsc,
-    OnceLock,
-}, thread};
+use std::{
+    fs,
+    sync::{OnceLock, mpsc},
+    thread,
+};
 
 use notify::{Config as NotifyConfig, Event, RecommendedWatcher, RecursiveMode, Watcher};
-use reactive_graph::prelude::{ReadUntracked};
+use reactive_graph::prelude::ReadUntracked;
 use reactive_stores::{ArcStore, Patch};
 use tracing::{error, info};
 
-use crate::schema::config::{Config};
-use crate::paths::*;
 use crate::config_utils::*;
 use crate::errors::{ProfileCreateError, ProfileDeleteError};
+use crate::paths::*;
+use crate::schema::config::Config;
 
 pub struct ConfigManager {
     active_profile: ArcStore<Option<String>>,
@@ -22,22 +23,18 @@ pub struct ConfigManager {
 static CONFIG_MANAGER: OnceLock<ConfigManager> = OnceLock::new();
 
 pub fn config_manager() -> &'static ConfigManager {
-    CONFIG_MANAGER.get_or_init(|| {
-        ConfigManager::new()
-    })
+    CONFIG_MANAGER.get_or_init(ConfigManager::new)
 }
 
 impl ConfigManager {
-
     fn new() -> Self {
         info!("Creating new ConfigManager");
         let active_profile = read_active_profile_from_cache();
         let config = ArcStore::new(
-            load_effective_config(active_profile.as_deref())
-                .unwrap_or_else(|e| {
-                    error!("Error loading config: {}", e);
-                    Config::default()
-                })
+            load_effective_config(active_profile.as_deref()).unwrap_or_else(|e| {
+                error!("Error loading config: {}", e);
+                Config::default()
+            }),
         );
         let active_profile = ArcStore::new(active_profile);
 
@@ -63,10 +60,7 @@ impl ConfigManager {
     }
 
     /// Sets active profile name (without ".yaml"), persists it, reloads immediately
-    pub fn set_active_profile(
-        &self,
-        name: Option<String>,
-    ) {
+    pub fn set_active_profile(&self, name: Option<String>) {
         self.active_profile.patch(name.clone());
 
         write_active_profile_to_cache(name.as_deref());
@@ -101,9 +95,7 @@ impl ConfigManager {
             drop(active); // release borrow before mutating
 
             let available = list_available_profiles();
-            let fallback = available.iter()
-                .find(|p| p.as_str() != name)
-                .cloned();
+            let fallback = available.iter().find(|p| p.as_str() != name).cloned();
             self.set_active_profile(fallback);
         }
 

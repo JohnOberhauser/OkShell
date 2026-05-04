@@ -1,10 +1,10 @@
+use reactive_graph::prelude::{ReadUntracked, Update};
+use reactive_stores::{ArcStore, Store};
+use relm4::gtk::glib;
 use std::fs;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::sync::LazyLock;
-use reactive_graph::prelude::{ReadUntracked, Update};
-use reactive_stores::{ArcStore, Store};
-use relm4::gtk::glib;
 
 #[derive(Debug, Clone, PartialEq, Eq, Store)]
 pub struct HiddenAppsState {
@@ -56,7 +56,9 @@ fn persist() {
 }
 
 fn hidden_apps_path() -> PathBuf {
-    glib::user_cache_dir().join("okshell").join("hidden_apps.txt")
+    glib::user_cache_dir()
+        .join("okshell")
+        .join("hidden_apps.txt")
 }
 
 fn load_hidden_apps() -> Vec<String> {
@@ -64,7 +66,7 @@ fn load_hidden_apps() -> Vec<String> {
     match fs::File::open(&path) {
         Ok(file) => BufReader::new(file)
             .lines()
-            .filter_map(|l| l.ok())
+            .map_while(Result::ok)
             .map(|l| l.trim().to_string())
             .filter(|l| !l.is_empty())
             .collect(),

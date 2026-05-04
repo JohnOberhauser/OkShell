@@ -1,7 +1,7 @@
-use relm4::prelude::*;
 use relm4::gtk;
-use relm4::gtk::prelude::*;
 use relm4::gtk::pango;
+use relm4::gtk::prelude::*;
+use relm4::prelude::*;
 
 pub struct RevealerRowLabelModel {
     label: String,
@@ -37,7 +37,7 @@ impl SimpleComponent for RevealerRowLabelModel {
     fn init(
         params: Self::Init,
         root: Self::Root,
-        _sender: ComponentSender<Self>
+        _sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
         let model = RevealerRowLabelModel {
             label: params.label,
@@ -46,15 +46,11 @@ impl SimpleComponent for RevealerRowLabelModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        msg: Self::Input,
-        _sender: ComponentSender<Self>
-    ) {
+    fn update(&mut self, msg: Self::Input, _sender: ComponentSender<Self>) {
         match msg {
             RevealerRowLabelInput::SetLabel(label) => {
                 self.label = label;
-            },
+            }
         }
     }
 }

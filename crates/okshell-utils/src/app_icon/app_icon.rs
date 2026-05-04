@@ -1,11 +1,11 @@
-use std::sync::atomic::AtomicBool;
-use relm4::gtk;
-use relm4::gtk::{gio, glib};
-use relm4::gtk::gio::DesktopAppInfo;
-use relm4::gtk::prelude::{AppInfoExt, Cast, FileExt};
+use crate::app_icon::icon_index::IconIndex;
 use okshell_config::schema::themes::Themes;
 use okshell_image::lut::{apply_theme_filter, embedded_clut, rgba_to_texture};
-use crate::app_icon::icon_index::IconIndex;
+use relm4::gtk;
+use relm4::gtk::gio::DesktopAppInfo;
+use relm4::gtk::prelude::{AppInfoExt, Cast, FileExt};
+use relm4::gtk::{gio, glib};
+use std::sync::atomic::AtomicBool;
 
 pub fn set_icon(
     app_info: &Option<DesktopAppInfo>,
@@ -36,11 +36,12 @@ pub fn set_icon(
     };
 
     let image = image.clone();
-    let color_theme = color_theme.clone();
+    let color_theme = *color_theme;
     let hyprland_class = hyprland_class.clone();
 
     // Also grab the direct file path if it's a FileIcon
-    let file_icon_path = icon.downcast_ref::<gio::FileIcon>()
+    let file_icon_path = icon
+        .downcast_ref::<gio::FileIcon>()
         .and_then(|fi| fi.file().path());
 
     glib::spawn_future_local(async move {
@@ -56,10 +57,10 @@ pub fn set_icon(
             }
             None
         })
-            .await
-            .ok()
-            .flatten()
-            .or(file_icon_path);
+        .await
+        .ok()
+        .flatten()
+        .or(file_icon_path);
 
         let Some(path) = path else {
             image.set_icon_name(Some("application-x-executable"));
@@ -69,21 +70,26 @@ pub fn set_icon(
         if should_recolor {
             let result = gio::spawn_blocking(move || {
                 let cancel = AtomicBool::new(false);
-                apply_theme_filter(&path, &color_theme, filter_strength, contrast_strength, monochrome_strength, &cancel)
+                apply_theme_filter(
+                    &path,
+                    &color_theme,
+                    filter_strength,
+                    contrast_strength,
+                    monochrome_strength,
+                    &cancel,
+                )
             })
-                .await;
+            .await;
 
-            if let Ok(Some(r)) = result {
-                if let Some(texture) = rgba_to_texture(&r.buf, r.width, r.height) {
-                    image.set_paintable(Some(&texture));
-                    return;
-                }
+            if let Ok(Some(r)) = result
+                && let Some(texture) = rgba_to_texture(&r.buf, r.width, r.height)
+            {
+                image.set_paintable(Some(&texture));
+                return;
             }
         } else {
-            let result = gio::spawn_blocking(move || {
-                gtk::gdk::Texture::from_filename(&path).ok()
-            })
-                .await;
+            let result =
+                gio::spawn_blocking(move || gtk::gdk::Texture::from_filename(&path).ok()).await;
 
             if let Ok(Some(texture)) = result {
                 image.set_paintable(Some(&texture));
@@ -95,10 +101,7 @@ pub fn set_icon(
     });
 }
 
-fn resolve_icon_candidates(
-    icon: &gio::Icon,
-    hyprland_class: &Option<String>,
-) -> Vec<String> {
+fn resolve_icon_candidates(icon: &gio::Icon, hyprland_class: &Option<String>) -> Vec<String> {
     let mut candidates = Vec::new();
 
     // ThemedIcon names (first is primary, rest are fallbacks)
@@ -115,17 +118,17 @@ fn resolve_icon_candidates(
     }
 
     // FileIcon path walk — derive names from parent directories
-    if let Some(file_icon) = icon.downcast_ref::<gio::FileIcon>() {
-        if let Some(path) = file_icon.file().path() {
-            let mut dir = path.as_path();
-            for _ in 0..4 {
-                if let Some(stem) = dir.file_stem().and_then(|s| s.to_str()) {
-                    candidates.push(stem.to_string());
-                }
-                match dir.parent() {
-                    Some(p) => dir = p,
-                    None => break,
-                }
+    if let Some(file_icon) = icon.downcast_ref::<gio::FileIcon>()
+        && let Some(path) = file_icon.file().path()
+    {
+        let mut dir = path.as_path();
+        for _ in 0..4 {
+            if let Some(stem) = dir.file_stem().and_then(|s| s.to_str()) {
+                candidates.push(stem.to_string());
+            }
+            match dir.parent() {
+                Some(p) => dir = p,
+                None => break,
             }
         }
     }
@@ -140,7 +143,8 @@ fn resolve_icon_candidates(
 
 fn strip_uuid_suffix(name: &str) -> Option<String> {
     // Match trailing -xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-    let re = regex::Regex::new(r"-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$").unwrap();
+    let re = regex::Regex::new(r"-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+        .unwrap();
     let stripped = re.replace(name, "");
     if stripped != name {
         Some(stripped.into_owned())

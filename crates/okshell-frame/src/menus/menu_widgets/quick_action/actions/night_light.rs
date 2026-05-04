@@ -1,7 +1,7 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use okshell_gamma::{GammaState, gamma_service};
 use relm4::gtk::glib;
-use okshell_gamma::{gamma_service, GammaState};
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct NightLightModel {
@@ -63,7 +63,6 @@ impl Component for NightLightModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let state = gamma_service().state();
 
         let sender_clone = sender.clone();

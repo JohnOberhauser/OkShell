@@ -1,11 +1,13 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller, ComponentController};
-use relm4::gtk::prelude::*;
-use wayle_audio::core::device::output::OutputDevice;
+use crate::common_widgets::revealer_button::revealer_button_icon_label::{
+    RevealerButtonIconLabelInit, RevealerButtonIconLabelInput, RevealerButtonIconLabelModel,
+};
 use okshell_common::WatcherToken;
 use okshell_services::audio_service;
-use crate::common_widgets::revealer_button::revealer_button_icon_label::{RevealerButtonIconLabelInit, RevealerButtonIconLabelInput, RevealerButtonIconLabelModel};
 use okshell_utils::audio::spawn_default_output_watcher;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_audio::core::device::output::OutputDevice;
 
 pub(crate) struct OutputDeviceRevealerButtonModel {
     output_device: Arc<OutputDevice>,
@@ -61,16 +63,13 @@ impl Component for OutputDeviceRevealerButtonModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut watcher_token = WatcherToken::new();
 
         let token = watcher_token.reset();
 
-        spawn_default_output_watcher(
-            &sender,
-            Some(token),
-            ||OutputDeviceRevealerButtonCommandOutput::DefaultDeviceChanged,
-        );
+        spawn_default_output_watcher(&sender, Some(token), || {
+            OutputDeviceRevealerButtonCommandOutput::DefaultDeviceChanged
+        });
 
         let button_content = RevealerButtonIconLabelModel::builder()
             .launch(RevealerButtonIconLabelInit {
@@ -83,7 +82,7 @@ impl Component for OutputDeviceRevealerButtonModel {
         let model = OutputDeviceRevealerButtonModel {
             output_device: params.output_device,
             content: button_content,
-            watcher_token
+            watcher_token,
         };
 
         let widgets = view_output!();
@@ -110,22 +109,29 @@ impl Component for OutputDeviceRevealerButtonModel {
 
                 if let Some(default_device) = default_device {
                     if default_device.eq(&self.output_device) {
-                        self.content.emit(RevealerButtonIconLabelInput::SetPrimaryIconName("check-circle-symbolic".to_string()))
+                        self.content
+                            .emit(RevealerButtonIconLabelInput::SetPrimaryIconName(
+                                "check-circle-symbolic".to_string(),
+                            ))
                     } else {
-                        self.content.emit(RevealerButtonIconLabelInput::SetPrimaryIconName("".to_string()))
+                        self.content
+                            .emit(RevealerButtonIconLabelInput::SetPrimaryIconName(
+                                "".to_string(),
+                            ))
                     }
                 } else {
-                    self.content.emit(RevealerButtonIconLabelInput::SetPrimaryIconName("".to_string()))
+                    self.content
+                        .emit(RevealerButtonIconLabelInput::SetPrimaryIconName(
+                            "".to_string(),
+                        ))
                 }
             }
             OutputDeviceRevealerButtonInput::Revealed => {
                 let token = self.watcher_token.reset();
 
-                spawn_default_output_watcher(
-                    &sender,
-                    Some(token),
-                    ||OutputDeviceRevealerButtonCommandOutput::DefaultDeviceChanged,
-                );
+                spawn_default_output_watcher(&sender, Some(token), || {
+                    OutputDeviceRevealerButtonCommandOutput::DefaultDeviceChanged
+                });
             }
             OutputDeviceRevealerButtonInput::Hidden => {
                 self.watcher_token.reset();
@@ -137,7 +143,7 @@ impl Component for OutputDeviceRevealerButtonModel {
         &mut self,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             OutputDeviceRevealerButtonCommandOutput::DefaultDeviceChanged => {

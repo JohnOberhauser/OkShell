@@ -1,8 +1,10 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller, ComponentController};
-use relm4::gtk::prelude::*;
+use crate::menu_settings::menu_widget_list::{
+    MenuWidgetListInit, MenuWidgetListModel, MenuWidgetListOutput,
+};
 use okshell_config::schema::menu_widgets::{ContainerConfig, MenuWidget};
 use okshell_config::schema::position::Orientation;
-use crate::menu_settings::menu_widget_list::{MenuWidgetListInit, MenuWidgetListModel, MenuWidgetListOutput};
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 
 #[derive(Debug)]
 pub struct ContainerConfigModel {
@@ -153,12 +155,7 @@ impl Component for ContainerConfigModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-        _root: &Self::Root,
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>, _root: &Self::Root) {
         match message {
             ContainerConfigInput::SpacingChanged(s) => {
                 self.spacing = s;

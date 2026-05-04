@@ -1,11 +1,6 @@
-use relm4::{
-    gtk,
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-};
 use relm4::gtk::Orientation;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct QuickSettingsModel {
@@ -38,7 +33,7 @@ impl SimpleComponent for QuickSettingsModel {
             set_vexpand: model.orientation == Orientation::Horizontal,
             set_halign: gtk::Align::Center,
             set_valign: gtk::Align::Center,
-            
+
             gtk::Button {
                 set_css_classes: &["ok-button-surface", "ok-bar-widget"],
                 set_hexpand: false,
@@ -73,11 +68,7 @@ impl SimpleComponent for QuickSettingsModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        _sender: ComponentSender<Self>,
-    ) {
+    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
         match message {}
     }
 }

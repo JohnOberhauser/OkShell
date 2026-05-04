@@ -1,13 +1,13 @@
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use relm4::gtk::gdk_pixbuf::Pixbuf;
 use image::{ImageBuffer, Rgb, RgbaImage};
 use lutgen::identity::correct_image;
-use relm4::gtk;
-use relm4::gtk::prelude::{Cast, GskRendererExt, SnapshotExt, TextureExt, TextureExtManual};
 use okshell_config::schema::themes::Themes;
 use okshell_matugen::static_theme_mapping::static_theme;
+use relm4::gtk;
+use relm4::gtk::gdk_pixbuf::Pixbuf;
+use relm4::gtk::prelude::{Cast, GskRendererExt, SnapshotExt, TextureExt, TextureExtManual};
 
 const CLUT_BLOOD_RUST: &[u8] = include_bytes!("../cluts/blood_rust.bin");
 const CLUT_CATPPUCCIN_FRAPPE: &[u8] = include_bytes!("../cluts/catppuccin_frappe.bin");
@@ -188,14 +188,10 @@ pub fn decode_pixbuf_rgba(path: &Path) -> Option<RgbaImage> {
             let src = row_offset + (x * n_channels) as usize;
             let dst = ((y * width + x) * 4) as usize;
 
-            rgba_buf[dst] = pixels[src];         // R
+            rgba_buf[dst] = pixels[src]; // R
             rgba_buf[dst + 1] = pixels[src + 1]; // G
             rgba_buf[dst + 2] = pixels[src + 2]; // B
-            rgba_buf[dst + 3] = if has_alpha {
-                pixels[src + 3]
-            } else {
-                255
-            };
+            rgba_buf[dst + 3] = if has_alpha { pixels[src + 3] } else { 255 };
         }
     }
 
@@ -222,8 +218,8 @@ pub fn snapshot_and_recolor(
     paintable: &gtk::IconPaintable,
     color_theme: &Themes,
 ) -> Option<gtk::gdk::Texture> {
-    use gtk::prelude::PaintableExt;
     use gtk::graphene;
+    use gtk::prelude::PaintableExt;
 
     let w = paintable.intrinsic_width().max(48) as f64;
     let h = paintable.intrinsic_height().max(48) as f64;
@@ -272,9 +268,12 @@ pub fn rgba_to_texture(buf: &[u8], width: u32, height: u32) -> Option<gtk::gdk::
 /// 1.0 is no change.
 fn adjust_contrast(buf: &mut [u8], factor: f64) {
     for chunk in buf.chunks_exact_mut(4) {
-        chunk[0] = ((((chunk[0] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
-        chunk[1] = ((((chunk[1] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
-        chunk[2] = ((((chunk[2] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        chunk[0] =
+            ((((chunk[0] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        chunk[1] =
+            ((((chunk[1] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
+        chunk[2] =
+            ((((chunk[2] as f64 / 255.0) - 0.5) * factor + 0.5) * 255.0).clamp(0.0, 255.0) as u8;
         // leave alpha (chunk[3]) untouched
     }
 }
@@ -284,9 +283,7 @@ fn adjust_contrast(buf: &mut [u8], factor: f64) {
 fn apply_monochrome(buf: &mut [u8], tint: [u8; 3], factor: f64) {
     for chunk in buf.chunks_exact_mut(4) {
         // Rec. 709 luminance
-        let luma = (chunk[0] as f32 * 0.2126
-            + chunk[1] as f32 * 0.7152
-            + chunk[2] as f32 * 0.0722)
+        let luma = (chunk[0] as f32 * 0.2126 + chunk[1] as f32 * 0.7152 + chunk[2] as f32 * 0.0722)
             .clamp(0.0, 255.0);
 
         // Blend tint color by luma (preserves light/dark variation)

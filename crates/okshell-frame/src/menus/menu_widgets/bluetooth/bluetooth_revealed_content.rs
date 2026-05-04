@@ -1,17 +1,20 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::{Justification, RevealerTransitionType};
-use relm4::gtk::prelude::*;
-use wayle_bluetooth::core::device::Device;
-use okshell_services::bluetooth_service;
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
-use okshell_common::dynamic_box::generic_widget_controller::{
-    GenericWidgetController,
-    GenericWidgetControllerExtSafe,
+use crate::menus::menu_widgets::bluetooth::device_revealed_content::DeviceRevealedContentInput;
+use crate::menus::menu_widgets::bluetooth::device_revealer_button::{
+    DeviceRevealerButtonInit, DeviceRevealerButtonInput, DeviceRevealerButtonModel,
 };
-use crate::menus::menu_widgets::bluetooth::device_revealed_content::{DeviceRevealedContentInput};
-use crate::menus::menu_widgets::bluetooth::device_revealer_button::{DeviceRevealerButtonInit, DeviceRevealerButtonInput, DeviceRevealerButtonModel};
-use okshell_utils::bluetooth::{spawn_bluetooth_devices_watcher};
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
+};
+use okshell_common::dynamic_box::generic_widget_controller::{
+    GenericWidgetController, GenericWidgetControllerExtSafe,
+};
+use okshell_services::bluetooth_service;
+use okshell_utils::bluetooth::spawn_bluetooth_devices_watcher;
+use relm4::gtk::prelude::*;
+use relm4::gtk::{Justification, RevealerTransitionType};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_bluetooth::core::device::Device;
 
 pub(crate) struct BluetoothRevealedContentModel {
     paired_devices_dynamic_box_controller: Controller<DynamicBoxModel<Arc<Device>, String>>,
@@ -105,43 +108,43 @@ impl Component for BluetoothRevealedContentModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
-        spawn_bluetooth_devices_watcher(
-            &sender,
-            ||BluetoothRevealedContentCommandOutput::DevicesUpdate,
-        );
+        spawn_bluetooth_devices_watcher(&sender, || {
+            BluetoothRevealedContentCommandOutput::DevicesUpdate
+        });
 
         let devices_dynamic_box_factory = Self::create_device_factory();
 
-        let paired_devices_dynamic_box_controller: Controller<DynamicBoxModel<Arc<Device>, String>> =
-            DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
-                    factory: devices_dynamic_box_factory,
-                    orientation: gtk::Orientation::Vertical,
-                    spacing: 0,
-                    transition_type: RevealerTransitionType::SlideDown,
-                    transition_duration_ms: 200,
-                    reverse: false,
-                    retain_entries: false,
-                    allow_drag_and_drop: false,
-                })
-                .detach();
+        let paired_devices_dynamic_box_controller: Controller<
+            DynamicBoxModel<Arc<Device>, String>,
+        > = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory: devices_dynamic_box_factory,
+                orientation: gtk::Orientation::Vertical,
+                spacing: 0,
+                transition_type: RevealerTransitionType::SlideDown,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: false,
+            })
+            .detach();
 
         let devices_dynamic_box_factory = Self::create_device_factory();
 
-        let unpaired_devices_dynamic_box_controller: Controller<DynamicBoxModel<Arc<Device>, String>> =
-            DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
-                    factory: devices_dynamic_box_factory,
-                    orientation: gtk::Orientation::Vertical,
-                    spacing: 0,
-                    transition_type: RevealerTransitionType::SlideDown,
-                    transition_duration_ms: 200,
-                    reverse: false,
-                    retain_entries: false,
-                    allow_drag_and_drop: false,
-                })
-                .detach();
+        let unpaired_devices_dynamic_box_controller: Controller<
+            DynamicBoxModel<Arc<Device>, String>,
+        > = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory: devices_dynamic_box_factory,
+                orientation: gtk::Orientation::Vertical,
+                spacing: 0,
+                transition_type: RevealerTransitionType::SlideDown,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: false,
+            })
+            .detach();
 
         let model = BluetoothRevealedContentModel {
             paired_devices_dynamic_box_controller,
@@ -178,62 +181,80 @@ impl Component for BluetoothRevealedContentModel {
                     .collect();
 
                 self.paired_devices_count = paired_devices.len() as i16;
-                self.paired_devices_dynamic_box_controller.emit(DynamicBoxInput::SetItems(paired_devices));
+                self.paired_devices_dynamic_box_controller
+                    .emit(DynamicBoxInput::SetItems(paired_devices));
 
                 self.unpaired_devices_count = unpaired_devices.len() as i16;
-                self.unpaired_devices_dynamic_box_controller.emit(DynamicBoxInput::SetItems(unpaired_devices));
+                self.unpaired_devices_dynamic_box_controller
+                    .emit(DynamicBoxInput::SetItems(unpaired_devices));
             }
             BluetoothRevealedContentInput::Revealed => {
-                self.paired_devices_dynamic_box_controller.model().for_each_entry(|_, entry| {
-                    if let Some(ctrl) = entry
-                        .controller
-                        .as_ref()
-                        .downcast_ref::<Controller<DeviceRevealerButtonModel>>()
-                    {
-                        ctrl.model()
-                            .revealer_button_controller.model()
-                            .revealed_content.emit(DeviceRevealedContentInput::ParentRevealed(true));
-                        ctrl.emit(DeviceRevealerButtonInput::ParentRevealed(true));
-                    }
-                });
-                self.unpaired_devices_dynamic_box_controller.model().for_each_entry(|_, entry| {
-                    if let Some(ctrl) = entry
-                        .controller
-                        .as_ref()
-                        .downcast_ref::<Controller<DeviceRevealerButtonModel>>()
-                    {
-                        ctrl.model()
-                            .revealer_button_controller.model()
-                            .revealed_content.emit(DeviceRevealedContentInput::ParentRevealed(true));
-                        ctrl.emit(DeviceRevealerButtonInput::ParentRevealed(true));
-                    }
-                });
+                self.paired_devices_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|_, entry| {
+                        if let Some(ctrl) = entry
+                            .controller
+                            .as_ref()
+                            .downcast_ref::<Controller<DeviceRevealerButtonModel>>()
+                        {
+                            ctrl.model()
+                                .revealer_button_controller
+                                .model()
+                                .revealed_content
+                                .emit(DeviceRevealedContentInput::ParentRevealed(true));
+                            ctrl.emit(DeviceRevealerButtonInput::ParentRevealed(true));
+                        }
+                    });
+                self.unpaired_devices_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|_, entry| {
+                        if let Some(ctrl) = entry
+                            .controller
+                            .as_ref()
+                            .downcast_ref::<Controller<DeviceRevealerButtonModel>>()
+                        {
+                            ctrl.model()
+                                .revealer_button_controller
+                                .model()
+                                .revealed_content
+                                .emit(DeviceRevealedContentInput::ParentRevealed(true));
+                            ctrl.emit(DeviceRevealerButtonInput::ParentRevealed(true));
+                        }
+                    });
             }
             BluetoothRevealedContentInput::Hidden => {
-                self.paired_devices_dynamic_box_controller.model().for_each_entry(|_, entry| {
-                    if let Some(ctrl) = entry
-                        .controller
-                        .as_ref()
-                        .downcast_ref::<Controller<DeviceRevealerButtonModel>>()
-                    {
-                        ctrl.model()
-                            .revealer_button_controller.model()
-                            .revealed_content.emit(DeviceRevealedContentInput::ParentRevealed(false));
-                        ctrl.emit(DeviceRevealerButtonInput::ParentRevealed(false));
-                    }
-                });
-                self.unpaired_devices_dynamic_box_controller.model().for_each_entry(|_, entry| {
-                    if let Some(ctrl) = entry
-                        .controller
-                        .as_ref()
-                        .downcast_ref::<Controller<DeviceRevealerButtonModel>>()
-                    {
-                        ctrl.model()
-                            .revealer_button_controller.model()
-                            .revealed_content.emit(DeviceRevealedContentInput::ParentRevealed(false));
-                        ctrl.emit(DeviceRevealerButtonInput::ParentRevealed(false));
-                    }
-                });
+                self.paired_devices_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|_, entry| {
+                        if let Some(ctrl) = entry
+                            .controller
+                            .as_ref()
+                            .downcast_ref::<Controller<DeviceRevealerButtonModel>>()
+                        {
+                            ctrl.model()
+                                .revealer_button_controller
+                                .model()
+                                .revealed_content
+                                .emit(DeviceRevealedContentInput::ParentRevealed(false));
+                            ctrl.emit(DeviceRevealerButtonInput::ParentRevealed(false));
+                        }
+                    });
+                self.unpaired_devices_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|_, entry| {
+                        if let Some(ctrl) = entry
+                            .controller
+                            .as_ref()
+                            .downcast_ref::<Controller<DeviceRevealerButtonModel>>()
+                        {
+                            ctrl.model()
+                                .revealer_button_controller
+                                .model()
+                                .revealed_content
+                                .emit(DeviceRevealedContentInput::ParentRevealed(false));
+                            ctrl.emit(DeviceRevealerButtonInput::ParentRevealed(false));
+                        }
+                    });
             }
         }
 
@@ -261,9 +282,7 @@ impl BluetoothRevealedContentModel {
             create: Box::new(move |item| {
                 let device = item.clone();
                 let revealer_button = DeviceRevealerButtonModel::builder()
-                    .launch(DeviceRevealerButtonInit {
-                        device,
-                    })
+                    .launch(DeviceRevealerButtonInit { device })
                     .detach();
 
                 Box::new(revealer_button) as Box<dyn GenericWidgetController>

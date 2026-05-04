@@ -1,6 +1,6 @@
 mod ramp;
-mod wayland;
 mod service;
+mod wayland;
 
 pub use service::GammaService;
 pub use wayland::GammaManager;
@@ -19,14 +19,15 @@ pub struct GammaState {
 
 impl Default for GammaState {
     fn default() -> Self {
-        Self { enabled: false, night_temp: 5500 }
+        Self {
+            enabled: false,
+            night_temp: 5500,
+        }
     }
 }
 
 static GAMMA: OnceLock<GammaService> = OnceLock::new();
 
 pub fn gamma_service() -> &'static GammaService {
-    GAMMA.get_or_init(|| {
-        GammaService::start().expect("failed to start gamma service")
-    })
+    GAMMA.get_or_init(|| GammaService::start().expect("failed to start gamma service"))
 }

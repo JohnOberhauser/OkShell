@@ -1,6 +1,6 @@
-use relm4::{Component, ComponentSender};
 use okshell_common::watch;
 use okshell_services::{battery_service, line_power_service};
+use relm4::{Component, ComponentSender};
 
 pub fn get_battery_icon(percent: f64) -> &'static str {
     if percent > 99.0 {
@@ -57,8 +57,7 @@ pub fn get_charging_battery_icon(percent: f64) -> &'static str {
 pub fn spawn_battery_watcher<C>(
     sender: &ComponentSender<C>,
     map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
@@ -69,11 +68,7 @@ where
 
     watch!(
         sender,
-        [
-            percentage.watch(),
-            state.watch(),
-            is_present.watch(),
-        ],
+        [percentage.watch(), state.watch(), is_present.watch(),],
         |out| {
             let _ = out.send(map_state());
         }
@@ -83,22 +78,15 @@ where
 pub fn spawn_battery_online_watcher<C>(
     sender: &ComponentSender<C>,
     map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
     if let Some(service) = line_power_service() {
         let online = service.device.online.clone();
 
-            watch!(
-            sender,
-            [
-                online.watch(),
-            ],
-            |out| {
-                let _ = out.send(map_state());
-            }
-        );
+        watch!(sender, [online.watch(),], |out| {
+            let _ = out.send(map_state());
+        });
     }
 }

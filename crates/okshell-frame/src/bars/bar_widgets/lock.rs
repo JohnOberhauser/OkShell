@@ -1,12 +1,7 @@
-use relm4::{
-    gtk,
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-};
+use okshell_session::session_lock::session_lock;
 use relm4::gtk::Orientation;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
-use okshell_session::session_lock::session_lock;
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct LockModel {
@@ -41,7 +36,7 @@ impl SimpleComponent for LockModel {
             set_vexpand: model.orientation == Orientation::Horizontal,
             set_halign: gtk::Align::Center,
             set_valign: gtk::Align::Center,
-            
+
             gtk::Button {
                 set_css_classes: &["ok-button-surface", "ok-bar-widget"],
                 set_hexpand: false,
@@ -76,11 +71,7 @@ impl SimpleComponent for LockModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
             LockInput::Clicked => {
                 let _ = sender.output(LockOutput::CloseMenu);

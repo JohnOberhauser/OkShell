@@ -1,16 +1,21 @@
-use std::path::PathBuf;
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::{glib};
-use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, WidgetExt};
-use relm4::prelude::FactoryVecDeque;
+use crate::theme_settings::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
-use okshell_config::schema::config::{ConfigStoreFields, FontStoreFields, IconsStoreFields, MatugenStoreFields, SizingStoreFields, ThemeAttributesStoreFields, ThemeStoreFields};
-use okshell_config::schema::themes::{MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity};
+use okshell_config::schema::config::{
+    ConfigStoreFields, FontStoreFields, IconsStoreFields, MatugenStoreFields, SizingStoreFields,
+    ThemeAttributesStoreFields, ThemeStoreFields,
+};
+use okshell_config::schema::themes::{
+    MatugenContrast, MatugenMode, MatugenPreference, MatugenType, Themes, WindowOpacity,
+};
 use okshell_config::schema::wallpaper::{ContrastFilterStrength, ThemeFilterStrength};
 use okshell_style::user_css::style_utils::list_available_styles;
-use crate::theme_settings::theme_card::{ThemeCardInput, ThemeCardModel, ThemeCardOutput};
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::glib;
+use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, WidgetExt};
+use relm4::prelude::FactoryVecDeque;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub(crate) struct ThemeSettingsModel {
@@ -211,7 +216,7 @@ impl Component for ThemeSettingsModel {
                         } @app_handler,
                     },
                 },
-                
+
                 gtk::Box {
                     set_orientation: gtk::Orientation::Horizontal,
                     set_spacing: 20,
@@ -938,7 +943,6 @@ impl Component for ThemeSettingsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let app_icon_themes = available_app_icon_themes();
         let theme_refs: Vec<&str> = app_icon_themes.iter().map(|s| s.as_str()).collect();
         let available_app_icon_themes = gtk::StringList::new(&theme_refs);
@@ -961,21 +965,21 @@ impl Component for ThemeSettingsModel {
             &MatugenPreference::all()
                 .iter()
                 .map(|p| p.label())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
         );
 
         let matugen_types = gtk::StringList::new(
             &MatugenType::all()
                 .iter()
                 .map(|p| p.label())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
         );
 
         let matugen_modes = gtk::StringList::new(
             &MatugenMode::all()
                 .iter()
                 .map(|p| p.label())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>(),
         );
 
         let mut effects = EffectScope::new();
@@ -996,25 +1000,48 @@ impl Component for ThemeSettingsModel {
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let value = config_manager().config().theme().icons().apply_theme_filter().get();
+            let value = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .apply_theme_filter()
+                .get();
             sender_clone.input(ThemeSettingsInput::ThemeFilterEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let value = config_manager().config().theme().icons().filter_strength().get().get();
+            let value = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .filter_strength()
+                .get()
+                .get();
             sender_clone.input(ThemeSettingsInput::FilterStrengthEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let value = config_manager().config().theme().icons().monochrome_strength().get().get();
+            let value = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .monochrome_strength()
+                .get()
+                .get();
             sender_clone.input(ThemeSettingsInput::MonochromeStrengthEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let value = config_manager().config().theme().icons().contrast_strength().get().get();
+            let value = config_manager()
+                .config()
+                .theme()
+                .icons()
+                .contrast_strength()
+                .get()
+                .get();
             sender_clone.input(ThemeSettingsInput::ContrastStrengthEffect(value));
         });
 
@@ -1111,34 +1138,134 @@ impl Component for ThemeSettingsModel {
 
         let mut model = ThemeSettingsModel {
             available_shell_icon_themes,
-            active_shell_theme: config_manager().config().theme().icons().shell_icon_theme().get_untracked(),
+            active_shell_theme: config_manager()
+                .config()
+                .theme()
+                .icons()
+                .shell_icon_theme()
+                .get_untracked(),
             available_app_icon_themes,
-            active_apps_theme: config_manager().config().theme().icons().app_icon_theme().get_untracked(),
-            apply_theme_filter: config_manager().config().theme().icons().apply_theme_filter().get_untracked(),
-            filter_strength: config_manager().config().theme().icons().filter_strength().get_untracked().get(),
-            contrast_strength: config_manager().config().theme().icons().contrast_strength().get_untracked().get(),
-            monochrome_strength: config_manager().config().theme().icons().monochrome_strength().get_untracked().get(),
+            active_apps_theme: config_manager()
+                .config()
+                .theme()
+                .icons()
+                .app_icon_theme()
+                .get_untracked(),
+            apply_theme_filter: config_manager()
+                .config()
+                .theme()
+                .icons()
+                .apply_theme_filter()
+                .get_untracked(),
+            filter_strength: config_manager()
+                .config()
+                .theme()
+                .icons()
+                .filter_strength()
+                .get_untracked()
+                .get(),
+            contrast_strength: config_manager()
+                .config()
+                .theme()
+                .icons()
+                .contrast_strength()
+                .get_untracked()
+                .get(),
+            monochrome_strength: config_manager()
+                .config()
+                .theme()
+                .icons()
+                .monochrome_strength()
+                .get_untracked()
+                .get(),
             available_fonts,
-            active_primary_font: config_manager().config().theme().attributes().font().primary().get_untracked(),
-            active_secondary_font: config_manager().config().theme().attributes().font().secondary().get_untracked(),
-            active_tertiary_font: config_manager().config().theme().attributes().font().tertiary().get_untracked(),
-            radius_widget: config_manager().config().theme().attributes().sizing().radius_widget().get_untracked(),
-            radius_window: config_manager().config().theme().attributes().sizing().radius_window().get_untracked(),
-            border_width: config_manager().config().theme().attributes().sizing().border_width().get_untracked(),
+            active_primary_font: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .font()
+                .primary()
+                .get_untracked(),
+            active_secondary_font: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .font()
+                .secondary()
+                .get_untracked(),
+            active_tertiary_font: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .font()
+                .tertiary()
+                .get_untracked(),
+            radius_widget: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .sizing()
+                .radius_widget()
+                .get_untracked(),
+            radius_window: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .sizing()
+                .radius_window()
+                .get_untracked(),
+            border_width: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .sizing()
+                .border_width()
+                .get_untracked(),
             available_css,
             active_css: {
                 let css = config_manager().config().theme().css_file().get_untracked();
-                if css.is_empty() { "(none)".to_string() } else { css }
+                if css.is_empty() {
+                    "(none)".to_string()
+                } else {
+                    css
+                }
             },
             matugen_preferences,
-            active_matugen_preference: config_manager().config().theme().matugen().preference().get_untracked(),
+            active_matugen_preference: config_manager()
+                .config()
+                .theme()
+                .matugen()
+                .preference()
+                .get_untracked(),
             matugen_types,
-            active_matugen_type: config_manager().config().theme().matugen().scheme_type().get_untracked(),
+            active_matugen_type: config_manager()
+                .config()
+                .theme()
+                .matugen()
+                .scheme_type()
+                .get_untracked(),
             matugen_modes,
-            active_matugen_mode: config_manager().config().theme().matugen().mode().get_untracked(),
-            matugen_contrast: config_manager().config().theme().matugen().contrast().get_untracked().get(),
+            active_matugen_mode: config_manager()
+                .config()
+                .theme()
+                .matugen()
+                .mode()
+                .get_untracked(),
+            matugen_contrast: config_manager()
+                .config()
+                .theme()
+                .matugen()
+                .contrast()
+                .get_untracked()
+                .get(),
             matugen_contrast_debounce: None,
-            window_opacity: config_manager().config().theme().attributes().window_opacity().get_untracked().get(),
+            window_opacity: config_manager()
+                .config()
+                .theme()
+                .attributes()
+                .window_opacity()
+                .get_untracked()
+                .get(),
             theme_cards: None,
             _effects: effects,
         };
@@ -1154,7 +1281,7 @@ impl Component for ThemeSettingsModel {
         {
             let mut guard = theme_cards.guard();
             for theme in Themes::all() {
-                guard.push_back(theme.clone());
+                guard.push_back(*theme);
             }
         }
 
@@ -1238,46 +1365,38 @@ impl Component for ThemeSettingsModel {
             }
             ThemeSettingsInput::ThemeSelected(theme) => {
                 config_manager().update_config(|config| {
-                    config.theme.theme = theme.clone();
+                    config.theme.theme = theme;
                 });
 
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {
-                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
                 }
             }
             ThemeSettingsInput::CssFileSelected(css_file) => {
-                config_manager().update_config(|config| {
-                    match css_file.as_deref() {
-                        Some("(none)") | None => config.theme.css_file = String::new(),
-                        Some(file) => config.theme.css_file = file.to_string(),
-                    }
+                config_manager().update_config(|config| match css_file.as_deref() {
+                    Some("(none)") | None => config.theme.css_file = String::new(),
+                    Some(file) => config.theme.css_file = file.to_string(),
                 });
             }
             ThemeSettingsInput::PrimaryFontSelected(font) => {
-                config_manager().update_config(|config| {
-                    match font.as_deref() {
-                        Some("(none)") | None => config.theme.attributes.font.primary = String::new(),
-                        Some(font) => config.theme.attributes.font.primary = font.to_string(),
-                    }
+                config_manager().update_config(|config| match font.as_deref() {
+                    Some("(none)") | None => config.theme.attributes.font.primary = String::new(),
+                    Some(font) => config.theme.attributes.font.primary = font.to_string(),
                 });
             }
             ThemeSettingsInput::SecondaryFontSelected(font) => {
-                config_manager().update_config(|config| {
-                    match font.as_deref() {
-                        Some("(none)") | None => config.theme.attributes.font.secondary = String::new(),
-                        Some(font) => config.theme.attributes.font.secondary = font.to_string(),
-                    }
+                config_manager().update_config(|config| match font.as_deref() {
+                    Some("(none)") | None => config.theme.attributes.font.secondary = String::new(),
+                    Some(font) => config.theme.attributes.font.secondary = font.to_string(),
                 });
             }
             ThemeSettingsInput::TertiaryFontSelected(font) => {
-                config_manager().update_config(|config| {
-                    match font.as_deref() {
-                        Some("(none)") | None => config.theme.attributes.font.tertiary = String::new(),
-                        Some(font) => config.theme.attributes.font.tertiary = font.to_string(),
-                    }
+                config_manager().update_config(|config| match font.as_deref() {
+                    Some("(none)") | None => config.theme.attributes.font.tertiary = String::new(),
+                    Some(font) => config.theme.attributes.font.tertiary = font.to_string(),
                 });
             }
             ThemeSettingsInput::RadiusWidgetSelected(radius) => {
@@ -1336,7 +1455,7 @@ impl Component for ThemeSettingsModel {
                 if let Some(theme_cards) = &mut self.theme_cards {
                     let guard = theme_cards.guard();
                     for i in 0..guard.len() {
-                        guard.send(i, ThemeCardInput::SelectionChanged(theme.clone()));
+                        guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
                 }
             }
@@ -1367,18 +1486,18 @@ impl Component for ThemeSettingsModel {
 fn available_shell_icon_themes() -> Vec<String> {
     let mut themes = std::collections::HashSet::new();
 
-    let search_paths = [
-        dirs::home_dir().map(|h| h.join(".config/okshell/icons")),
-    ];
+    let search_paths = [dirs::home_dir().map(|h| h.join(".config/okshell/icons"))];
 
     for path in search_paths.iter().flatten() {
-        let Ok(entries) = std::fs::read_dir(path) else { continue };
+        let Ok(entries) = std::fs::read_dir(path) else {
+            continue;
+        };
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.join("index.theme").exists() {
-                if let Some(name) = entry.file_name().to_str() {
-                    themes.insert(name.to_string());
-                }
+            if path.join("index.theme").exists()
+                && let Some(name) = entry.file_name().to_str()
+            {
+                themes.insert(name.to_string());
             }
         }
     }
@@ -1401,17 +1520,19 @@ fn available_app_icon_themes() -> Vec<String> {
     ];
 
     for path in search_paths.iter().flatten() {
-        let Ok(entries) = std::fs::read_dir(path) else { continue };
+        let Ok(entries) = std::fs::read_dir(path) else {
+            continue;
+        };
         for entry in entries.flatten() {
             let path = entry.path();
-            if path.join("index.theme").exists() {
-                if let Some(name) = entry.file_name().to_str() {
-                    themes.insert(name.to_string());
-                }
+            if path.join("index.theme").exists()
+                && let Some(name) = entry.file_name().to_str()
+            {
+                themes.insert(name.to_string());
             }
         }
     }
-    
+
     themes.remove("OkPhosphor");
     themes.remove("OkMaterial");
 

@@ -1,12 +1,14 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller, ComponentController};
-use relm4::gtk::prelude::*;
+use crate::menus::menu_widgets::clipboard::clipboard_item::ClipboardItemModel;
+use okshell_clipboard::{ClipboardEntry, ClipboardHistory, clipboard_service};
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
+};
+use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
 use relm4::gtk::RevealerTransitionType;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use tokio::sync::broadcast;
 use tracing::{error, warn};
-use okshell_clipboard::{clipboard_service, ClipboardEntry, ClipboardHistory};
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
-use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
-use crate::menus::menu_widgets::clipboard::clipboard_item::{ClipboardItemModel};
 
 pub(crate) struct ClipboardModel {
     dynamic_box: Controller<DynamicBoxModel<ClipboardEntry, u64>>,
@@ -95,7 +97,6 @@ impl Component for ClipboardModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let service = clipboard_service();
         let history = service.history().clone();
 
@@ -132,27 +133,24 @@ impl Component for ClipboardModel {
             id: Box::new(|item| item.id),
             create: Box::new(move |item| {
                 let controller: Controller<ClipboardItemModel> =
-                    ClipboardItemModel::builder()
-                        .launch(item.clone().into())
-                        .detach();
+                    ClipboardItemModel::builder().launch(item.clone()).detach();
                 Box::new(controller) as Box<dyn GenericWidgetController>
             }),
             update: None,
         };
 
-        let dynamic: Controller<DynamicBoxModel<ClipboardEntry, u64>> =
-            DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
-                    factory,
-                    orientation: gtk::Orientation::Vertical,
-                    spacing: 10,
-                    transition_type: RevealerTransitionType::SlideDown,
-                    transition_duration_ms: 200,
-                    reverse: false,
-                    retain_entries: false,
-                    allow_drag_and_drop: false,
-                })
-                .detach();
+        let dynamic: Controller<DynamicBoxModel<ClipboardEntry, u64>> = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory,
+                orientation: gtk::Orientation::Vertical,
+                spacing: 10,
+                transition_type: RevealerTransitionType::SlideDown,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: false,
+            })
+            .detach();
 
         let model = ClipboardModel {
             dynamic_box: dynamic,
@@ -176,7 +174,10 @@ impl Component for ClipboardModel {
             ClipboardInput::Refresh => {
                 let items = self.history.entries();
                 self.delete_button_visible = !items.is_empty();
-                self.dynamic_box.sender().send(DynamicBoxInput::SetItems(items)).unwrap();
+                self.dynamic_box
+                    .sender()
+                    .send(DynamicBoxInput::SetItems(items))
+                    .unwrap();
             }
             ClipboardInput::DeleteAllClicked => {
                 clipboard_service().clear_history();

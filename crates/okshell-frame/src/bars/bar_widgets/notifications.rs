@@ -1,8 +1,8 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::Orientation;
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use okshell_services::notification_service;
 use okshell_utils::notifications::spawn_notifications_watcher;
+use relm4::gtk::Orientation;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct NotificationsModel {
@@ -24,7 +24,7 @@ pub(crate) struct NotificationsInit {
 
 #[derive(Debug)]
 pub(crate) enum NotificationsCommandOutput {
-    NotificationsChanged
+    NotificationsChanged,
 }
 
 #[relm4::component(pub)]
@@ -42,7 +42,7 @@ impl Component for NotificationsModel {
             set_vexpand: model.orientation == Orientation::Horizontal,
             set_halign: gtk::Align::Center,
             set_valign: gtk::Align::Center,
-            
+
             gtk::Button {
                 set_css_classes: &["ok-button-surface", "ok-bar-widget"],
                 set_hexpand: false,
@@ -69,11 +69,7 @@ impl Component for NotificationsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
-        spawn_notifications_watcher(
-            &sender,
-            ||NotificationsCommandOutput::NotificationsChanged,
-        );
+        spawn_notifications_watcher(&sender, || NotificationsCommandOutput::NotificationsChanged);
 
         let model = NotificationsModel {
             orientation: params.orientation,
@@ -90,7 +86,7 @@ impl Component for NotificationsModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             NotificationsCommandOutput::NotificationsChanged => {

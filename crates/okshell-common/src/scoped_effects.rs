@@ -17,12 +17,12 @@ impl Drop for OwnedEffect {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct EffectScope(Vec<OwnedEffect>);
 
 impl EffectScope {
     pub fn new() -> Self {
-        Self(Vec::new())
+        Self::default()
     }
 
     pub fn push(&mut self, f: impl Fn(Option<()>) + 'static) {

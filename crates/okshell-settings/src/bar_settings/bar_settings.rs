@@ -1,14 +1,19 @@
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::factory::{DynamicIndex, FactoryVecDeque};
-use relm4::gtk::{gdk, gio, glib};
-use relm4::gtk::prelude::*;
+use crate::bar_settings::bar_widget_section::{
+    BarSection, WidgetSectionInit, WidgetSectionInput, WidgetSectionModel, WidgetSectionOutput,
+};
+use crate::bar_settings::monitor_chip::{MonitorChipModel, MonitorChipOutput};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::bar_widgets::BarWidget;
-use okshell_config::schema::config::{BarsStoreFields, ConfigStoreFields, FrameStoreFields, HorizontalBarStoreFields, VerticalBarStoreFields};
-use crate::bar_settings::bar_widget_section::{BarSection, WidgetSectionInit, WidgetSectionInput, WidgetSectionModel, WidgetSectionOutput};
-use crate::bar_settings::monitor_chip::{MonitorChipModel, MonitorChipOutput};
+use okshell_config::schema::config::{
+    BarsStoreFields, ConfigStoreFields, FrameStoreFields, HorizontalBarStoreFields,
+    VerticalBarStoreFields,
+};
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::factory::{DynamicIndex, FactoryVecDeque};
+use relm4::gtk::prelude::*;
+use relm4::gtk::{gdk, gio, glib};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 
 #[derive(Debug)]
 pub(crate) struct BarSettingsModel {
@@ -502,7 +507,6 @@ impl Component for BarSettingsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let chips = FactoryVecDeque::builder()
             .launch(gtk::FlowBox::default())
             .forward(sender.input_sender(), |output| match output {
@@ -691,133 +695,185 @@ impl Component for BarSettingsModel {
         let top_bar_start_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::Start,
-                widgets: config_manager().config().bars().top_bar().left_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .top_bar()
+                    .left_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
-                    BarSettingsInput::TopStartChanged(widgets)
-                } }
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => BarSettingsInput::TopStartChanged(widgets),
             });
 
         let top_bar_center_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::Center,
-                widgets: config_manager().config().bars().top_bar().center_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .top_bar()
+                    .center_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => {
                     BarSettingsInput::TopCenterChanged(widgets)
-                } }
+                }
             });
 
         let top_bar_end_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::End,
-                widgets: config_manager().config().bars().top_bar().right_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .top_bar()
+                    .right_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
-                    BarSettingsInput::TopEndChanged(widgets)
-                } }
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => BarSettingsInput::TopEndChanged(widgets),
             });
 
         let left_bar_start_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::Start,
-                widgets: config_manager().config().bars().left_bar().top_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .left_bar()
+                    .top_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => {
                     BarSettingsInput::LeftStartChanged(widgets)
-                } }
+                }
             });
 
         let left_bar_center_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::Center,
-                widgets: config_manager().config().bars().left_bar().center_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .left_bar()
+                    .center_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => {
                     BarSettingsInput::LeftCenterChanged(widgets)
-                } }
+                }
             });
 
         let left_bar_end_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::End,
-                widgets: config_manager().config().bars().left_bar().bottom_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .left_bar()
+                    .bottom_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
-                    BarSettingsInput::LeftEndChanged(widgets)
-                } }
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => BarSettingsInput::LeftEndChanged(widgets),
             });
 
         let right_bar_start_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::Start,
-                widgets: config_manager().config().bars().right_bar().top_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .right_bar()
+                    .top_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => {
                     BarSettingsInput::RightStartChanged(widgets)
-                } }
+                }
             });
 
         let right_bar_center_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::Center,
-                widgets: config_manager().config().bars().right_bar().center_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .right_bar()
+                    .center_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => {
                     BarSettingsInput::RightCenterChanged(widgets)
-                } }
+                }
             });
 
         let right_bar_end_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::End,
-                widgets: config_manager().config().bars().right_bar().bottom_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .right_bar()
+                    .bottom_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
-                    BarSettingsInput::RightEndChanged(widgets)
-                } }
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => BarSettingsInput::RightEndChanged(widgets),
             });
 
         let bottom_bar_start_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::Start,
-                widgets: config_manager().config().bars().bottom_bar().left_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .bottom_bar()
+                    .left_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => {
                     BarSettingsInput::BottomStartChanged(widgets)
-                } }
+                }
             });
 
         let bottom_bar_center_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::Center,
-                widgets: config_manager().config().bars().bottom_bar().center_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .bottom_bar()
+                    .center_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => {
                     BarSettingsInput::BottomCenterChanged(widgets)
-                } }
+                }
             });
 
         let bottom_bar_end_controller = WidgetSectionModel::builder()
             .launch(WidgetSectionInit {
                 bar_section: BarSection::End,
-                widgets: config_manager().config().bars().bottom_bar().right_widgets().get_untracked(),
+                widgets: config_manager()
+                    .config()
+                    .bars()
+                    .bottom_bar()
+                    .right_widgets()
+                    .get_untracked(),
             })
-            .forward(sender.input_sender(), |msg| {
-                match msg { WidgetSectionOutput::Changed(widgets) => {
+            .forward(sender.input_sender(), |msg| match msg {
+                WidgetSectionOutput::Changed(widgets) => {
                     BarSettingsInput::BottomEndChanged(widgets)
-                } }
+                }
             });
 
         let model = BarSettingsModel {
@@ -837,14 +893,54 @@ impl Component for BarSettingsModel {
             bottom_bar_start_controller,
             bottom_bar_center_controller,
             bottom_bar_end_controller,
-            top_min_height: config_manager().config().bars().top_bar().minimum_height().get_untracked(),
-            bottom_min_height: config_manager().config().bars().bottom_bar().minimum_height().get_untracked(),
-            left_min_width: config_manager().config().bars().left_bar().minimum_width().get_untracked(),
-            right_min_width: config_manager().config().bars().right_bar().minimum_width().get_untracked(),
-            top_reveal_by_default: config_manager().config().bars().top_bar().reveal_by_default().get_untracked(),
-            bottom_reveal_by_default: config_manager().config().bars().bottom_bar().reveal_by_default().get_untracked(),
-            left_reveal_by_default: config_manager().config().bars().left_bar().reveal_by_default().get_untracked(),
-            right_reveal_by_default: config_manager().config().bars().right_bar().reveal_by_default().get_untracked(),
+            top_min_height: config_manager()
+                .config()
+                .bars()
+                .top_bar()
+                .minimum_height()
+                .get_untracked(),
+            bottom_min_height: config_manager()
+                .config()
+                .bars()
+                .bottom_bar()
+                .minimum_height()
+                .get_untracked(),
+            left_min_width: config_manager()
+                .config()
+                .bars()
+                .left_bar()
+                .minimum_width()
+                .get_untracked(),
+            right_min_width: config_manager()
+                .config()
+                .bars()
+                .right_bar()
+                .minimum_width()
+                .get_untracked(),
+            top_reveal_by_default: config_manager()
+                .config()
+                .bars()
+                .top_bar()
+                .reveal_by_default()
+                .get_untracked(),
+            bottom_reveal_by_default: config_manager()
+                .config()
+                .bars()
+                .bottom_bar()
+                .reveal_by_default()
+                .get_untracked(),
+            left_reveal_by_default: config_manager()
+                .config()
+                .bars()
+                .left_bar()
+                .reveal_by_default()
+                .get_untracked(),
+            right_reveal_by_default: config_manager()
+                .config()
+                .bars()
+                .right_bar()
+                .reveal_by_default()
+                .get_untracked(),
             _effects: effects,
         };
 
@@ -1032,40 +1128,52 @@ impl Component for BarSettingsModel {
                 });
             }
             BarSettingsInput::TopStartEffect(widgets) => {
-                self.top_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.top_bar_start_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::TopCenterEffect(widgets) => {
-                self.top_bar_center_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.top_bar_center_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::TopEndEffect(widgets) => {
-                self.top_bar_end_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.top_bar_end_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::BottomStartEffect(widgets) => {
-                self.bottom_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.bottom_bar_start_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::BottomCenterEffect(widgets) => {
-                self.bottom_bar_center_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.bottom_bar_center_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::BottomEndEffect(widgets) => {
-                self.bottom_bar_end_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.bottom_bar_end_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::LeftStartEffect(widgets) => {
-                self.left_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.left_bar_start_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::LeftCenterEffect(widgets) => {
-                self.left_bar_center_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.left_bar_center_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::LeftEndEffect(widgets) => {
-                self.left_bar_end_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.left_bar_end_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::RightStartEffect(widgets) => {
-                self.right_bar_start_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.right_bar_start_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::RightCenterEffect(widgets) => {
-                self.right_bar_center_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.right_bar_center_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::RightEndEffect(widgets) => {
-                self.right_bar_end_controller.emit(WidgetSectionInput::SetWidgetsEffect(widgets));
+                self.right_bar_end_controller
+                    .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
             }
             BarSettingsInput::TopMinHeightEffect(height) => {
                 self.top_min_height = height;
@@ -1099,14 +1207,12 @@ impl Component for BarSettingsModel {
 
 impl BarSettingsModel {
     fn has_unselected_monitors(&self) -> bool {
-        self.available_monitors.iter().any(|m| !self.selected_monitors.contains(m))
+        self.available_monitors
+            .iter()
+            .any(|m| !self.selected_monitors.contains(m))
     }
 
-    fn rebuild_menu(
-        &self,
-        widgets: &<Self as Component>::Widgets,
-        sender: &ComponentSender<Self>,
-    ) {
+    fn rebuild_menu(&self, widgets: &<Self as Component>::Widgets, sender: &ComponentSender<Self>) {
         let menu = gio::Menu::new();
         let action_group = gio::SimpleActionGroup::new();
 
@@ -1128,7 +1234,9 @@ impl BarSettingsModel {
             menu.append(Some(name.as_str()), Some(&format!("monitor.{action_name}")));
         }
 
-        widgets.add_monitor_button.insert_action_group("monitor", Some(&action_group));
+        widgets
+            .add_monitor_button
+            .insert_action_group("monitor", Some(&action_group));
         widgets.add_monitor_button.set_menu_model(Some(&menu));
     }
 }

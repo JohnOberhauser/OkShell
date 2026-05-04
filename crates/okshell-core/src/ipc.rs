@@ -1,17 +1,17 @@
-use std::path::PathBuf;
-use relm4::{gtk, ComponentSender};
+use crate::relm_app::{Shell, ShellInput};
+use okshell_cache::wallpaper::set_wallpaper;
+use okshell_services::{audio_service, brightness_service, hyprland_service};
+use okshell_session::session_lock::session_lock;
+use okshell_settings::{close_settings, open_settings};
+use okshell_sounds::play_audio_volume_change;
 use relm4::gtk::glib;
-use zbus::interface;
-use zbus::connection;
+use relm4::{ComponentSender, gtk};
+use std::path::PathBuf;
 use tokio::sync::mpsc;
 use wayle_audio::volume::types::Volume;
 use wayle_brightness::Percentage;
-use okshell_cache::wallpaper::set_wallpaper;
-use okshell_session::session_lock::session_lock;
-use okshell_services::{audio_service, brightness_service, hyprland_service};
-use okshell_settings::{close_settings, open_settings};
-use okshell_sounds::{play_audio_volume_change};
-use crate::relm_app::{Shell, ShellInput};
+use zbus::connection;
+use zbus::interface;
 
 pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
     let (shell_tx, mut shell_rx) = mpsc::unbounded_channel();
@@ -25,67 +25,76 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                 IPCCommand::Quit => app_sender.emit(ShellInput::Quit),
                 IPCCommand::AppLauncher => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::ToggleAppLauncher(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::ToggleAppLauncher(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::ToggleAppLauncher(None));
                     }
-                },
+                }
                 IPCCommand::QuickSettings => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::ToggleQuickSettings(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::ToggleQuickSettings(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::ToggleQuickSettings(None));
                     }
-                },
+                }
                 IPCCommand::Clock => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::ToggleClockMenu(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::ToggleClockMenu(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::ToggleClockMenu(None));
                     }
-                },
+                }
                 IPCCommand::Clipboard => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::ToggleClipboard(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::ToggleClipboard(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::ToggleClipboard(None));
                     }
-                },
+                }
                 IPCCommand::Notifications => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::ToggleNotifications(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::ToggleNotifications(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::ToggleNotifications(None));
                     }
-                },
+                }
                 IPCCommand::Screenshot => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::ToggleScreenshotMenu(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::ToggleScreenshotMenu(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::ToggleScreenshotMenu(None));
                     }
-                },
+                }
                 IPCCommand::Wallpaper => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::ToggleWallpaperMenu(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::ToggleWallpaperMenu(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::ToggleWallpaperMenu(None));
                     }
-                },
-                IPCCommand::CloseAllMenus => {
-                    app_sender.emit(ShellInput::CloseAllMenus)
                 }
+                IPCCommand::CloseAllMenus => app_sender.emit(ShellInput::CloseAllMenus),
                 IPCCommand::VolumeUp => {
                     if let Some(output) = audio_service().default_output.get() {
                         let current_volume = output.volume.get();
                         let max_volume: f64 = 1.0;
                         let new_volume = max_volume.min(current_volume.average() + 0.05);
-                        let _ = output.set_volume(
-                            Volume::stereo(
-                                new_volume,
-                                new_volume,
-                            )
-                        ).await;
+                        let _ = output
+                            .set_volume(Volume::stereo(new_volume, new_volume))
+                            .await;
                     }
                     play_audio_volume_change();
                 }
@@ -94,12 +103,9 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                         let current_volume = output.volume.get();
                         let min_volume: f64 = 0.0;
                         let new_volume = min_volume.max(current_volume.average() - 0.05);
-                        let _ = output.set_volume(
-                            Volume::stereo(
-                                new_volume,
-                                new_volume,
-                            )
-                        ).await;
+                        let _ = output
+                            .set_volume(Volume::stereo(new_volume, new_volume))
+                            .await;
                     }
                     play_audio_volume_change();
                 }
@@ -110,23 +116,27 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                     play_audio_volume_change();
                 }
                 IPCCommand::BrightnessUp => {
-                    if let Some(brightness_service) = brightness_service() {
-                        if let Some(primary) = brightness_service.primary.get() {
-                            let current_brightness = primary.percentage().value();
-                            let max_brightness: f64 = 100.0;
-                            let new_brightness = max_brightness.min(current_brightness + 5.0);
-                            let _ = primary.set_percentage(Percentage::new(new_brightness)).await;
-                        }
+                    if let Some(brightness_service) = brightness_service()
+                        && let Some(primary) = brightness_service.primary.get()
+                    {
+                        let current_brightness = primary.percentage().value();
+                        let max_brightness: f64 = 100.0;
+                        let new_brightness = max_brightness.min(current_brightness + 5.0);
+                        let _ = primary
+                            .set_percentage(Percentage::new(new_brightness))
+                            .await;
                     }
                 }
                 IPCCommand::BrightnessDown => {
-                    if let Some(brightness_service) = brightness_service() {
-                        if let Some(primary) = brightness_service.primary.get() {
-                            let current_brightness = primary.percentage().value();
-                            let min_brightness: f64 = 0.0;
-                            let new_brightness = min_brightness.max(current_brightness - 5.0);
-                            let _ = primary.set_percentage(Percentage::new(new_brightness)).await;
-                        }
+                    if let Some(brightness_service) = brightness_service()
+                        && let Some(primary) = brightness_service.primary.get()
+                    {
+                        let current_brightness = primary.percentage().value();
+                        let min_brightness: f64 = 0.0;
+                        let new_brightness = min_brightness.max(current_brightness - 5.0);
+                        let _ = primary
+                            .set_percentage(Percentage::new(new_brightness))
+                            .await;
                     }
                 }
                 IPCCommand::SetWallpaper(path) => {
@@ -146,11 +156,7 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                             payload,
                         ));
                     } else {
-                        app_sender.emit(ShellInput::ToggleScreenshareMenu(
-                            None,
-                            reply,
-                            payload,
-                        ));
+                        app_sender.emit(ShellInput::ToggleScreenshareMenu(None, reply, payload));
                     }
                 }
                 IPCCommand::OpenSettings => {
@@ -164,49 +170,62 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                 }
                 IPCCommand::BarToggleTop => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarToggleTop(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::BarToggleTop(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::BarToggleTop(None));
                     }
                 }
                 IPCCommand::BarToggleBottom => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarToggleBottom(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::BarToggleBottom(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::BarToggleBottom(None));
                     }
                 }
                 IPCCommand::BarToggleLeft => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarToggleLeft(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::BarToggleLeft(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::BarToggleLeft(None));
                     }
                 }
                 IPCCommand::BarToggleRight => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarToggleRight(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::BarToggleRight(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::BarToggleRight(None));
                     }
                 }
                 IPCCommand::BarToggleAll => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarToggleAll(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::BarToggleAll(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::BarToggleAll(None));
                     }
                 }
                 IPCCommand::BarRevealAll => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarRevealAll(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::BarRevealAll(Some(
+                            active_workspace.monitor.get(),
+                        )));
                     } else {
                         app_sender.emit(ShellInput::BarRevealAll(None));
                     }
                 }
                 IPCCommand::BarHideAll => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarHideAll(Some(active_workspace.monitor.get())));
+                        app_sender
+                            .emit(ShellInput::BarHideAll(Some(active_workspace.monitor.get())));
                     } else {
                         app_sender.emit(ShellInput::BarHideAll(None));
                     }
@@ -280,7 +299,9 @@ impl IPCService {
     async fn screenshot(&self) {
         let _ = self.tx.send(IPCCommand::Screenshot);
     }
-    async fn wallpaper(&self) { let _ = self.tx.send(IPCCommand::Wallpaper); }
+    async fn wallpaper(&self) {
+        let _ = self.tx.send(IPCCommand::Wallpaper);
+    }
     async fn close_all_menus(&self) {
         let _ = self.tx.send(IPCCommand::CloseAllMenus);
     }
@@ -312,7 +333,9 @@ impl IPCService {
     }
     async fn screenshare(&self, payload: &str) -> String {
         let (tx, rx) = tokio::sync::oneshot::channel();
-        let _ = self.tx.send(IPCCommand::Screenshare(tx, payload.to_string()));
+        let _ = self
+            .tx
+            .send(IPCCommand::Screenshare(tx, payload.to_string()));
         rx.await.unwrap_or(String::new())
     }
     async fn open_settings(&self) {

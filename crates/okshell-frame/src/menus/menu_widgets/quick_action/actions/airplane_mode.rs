@@ -1,8 +1,8 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use okshell_common::WatcherToken;
 use okshell_services::network_service;
 use okshell_utils::network::{spawn_wifi_available_watcher, spawn_wifi_enabled_watcher};
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 pub(crate) struct AirplaneModeModel {
     enabled: bool,
@@ -75,11 +75,7 @@ impl Component for AirplaneModeModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
-        spawn_wifi_available_watcher(
-            &sender,
-            ||AirplaneModeCommandOutput::WifiChanged
-        );
+        spawn_wifi_available_watcher(&sender, || AirplaneModeCommandOutput::WifiChanged);
 
         let model = AirplaneModeModel {
             enabled: false,
@@ -97,7 +93,7 @@ impl Component for AirplaneModeModel {
         _widgets: &mut Self::Widgets,
         message: Self::Input,
         _sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             AirplaneModeInput::Clicked => {
@@ -115,7 +111,7 @@ impl Component for AirplaneModeModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             AirplaneModeCommandOutput::WifiChanged => {
@@ -128,11 +124,9 @@ impl Component for AirplaneModeModel {
                 }
 
                 let token = self.wifi_watcher_token.reset();
-                spawn_wifi_enabled_watcher(
-                    &sender,
-                    token,
-                    || AirplaneModeCommandOutput::WifiEnabledChanged
-                );
+                spawn_wifi_enabled_watcher(&sender, token, || {
+                    AirplaneModeCommandOutput::WifiEnabledChanged
+                });
             }
             AirplaneModeCommandOutput::WifiEnabledChanged => {
                 if let Some(wifi) = network_service().wifi.get() {

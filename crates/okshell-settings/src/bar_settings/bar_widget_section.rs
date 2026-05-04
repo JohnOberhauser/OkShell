@@ -1,9 +1,9 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
+use crate::bar_settings::bar_widget_factory::{ActiveWidgetModel, ActiveWidgetOutput};
+use okshell_config::schema::bar_widgets::BarWidget;
 use relm4::factory::{DynamicIndex, FactoryVecDeque};
 use relm4::gtk::gio;
 use relm4::gtk::prelude::{ActionMapExt, BoxExt, OrientableExt, WidgetExt};
-use okshell_config::schema::bar_widgets::BarWidget;
-use crate::bar_settings::bar_widget_factory::{ActiveWidgetModel, ActiveWidgetOutput};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BarSection {
@@ -111,7 +111,10 @@ impl Component for WidgetSectionModel {
         // Build the add-widget menu
         Self::build_add_menu(&widgets_view.add_widget_button, &sender);
 
-        ComponentParts { model, widgets: widgets_view }
+        ComponentParts {
+            model,
+            widgets: widgets_view,
+        }
     }
 
     fn update_with_view(
@@ -161,12 +164,8 @@ impl Component for WidgetSectionModel {
 
 impl WidgetSectionModel {
     fn emit_changed(&self, sender: &ComponentSender<Self>) {
-        let widgets: Vec<BarWidget> = self.widgets.iter()
-            .map(|w| w.widget.clone())
-            .collect();
-        let _ = sender.output(WidgetSectionOutput::Changed(
-            widgets,
-        ));
+        let widgets: Vec<BarWidget> = self.widgets.iter().map(|w| w.widget.clone()).collect();
+        let _ = sender.output(WidgetSectionOutput::Changed(widgets));
     }
 
     fn build_add_menu(button: &gtk::MenuButton, sender: &ComponentSender<Self>) {

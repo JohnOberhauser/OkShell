@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use tokio::sync::watch;
 
-use crate::{GammaState, wayland::GammaManager, TEMP_NEUTRAL};
+use crate::{GammaState, TEMP_NEUTRAL, wayland::GammaManager};
 
 const TRANSITION_MS: u64 = 500;
 /// Interval between ramp updates — ~60fps.
@@ -33,7 +33,9 @@ impl GammaService {
                 }
             })?;
 
-        Ok(Self { inner: Arc::new(Inner { tx }) })
+        Ok(Self {
+            inner: Arc::new(Inner { tx }),
+        })
     }
 
     pub fn state(&self) -> GammaState {
@@ -68,6 +70,7 @@ impl GammaService {
     ///
     /// ```no_run
     /// # use okshell_gamma::gamma_service;
+    /// # use glib;
     /// let mut rx = gamma_service().subscribe();
     /// glib::spawn_future_local(async move {
     ///     while rx.changed().await.is_ok() {
@@ -84,8 +87,7 @@ impl GammaService {
 fn run_wayland_thread(mut rx: watch::Receiver<GammaState>) -> Result<()> {
     let mut mgr = GammaManager::connect()?;
 
-    let rt = tokio::runtime::Builder::new_current_thread()
-        .build()?;
+    let rt = tokio::runtime::Builder::new_current_thread().build()?;
 
     // The temperature currently applied to the compositor.
     let initial = rx.borrow_and_update().clone();
@@ -95,9 +97,8 @@ fn run_wayland_thread(mut rx: watch::Receiver<GammaState>) -> Result<()> {
 
     loop {
         // Wait for a state change.
-        match rt.block_on(rx.changed()) {
-            Err(_) => break, // sender dropped — shut down
-            Ok(()) => {}
+        if rt.block_on(rx.changed()).is_err() {
+            break;
         }
 
         // Transition loop: step current_temp toward target, 16ms per step.
@@ -142,7 +143,11 @@ fn run_wayland_thread(mut rx: watch::Receiver<GammaState>) -> Result<()> {
 }
 
 fn target_temp(state: &GammaState) -> u32 {
-    if state.enabled { state.night_temp } else { TEMP_NEUTRAL }
+    if state.enabled {
+        state.night_temp
+    } else {
+        TEMP_NEUTRAL
+    }
 }
 
 /// Linear interpolation between two Kelvin values.
