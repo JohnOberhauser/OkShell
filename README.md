@@ -16,10 +16,26 @@
   </a>
 </p>
 
-
 ---
 
-OkShell is a customizable desktop shell for Hyprland.  It is built in Rust using [Relm4](https://relm4.org/) and [Wayle-services](https://github.com/wayle-rs/wayle-services).
+<p align="start">
+    <a href="https://github.com/JohnOberhauser/OkShell/stargazers">
+        <img
+        src="https://img.shields.io/github/stars/JohnOberhauser/OkShell?style=for-the-badge&logo=github&logoColor=%231E2326&labelColor=%237A8478&color=%237A8478&link=https%3A%2F%2Fgithub.com%2FJohnOberhauser%2FOkShell%2Fstargazers"
+        alt="Discord"
+        style="height: 24px"
+        />
+    </a>
+    <a href="https://discord.gg/8rZpwVkgjU">
+        <img
+        src="https://img.shields.io/badge/Discord-%237A8478?style=for-the-badge&logo=discord&logoColor=%231E2326&link=https%3A%2F%2Fdiscord.gg%2F8rZpwVkgjU"
+        alt="Discord"
+        style="height: 24px"
+        />
+    </a>
+</p>
+
+OkShell is a customizable desktop shell for Hyprland. It is built in Rust using [Relm4](https://relm4.org/) and [Wayle-services](https://github.com/wayle-rs/wayle-services).
 
 https://github.com/user-attachments/assets/91e80470-4d54-49d8-bc1a-5fad24e64b46
 
