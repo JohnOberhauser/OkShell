@@ -22,7 +22,7 @@
     <a href="https://github.com/JohnOberhauser/OkShell/stargazers">
         <img
         src="https://img.shields.io/github/stars/JohnOberhauser/OkShell?style=for-the-badge&logo=github&logoColor=%231E2326&labelColor=%237A8478&color=%237A8478&link=https%3A%2F%2Fgithub.com%2FJohnOberhauser%2FOkShell%2Fstargazers"
-        alt="Discord"
+        alt="Stars"
         style="height: 24px"
         />
     </a>
