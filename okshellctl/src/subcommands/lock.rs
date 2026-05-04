@@ -1,5 +1,5 @@
-use clap::Subcommand;
 use crate::bus::{bus_command, bus_command_with_reply};
+use clap::Subcommand;
 
 #[derive(Subcommand, Debug)]
 pub enum LockCommands {
@@ -11,11 +11,13 @@ pub enum LockCommands {
 
 pub async fn execute(command: LockCommands) -> anyhow::Result<()> {
     match command {
-        LockCommands::Activate => { bus_command("Lock").await?; },
+        LockCommands::Activate => {
+            bus_command("Lock").await?;
+        }
         LockCommands::Check => {
             let locked: bool = bus_command_with_reply("CheckLock").await?;
-            println!("{}", if locked { "locked" } else { "unlocked" }); 
-        },
+            println!("{}", if locked { "locked" } else { "unlocked" });
+        }
     }
     Ok(())
 }

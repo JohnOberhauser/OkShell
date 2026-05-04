@@ -9,8 +9,8 @@ const POWER_UNPLUG_SOUND: &[u8] = include_bytes!("../assets/power-unplug.ogg");
 
 pub fn play_shutter() {
     std::thread::spawn(|| {
-        let mut handle = rodio::DeviceSinkBuilder::open_default_sink()
-            .expect("open default audio device");
+        let mut handle =
+            rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio device");
         handle.log_on_drop(false);
         let cursor = Cursor::new(CAMERA_SHUTTER_SOUND);
         if let Ok(player) = rodio::play(&handle.mixer(), cursor) {
@@ -23,8 +23,8 @@ pub fn play_audio_volume_change() {
     std::thread::spawn(|| {
         // give volume changes a moment to happen
         std::thread::sleep(Duration::from_millis(50));
-        let mut handle = rodio::DeviceSinkBuilder::open_default_sink()
-            .expect("open default audio device");
+        let mut handle =
+            rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio device");
         handle.log_on_drop(false);
         let cursor = Cursor::new(AUDIO_VOLUME_CHANGED_SOUND);
         if let Ok(player) = rodio::play(&handle.mixer(), cursor) {
@@ -37,8 +37,8 @@ pub fn play_audio_volume_change() {
 
 pub fn play_battery_low() {
     std::thread::spawn(|| {
-        let mut handle = rodio::DeviceSinkBuilder::open_default_sink()
-            .expect("open default audio device");
+        let mut handle =
+            rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio device");
         handle.log_on_drop(false);
         let cursor = Cursor::new(BATTERY_LOW_SOUND);
         if let Ok(player) = rodio::play(&handle.mixer(), cursor) {
@@ -49,8 +49,8 @@ pub fn play_battery_low() {
 
 pub fn play_power_plug_sound() {
     std::thread::spawn(|| {
-        let mut handle = rodio::DeviceSinkBuilder::open_default_sink()
-            .expect("open default audio device");
+        let mut handle =
+            rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio device");
         handle.log_on_drop(false);
         let cursor = Cursor::new(POWER_PLUG_SOUND);
         if let Ok(player) = rodio::play(&handle.mixer(), cursor) {
@@ -61,8 +61,8 @@ pub fn play_power_plug_sound() {
 
 pub fn play_power_unplug_sound() {
     std::thread::spawn(|| {
-        let mut handle = rodio::DeviceSinkBuilder::open_default_sink()
-            .expect("open default audio device");
+        let mut handle =
+            rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio device");
         handle.log_on_drop(false);
         let cursor = Cursor::new(POWER_UNPLUG_SOUND);
         if let Ok(player) = rodio::play(&handle.mixer(), cursor) {

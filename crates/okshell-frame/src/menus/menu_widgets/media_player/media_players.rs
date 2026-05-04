@@ -1,8 +1,8 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender, Controller, ComponentController};
-use relm4::gtk::prelude::*;
-use okshell_services::media_service;
 use crate::menus::menu_widgets::media_player::media_player::{MediaPlayerInit, MediaPlayerModel};
+use okshell_services::media_service;
 use okshell_utils::media::spawn_media_players_watcher;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 
 pub(crate) struct MediaPlayersModel {
     player_controllers: Vec<Controller<MediaPlayerModel>>,
@@ -108,11 +108,10 @@ impl Component for MediaPlayersModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         spawn_media_players_watcher(
             &sender,
-            ||MediaPlayersCommandOutput::PlayersChanged,
-            ||MediaPlayersCommandOutput::ActivePlayerChanged,
+            || MediaPlayersCommandOutput::PlayersChanged,
+            || MediaPlayersCommandOutput::ActivePlayerChanged,
         );
 
         let players = media_service().player_list.get();
@@ -189,7 +188,9 @@ impl Component for MediaPlayersModel {
                 // Reveal active player, hide others
                 for controller in &self.player_controllers {
                     if Some(&controller.model().player.id) == active_id {
-                        widgets.player_container.set_visible_child(controller.widget());
+                        widgets
+                            .player_container
+                            .set_visible_child(controller.widget());
                     }
                 }
             }
@@ -203,7 +204,7 @@ impl Component for MediaPlayersModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             MediaPlayersCommandOutput::PlayersChanged => {
@@ -223,7 +224,9 @@ impl Component for MediaPlayersModel {
 
                 // Add controllers for new players
                 for player in &players {
-                    let already_exists = self.player_controllers.iter()
+                    let already_exists = self
+                        .player_controllers
+                        .iter()
                         .any(|c| c.model().player.id == player.id);
 
                     if !already_exists {

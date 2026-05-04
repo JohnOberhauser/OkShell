@@ -1,11 +1,11 @@
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::prelude::{GtkWindowExt, OrientableExt, WidgetExt};
 use crate::bar_settings::bar_settings::{BarSettingsInit, BarSettingsModel};
 use crate::general_settings::{GeneralSettingsInit, GeneralSettingsModel};
 use crate::menu_settings::menu_settings::{MenuSettingsInit, MenuSettingsModel};
 use crate::notification_settings::{NotificationSettingsInit, NotificationSettingsModel};
 use crate::theme_settings::theme_settings::{ThemeSettingsInit, ThemeSettingsModel};
 use crate::wallpaper_settings::{WallpaperSettingsInit, WallpaperSettingsModel};
+use relm4::gtk::prelude::{GtkWindowExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 
 pub(crate) struct SettingsWindowModel {
     general_settings_controller: Controller<GeneralSettingsModel>,
@@ -20,9 +20,7 @@ pub(crate) struct SettingsWindowModel {
 pub(crate) enum SettingsWindowInput {}
 
 #[derive(Debug)]
-pub(crate) enum SettingsWindowOutput {
-
-}
+pub(crate) enum SettingsWindowOutput {}
 
 pub(crate) struct SettingsWindowInit {}
 
@@ -74,29 +72,28 @@ impl Component for SettingsWindowModel {
         root: Self::Root,
         _sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let general_settings_controller = GeneralSettingsModel::builder()
-            .launch(GeneralSettingsInit{})
+            .launch(GeneralSettingsInit {})
             .detach();
-        
+
         let wallpaper_settings_controller = WallpaperSettingsModel::builder()
-            .launch(WallpaperSettingsInit{})
+            .launch(WallpaperSettingsInit {})
             .detach();
 
         let theme_settings_controller = ThemeSettingsModel::builder()
-            .launch(ThemeSettingsInit{})
+            .launch(ThemeSettingsInit {})
             .detach();
 
         let bar_settings_controller = BarSettingsModel::builder()
-            .launch(BarSettingsInit{})
+            .launch(BarSettingsInit {})
             .detach();
 
         let menu_settings_controller = MenuSettingsModel::builder()
-            .launch(MenuSettingsInit{})
+            .launch(MenuSettingsInit {})
             .detach();
 
         let notification_settings_controller = NotificationSettingsModel::builder()
-            .launch(NotificationSettingsInit{})
+            .launch(NotificationSettingsInit {})
             .detach();
 
         let model = SettingsWindowModel {
@@ -130,11 +127,9 @@ impl Component for SettingsWindowModel {
             "Wallpaper",
         );
 
-        widgets.stack.add_titled(
-            model.bar_settings_controller.widget(),
-            Some("bar"),
-            "Bar",
-        );
+        widgets
+            .stack
+            .add_titled(model.bar_settings_controller.widget(), Some("bar"), "Bar");
 
         widgets.stack.add_titled(
             model.menu_settings_controller.widget(),

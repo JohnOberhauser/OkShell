@@ -1,10 +1,10 @@
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, NotificationsStoreFields};
-use okshell_config::schema::position::{NotificationPosition};
+use okshell_config::schema::position::NotificationPosition;
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct NotificationSettingsModel {
@@ -103,7 +103,6 @@ impl Component for NotificationSettingsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut effects = EffectScope::new();
 
         let sender_clone = sender.clone();
@@ -114,7 +113,11 @@ impl Component for NotificationSettingsModel {
         });
 
         let model = NotificationSettingsModel {
-            position: config_manager().config().notifications().notification_position().get_untracked(),
+            position: config_manager()
+                .config()
+                .notifications()
+                .notification_position()
+                .get_untracked(),
             _effects: effects,
         };
 

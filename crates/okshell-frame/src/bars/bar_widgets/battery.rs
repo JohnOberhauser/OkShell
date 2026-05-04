@@ -1,8 +1,8 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::WidgetExt;
-use wayle_battery::types::DeviceState;
 use okshell_services::battery_service;
 use okshell_utils::battery::{get_battery_icon, get_charging_battery_icon, spawn_battery_watcher};
+use relm4::gtk::prelude::WidgetExt;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use wayle_battery::types::DeviceState;
 
 #[derive(Debug, Clone)]
 pub(crate) struct BatteryModel {}
@@ -50,10 +50,7 @@ impl Component for BatteryModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        spawn_battery_watcher(
-            &sender,
-            ||BatteryCommandOutput::BatteryStateChanged,
-        );
+        spawn_battery_watcher(&sender, || BatteryCommandOutput::BatteryStateChanged);
 
         let model = BatteryModel {};
 
@@ -67,7 +64,7 @@ impl Component for BatteryModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         _sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             BatteryCommandOutput::BatteryStateChanged => {
@@ -85,7 +82,9 @@ impl Component for BatteryModel {
                 let state = battery.state.get();
 
                 if state == DeviceState::Charging || state == DeviceState::FullyCharged {
-                    widgets.image.set_icon_name(Some(get_charging_battery_icon(percent)));
+                    widgets
+                        .image
+                        .set_icon_name(Some(get_charging_battery_icon(percent)));
                 } else {
                     widgets.image.set_icon_name(Some(get_battery_icon(percent)));
                 }

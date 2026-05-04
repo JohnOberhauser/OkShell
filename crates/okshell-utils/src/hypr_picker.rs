@@ -10,10 +10,7 @@ fn extract_hex_color(s: &str) -> Option<String> {
     for i in 0..bytes.len() {
         if bytes[i] == b'#' {
             let rest = &s[i..];
-            let token = rest
-                .split_whitespace()
-                .next()
-                .unwrap_or(rest);
+            let token = rest.split_whitespace().next().unwrap_or(rest);
 
             let hex = token.trim_matches(|c: char| !c.is_ascii_hexdigit() && c != '#');
 
@@ -54,7 +51,10 @@ async fn wl_copy(text: &str) -> anyhow::Result<()> {
 
     {
         use tokio::io::AsyncWriteExt;
-        let stdin = child.stdin.as_mut().ok_or_else(|| anyhow::anyhow!("wl-copy stdin unavailable"))?;
+        let stdin = child
+            .stdin
+            .as_mut()
+            .ok_or_else(|| anyhow::anyhow!("wl-copy stdin unavailable"))?;
         stdin.write_all(text.as_bytes()).await?;
         // close stdin so wl-copy commits
         stdin.shutdown().await?;
@@ -82,9 +82,7 @@ async fn notify(color: &str) {
     }
 }
 
-pub fn spawn_color_picker(
-    delay_millis: u64,
-) {
+pub fn spawn_color_picker(delay_millis: u64) {
     tokio::spawn(async move {
         sleep(core::time::Duration::from_millis(delay_millis)).await;
         let stdout = match run_hyprpicker().await {

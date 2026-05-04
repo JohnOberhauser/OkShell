@@ -1,5 +1,5 @@
-use relm4::gtk;
 use gtk::{glib, prelude::*, subclass::prelude::*};
+use relm4::gtk;
 
 mod notifying_layout {
     use super::*;
@@ -16,9 +16,7 @@ mod notifying_layout {
     impl NotifyingLayout {
         pub fn configure_like(&self, old: &gtk::BoxLayout) {
             let binding = self.inner.borrow();
-            let inner = binding
-                .as_ref()
-                .expect("inner BoxLayout must exist");
+            let inner = binding.as_ref().expect("inner BoxLayout must exist");
 
             inner.set_orientation(old.orientation());
             inner.set_spacing(old.spacing());
@@ -52,9 +50,7 @@ mod notifying_layout {
             for_size: i32,
         ) -> (i32, i32, i32, i32) {
             let binding = self.inner.borrow();
-            let inner = binding
-                .as_ref()
-                .expect("inner BoxLayout must exist");
+            let inner = binding.as_ref().expect("inner BoxLayout must exist");
 
             // Delegate measurement to the inner BoxLayout
             inner.measure(widget, orientation, for_size)
@@ -62,9 +58,7 @@ mod notifying_layout {
 
         fn allocate(&self, widget: &gtk::Widget, width: i32, height: i32, baseline: i32) {
             let binding = self.inner.borrow();
-            let inner = binding
-                .as_ref()
-                .expect("inner BoxLayout must exist");
+            let inner = binding.as_ref().expect("inner BoxLayout must exist");
 
             // Delegate allocation to the inner BoxLayout
             inner.allocate(widget, width, height, baseline);

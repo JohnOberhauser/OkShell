@@ -1,6 +1,6 @@
 mod bars;
-pub mod frame;
-mod menus;
 mod common_widgets;
-mod frame_spacer;
+pub mod frame;
 mod frame_draw_widget;
+mod frame_spacer;
+mod menus;

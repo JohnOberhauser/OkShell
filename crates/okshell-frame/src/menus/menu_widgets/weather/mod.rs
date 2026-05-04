@@ -1,6 +1,6 @@
-pub(crate) mod weather;
 mod current;
+mod daily;
+mod daily_item;
 mod hourly;
 mod hourly_item;
-mod daily_item;
-mod daily;
+pub(crate) mod weather;

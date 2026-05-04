@@ -1,12 +1,12 @@
-use reactive_graph::prelude::{Get, GetUntracked};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::{gio, glib};
-use relm4::gtk::prelude::{BoxExt, ButtonExt, FileExt, OrientableExt, WidgetExt};
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, WallpaperStoreFields};
 use okshell_config::schema::content_fit::ContentFit;
 use okshell_config::schema::wallpaper::ThemeFilterStrength;
+use reactive_graph::prelude::{Get, GetUntracked};
+use relm4::gtk::prelude::{BoxExt, ButtonExt, FileExt, OrientableExt, WidgetExt};
+use relm4::gtk::{gio, glib};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct WallpaperSettingsModel {
@@ -23,7 +23,7 @@ pub(crate) enum WallpaperSettingsInput {
     ContentFitChanged(ContentFit),
     ThemeFilterChanged(bool),
     FilterStrengthChanged(f64),
-    
+
     WallpaperDirectoryEffect(String),
     ContentFitEffect(ContentFit),
     ThemeFilterEffect(bool),
@@ -93,7 +93,7 @@ impl Component for WallpaperSettingsModel {
                     },
 
                 },
-                
+
                 gtk::Box {
                     set_orientation: gtk::Orientation::Horizontal,
                     set_spacing: 20,
@@ -218,13 +218,14 @@ impl Component for WallpaperSettingsModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut effects = EffectScope::new();
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let wallpaper_dir = config_manager().config().wallpaper().wallpaper_dir().get();
-            sender_clone.input(WallpaperSettingsInput::WallpaperDirectoryEffect(wallpaper_dir));
+            sender_clone.input(WallpaperSettingsInput::WallpaperDirectoryEffect(
+                wallpaper_dir,
+            ));
         });
 
         let sender_clone = sender.clone();
@@ -235,21 +236,42 @@ impl Component for WallpaperSettingsModel {
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let value = config_manager().config().wallpaper().apply_theme_filter().get();
+            let value = config_manager()
+                .config()
+                .wallpaper()
+                .apply_theme_filter()
+                .get();
             sender_clone.input(WallpaperSettingsInput::ThemeFilterEffect(value));
         });
 
         let sender_clone = sender.clone();
         effects.push(move |_| {
-            let value = config_manager().config().wallpaper().theme_filter_strength().get();
+            let value = config_manager()
+                .config()
+                .wallpaper()
+                .theme_filter_strength()
+                .get();
             sender_clone.input(WallpaperSettingsInput::FilterStrengthEffect(value.get()));
         });
 
         let model = WallpaperSettingsModel {
             wallpaper_directory: "".to_string(),
-            content_fit: config_manager().config().wallpaper().content_fit().get_untracked(),
-            apply_theme_filter: config_manager().config().wallpaper().apply_theme_filter().get_untracked(),
-            filter_strength: config_manager().config().wallpaper().theme_filter_strength().get_untracked().get(),
+            content_fit: config_manager()
+                .config()
+                .wallpaper()
+                .content_fit()
+                .get_untracked(),
+            apply_theme_filter: config_manager()
+                .config()
+                .wallpaper()
+                .apply_theme_filter()
+                .get_untracked(),
+            filter_strength: config_manager()
+                .config()
+                .wallpaper()
+                .theme_filter_strength()
+                .get_untracked()
+                .get(),
             _effects: effects,
         };
 
@@ -272,19 +294,15 @@ impl Component for WallpaperSettingsModel {
                     .modal(true)
                     .build();
 
-                dialog.select_folder(
-                    gtk::Window::NONE,
-                    gio::Cancellable::NONE,
-                    move |result| {
-                        if let Ok(file) = result {
-                            if let Some(path) = file.path() {
-                                config_manager().update_config(|config| {
-                                    config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
-                                });
-                            }
+                dialog.select_folder(gtk::Window::NONE, gio::Cancellable::NONE, move |result| {
+                    if let Ok(file) = result {
+                        if let Some(path) = file.path() {
+                            config_manager().update_config(|config| {
+                                config.wallpaper.wallpaper_dir = path.to_string_lossy().to_string();
+                            });
                         }
-                    },
-                );
+                    }
+                });
             }
             WallpaperSettingsInput::ContentFitChanged(content_fit) => {
                 config_manager().update_config(|config| {
@@ -296,12 +314,11 @@ impl Component for WallpaperSettingsModel {
                     config.wallpaper.apply_theme_filter = apply;
                 })
             }
-            WallpaperSettingsInput::FilterStrengthChanged(strength) => {
-                config_manager().update_config(|config| {
+            WallpaperSettingsInput::FilterStrengthChanged(strength) => config_manager()
+                .update_config(|config| {
                     config.wallpaper.theme_filter_strength = ThemeFilterStrength::new(strength)
-                })
-            }
-            
+                }),
+
             WallpaperSettingsInput::WallpaperDirectoryEffect(path) => {
                 self.wallpaper_directory = path;
             }

@@ -1,7 +1,7 @@
-use relm4::prelude::*;
 use relm4::gtk;
-use relm4::gtk::prelude::*;
 use relm4::gtk::pango;
+use relm4::gtk::prelude::*;
+use relm4::prelude::*;
 use std::fmt::Debug;
 
 pub trait OptionItem: Debug + Clone + Send + 'static {
@@ -37,8 +37,14 @@ impl<T: OptionItem> Component for OptionsList<T> {
         }
     }
 
-    fn init(options: Self::Init, root: Self::Root, sender: ComponentSender<Self>) -> ComponentParts<Self> {
-        let model = OptionsList { options: options.clone() };
+    fn init(
+        options: Self::Init,
+        root: Self::Root,
+        sender: ComponentSender<Self>,
+    ) -> ComponentParts<Self> {
+        let model = OptionsList {
+            options: options.clone(),
+        };
         let widgets = view_output!();
         populate(&widgets.container, &options, &sender);
         ComponentParts { model, widgets }
@@ -49,7 +55,7 @@ impl<T: OptionItem> Component for OptionsList<T> {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             OptionsListInput::SetOptions(new_options) => {
@@ -65,7 +71,11 @@ impl<T: OptionItem> Component for OptionsList<T> {
     }
 }
 
-fn populate<T: OptionItem>(container: &gtk::Box, options: &[T], sender: &ComponentSender<OptionsList<T>>) {
+fn populate<T: OptionItem>(
+    container: &gtk::Box,
+    options: &[T],
+    sender: &ComponentSender<OptionsList<T>>,
+) {
     for item in options {
         let btn = gtk::Button::new();
         btn.set_css_classes(&["ok-button-surface"]);
@@ -89,7 +99,9 @@ fn populate<T: OptionItem>(container: &gtk::Box, options: &[T], sender: &Compone
         let item_clone = item.clone();
         let sender = sender.clone();
         btn.connect_clicked(move |_| {
-            sender.output(OptionsListOutput::Selected(item_clone.clone())).unwrap_or_default();
+            sender
+                .output(OptionsListOutput::Selected(item_clone.clone()))
+                .unwrap_or_default();
         });
 
         container.append(&btn);

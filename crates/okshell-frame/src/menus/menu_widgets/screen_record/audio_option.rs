@@ -1,6 +1,6 @@
+use crate::common_widgets::option_list::{OptionItem, OptionsList};
 use std::sync::Arc;
 use wayle_audio::core::device::input::InputDevice;
-use crate::common_widgets::option_list::{OptionItem, OptionsList};
 
 #[derive(Debug, Clone)]
 pub struct AudioOption {

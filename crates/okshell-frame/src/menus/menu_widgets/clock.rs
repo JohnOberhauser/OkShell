@@ -1,29 +1,18 @@
-use relm4::{
-    gtk::{
-        self,
-        glib::{
-            self,
-            SourceId,
-        },
-        Orientation,
-        prelude::*,
-    }, 
-    once_cell, 
-    ComponentParts, 
-    ComponentSender, 
-    SimpleComponent,
-};
-use time::format_description::parse;
-use time::OffsetDateTime;
-use okshell_config::{
-    schema::config::*,
-};
-use reactive_graph::traits::{
-    Get,
-    GetUntracked,
-};
-use relm4::gtk::prelude::OrientableExt;
 use okshell_common::scoped_effects::EffectScope;
+use okshell_config::schema::config::*;
+use reactive_graph::traits::{Get, GetUntracked};
+use relm4::gtk::prelude::OrientableExt;
+use relm4::{
+    ComponentParts, ComponentSender, SimpleComponent,
+    gtk::{
+        self, Orientation,
+        glib::{self, SourceId},
+        prelude::*,
+    },
+    once_cell,
+};
+use time::OffsetDateTime;
+use time::format_description::parse;
 
 static TIME_FORMAT_24: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
@@ -36,9 +25,7 @@ static TIME_FORMAT_12: once_cell::sync::Lazy<Vec<time::format_description::Forma
     });
 
 static DAY_FORMAT: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
-    once_cell::sync::Lazy::new(|| {
-        parse("[weekday repr:long]").unwrap()
-    });
+    once_cell::sync::Lazy::new(|| parse("[weekday repr:long]").unwrap());
 
 static DATE_FORMAT: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
@@ -80,7 +67,7 @@ impl SimpleComponent for ClockModel {
             set_hexpand: true,
             set_spacing: 20,
             set_valign: gtk::Align::Center,
-            
+
             gtk::Label {
                 add_css_class: "label-xxl-bold",
                 add_css_class: "clock-menu-widget-day-label",
@@ -121,22 +108,21 @@ impl SimpleComponent for ClockModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let base_config = okshell_config::config_manager::config_manager().config();
 
         let sender_clone = sender.clone();
-        let id = glib::timeout_add_local(
-            std::time::Duration::from_secs(1),
-            move || {
-                sender_clone.input(ClockInput::UpdateTime);
-                glib::ControlFlow::Continue
-            },
-        );
+        let id = glib::timeout_add_local(std::time::Duration::from_secs(1), move || {
+            sender_clone.input(ClockInput::UpdateTime);
+            glib::ControlFlow::Continue
+        });
 
-        let format_24_h = base_config.clone().general().clock_format_24_h().get_untracked();
+        let format_24_h = base_config
+            .clone()
+            .general()
+            .clock_format_24_h()
+            .get_untracked();
 
-        let now = OffsetDateTime::now_local()
-            .unwrap_or_else(|_| OffsetDateTime::now_utc());
+        let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
 
         let time: String;
 
@@ -150,7 +136,7 @@ impl SimpleComponent for ClockModel {
         let date = now.format(&DATE_FORMAT).unwrap();
 
         let mut effects = EffectScope::new();
-        
+
         let sender_clone = sender.clone();
         effects.push(move |_| {
             let config = base_config.clone();
@@ -172,15 +158,10 @@ impl SimpleComponent for ClockModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self, 
-        message: Self::Input,
-        _sender: ComponentSender<Self>,
-    ) {
+    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
         match message {
             ClockInput::UpdateTime => {
-                let now = OffsetDateTime::now_local()
-                    .unwrap_or_else(|_| OffsetDateTime::now_utc());
+                let now = OffsetDateTime::now_local().unwrap_or_else(|_| OffsetDateTime::now_utc());
 
                 let time: String;
 
@@ -196,7 +177,7 @@ impl SimpleComponent for ClockModel {
                 self.day_label = day;
                 self.date_label = date;
                 self.time_label = time;
-            },
+            }
             ClockInput::ChangeFormat(format_24_h) => {
                 self.format_24_h = format_24_h;
             }

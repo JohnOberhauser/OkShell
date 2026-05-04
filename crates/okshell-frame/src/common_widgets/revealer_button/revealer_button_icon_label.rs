@@ -1,8 +1,8 @@
-use std::ops::Not;
-use relm4::prelude::*;
 use relm4::gtk;
-use relm4::gtk::prelude::*;
 use relm4::gtk::pango;
+use relm4::gtk::prelude::*;
+use relm4::prelude::*;
+use std::ops::Not;
 
 pub struct RevealerButtonIconLabelModel {
     pub label: String,
@@ -63,7 +63,7 @@ impl SimpleComponent for RevealerButtonIconLabelModel {
     fn init(
         params: Self::Init,
         root: Self::Root,
-        _sender: ComponentSender<Self>
+        _sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
         let model = RevealerButtonIconLabelModel {
             label: params.label,
@@ -74,11 +74,7 @@ impl SimpleComponent for RevealerButtonIconLabelModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        msg: Self::Input,
-        _sender: ComponentSender<Self>
-    ) {
+    fn update(&mut self, msg: Self::Input, _sender: ComponentSender<Self>) {
         match msg {
             RevealerButtonIconLabelInput::SetPrimaryIconName(icon_name) => {
                 self.icon_name = icon_name;

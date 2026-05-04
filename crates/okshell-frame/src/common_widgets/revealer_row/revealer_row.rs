@@ -1,9 +1,10 @@
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
 use relm4::gtk::Orientation;
 use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use std::fmt::Debug;
 
-pub(crate) struct RevealerRowModel<ContentComponent: Component, RevealedContentComponent: Component> {
+pub(crate) struct RevealerRowModel<ContentComponent: Component, RevealedContentComponent: Component>
+{
     pub content: Controller<ContentComponent>,
     pub revealed_content: Controller<RevealedContentComponent>,
     revealed: bool,
@@ -24,7 +25,8 @@ pub(crate) enum RevealerRowOutput {
     Hidden,
 }
 
-pub(crate) struct RevealerRowInit<ContentComponent: Component, RevealedContentComponent: Component> {
+pub(crate) struct RevealerRowInit<ContentComponent: Component, RevealedContentComponent: Component>
+{
     pub icon_name: String,
     pub action_button_sensitive: bool,
     pub content: Controller<ContentComponent>,
@@ -35,7 +37,8 @@ pub(crate) struct RevealerRowInit<ContentComponent: Component, RevealedContentCo
 pub(crate) enum RevealerRowCommandOutput {}
 
 #[relm4::component(pub)]
-impl<ContentComponent, RevealedContentComponent> Component for RevealerRowModel<ContentComponent, RevealedContentComponent>
+impl<ContentComponent, RevealedContentComponent> Component
+    for RevealerRowModel<ContentComponent, RevealedContentComponent>
 where
     ContentComponent: Component + 'static,
     ContentComponent::Output: Debug,
@@ -144,7 +147,9 @@ where
 
         let widgets = view_output!();
 
-        widgets.action_icon_image.set_icon_name(Some(&params.icon_name));
+        widgets
+            .action_icon_image
+            .set_icon_name(Some(&params.icon_name));
 
         ComponentParts { model, widgets }
     }

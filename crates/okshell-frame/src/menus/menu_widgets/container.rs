@@ -1,15 +1,10 @@
-use relm4::{
-    gtk,
-    ComponentParts,
-    ComponentSender,
-    SimpleComponent,
-};
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use crate::menus::builder::build_widget;
+use crate::menus::menu::MenuModel;
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
 use okshell_config::schema::menu_widgets::ContainerConfig;
 use okshell_config::schema::position::Orientation;
-use crate::menus::builder::build_widget;
-use crate::menus::menu::MenuModel;
+use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 pub(crate) struct ContainerModel {
     widget_controllers: Vec<Box<dyn GenericWidgetController>>,
@@ -52,7 +47,6 @@ impl SimpleComponent for ContainerModel {
         root: Self::Root,
         _sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let mut widget_controllers: Vec<Box<dyn GenericWidgetController>> = Vec::new();
 
         for item in params.config.widgets {

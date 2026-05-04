@@ -1,6 +1,9 @@
 use zbus::connection;
 
-pub async fn bus_command_with_reply<A: serde::Serialize + zbus::zvariant::Type, R: serde::de::DeserializeOwned + zbus::zvariant::Type>(
+pub async fn bus_command_with_reply<
+    A: serde::Serialize + zbus::zvariant::Type,
+    R: serde::de::DeserializeOwned + zbus::zvariant::Type,
+>(
     method_name: &'static str,
     arg: &A,
 ) -> zbus::Result<R> {

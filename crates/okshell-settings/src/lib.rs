@@ -1,24 +1,23 @@
-use std::cell::RefCell;
-use relm4::{Component, ComponentController};
-use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
 use crate::settings::{SettingsWindowInit, SettingsWindowModel};
+use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
+use relm4::{Component, ComponentController};
+use std::cell::RefCell;
 
-mod general_settings;
-pub mod settings;
-mod wallpaper_settings;
-mod theme_settings;
 mod bar_settings;
+mod general_settings;
 mod menu_settings;
 mod notification_settings;
+pub mod settings;
+mod theme_settings;
+mod wallpaper_settings;
 
 thread_local! {
     static SETTINGS_ROOT: RefCell<Option<relm4::Controller<SettingsWindowModel>>> = RefCell::new(None);
 }
 
 pub fn open_settings() {
-    let already_open = SETTINGS_ROOT.with(|w| {
-        w.borrow().as_ref().is_some_and(|c| c.widget().is_visible())
-    });
+    let already_open =
+        SETTINGS_ROOT.with(|w| w.borrow().as_ref().is_some_and(|c| c.widget().is_visible()));
 
     if already_open {
         SETTINGS_ROOT.with(|w| {

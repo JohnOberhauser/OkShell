@@ -2,17 +2,17 @@ use std::collections::HashMap;
 use std::os::fd::AsFd;
 use std::sync::{Arc, Mutex};
 
+use super::{HyprlandWindow, Result, ScreenshotError};
+use crate::selectors::area_selector::RegionSelection;
+use crate::utils::query_outputs;
 use wayland_client::{
-    globals::{registry_queue_init, GlobalListContents},
-    protocol::{wl_buffer, wl_output, wl_registry, wl_shm, wl_shm_pool},
     Connection, Dispatch, QueueHandle,
+    globals::{GlobalListContents, registry_queue_init},
+    protocol::{wl_buffer, wl_output, wl_registry, wl_shm, wl_shm_pool},
 };
 use wayland_protocols_wlr::screencopy::v1::client::{
     zwlr_screencopy_frame_v1, zwlr_screencopy_manager_v1,
 };
-use crate::selectors::area_selector::RegionSelection;
-use crate::utils::query_outputs;
-use super::{HyprlandWindow, ScreenshotError, Result};
 
 #[derive(Debug, Clone)]
 pub struct ScreenshotResult {
@@ -55,8 +55,7 @@ struct CaptureState {
 impl CaptureBackend {
     pub fn new() -> Result<Self> {
         // Quick check that we can connect to wayland.
-        Connection::connect_to_env()
-            .map_err(|e| ScreenshotError::WaylandConnect(e.to_string()))?;
+        Connection::connect_to_env().map_err(|e| ScreenshotError::WaylandConnect(e.to_string()))?;
         Ok(Self)
     }
 
@@ -109,7 +108,9 @@ impl CaptureBackend {
         let h = (win.height as u32).min(full.height().saturating_sub(local_y));
 
         if w == 0 || h == 0 {
-            return Err(ScreenshotError::CaptureFailed("window has zero size".into()));
+            return Err(ScreenshotError::CaptureFailed(
+                "window has zero size".into(),
+            ));
         }
 
         Ok(image::imageops::crop_imm(&full, local_x, local_y, w, h).to_image())
@@ -125,7 +126,9 @@ impl CaptureBackend {
         let h = (region.height as u32).min(full.height().saturating_sub(y));
 
         if w == 0 || h == 0 {
-            return Err(ScreenshotError::CaptureFailed("region has zero size".into()));
+            return Err(ScreenshotError::CaptureFailed(
+                "region has zero size".into(),
+            ));
         }
 
         Ok(image::imageops::crop_imm(&full, x, y, w, h).to_image())
@@ -170,9 +173,10 @@ impl CaptureBackend {
         let output_list = globals.contents().clone_list();
         for global in output_list.iter() {
             if global.interface == "wl_output" {
-                let _: wl_output::WlOutput = globals
-                    .registry()
-                    .bind(global.name, global.version.min(4), &qh, global.name);
+                let _: wl_output::WlOutput =
+                    globals
+                        .registry()
+                        .bind(global.name, global.version.min(4), &qh, global.name);
             }
         }
 
@@ -227,7 +231,9 @@ impl CaptureBackend {
 
             let fs = state.frame_state.lock().unwrap();
             if fs.failed {
-                return Err(ScreenshotError::CaptureFailed("compositor rejected copy".into()));
+                return Err(ScreenshotError::CaptureFailed(
+                    "compositor rejected copy".into(),
+                ));
             }
             if fs.done {
                 break;
@@ -325,7 +331,7 @@ fn create_shm_file(size: usize) -> Result<std::fs::File> {
         shm::OFlags::CREATE | shm::OFlags::EXCL | shm::OFlags::RDWR,
         rustix::fs::Mode::RUSR | rustix::fs::Mode::WUSR,
     )
-        .map_err(|e| ScreenshotError::CaptureFailed(format!("shm_open: {e}")))?;
+    .map_err(|e| ScreenshotError::CaptureFailed(format!("shm_open: {e}")))?;
 
     // Immediately unlink so it's cleaned up.
     let _ = shm::unlink(&name);

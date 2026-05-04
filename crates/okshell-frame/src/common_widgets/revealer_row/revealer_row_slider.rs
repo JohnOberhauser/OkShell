@@ -1,6 +1,6 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::prelude::*;
 use relm4::gtk::glib;
+use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 pub(crate) struct RevealerRowSliderModel {
     value_changed_signal: glib::SignalHandlerId,
@@ -8,12 +8,12 @@ pub(crate) struct RevealerRowSliderModel {
 
 #[derive(Debug)]
 pub(crate) enum RevealerRowSliderInput {
-    SetValue(f64)
+    SetValue(f64),
 }
 
 #[derive(Debug)]
 pub(crate) enum RevealerRowSliderOutput {
-    ValueChanged(f64)
+    ValueChanged(f64),
 }
 
 pub(crate) struct RevealerRowSliderInit {}

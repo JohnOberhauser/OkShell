@@ -1,7 +1,7 @@
-use std::os::unix::prelude::CommandExt;
-use std::process::{Command, Stdio};
 use relm4::gtk::gio;
 use relm4::gtk::prelude::AppInfoExt;
+use std::os::unix::prelude::CommandExt;
+use std::process::{Command, Stdio};
 
 pub fn launch_detached(app: &gio::DesktopAppInfo) {
     if let Some(id) = app.id() {

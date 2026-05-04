@@ -1,21 +1,21 @@
 mod capture;
-mod utils;
+mod common;
 pub mod record;
 mod selectors;
-mod common;
+mod utils;
 
 pub use capture::{CaptureBackend, ScreenshotResult};
 pub use selectors::area_selector::select_region;
 
+use crate::common::*;
+use crate::record::{RecordHandle, RecordResult, WfRecorderArgs, start_recording};
+use crate::utils::{default_screenshot_path, query_outputs};
 use gtk4::glib;
 use image::ImageEncoder;
-use std::path::PathBuf;
-use std::time::Duration;
 use selectors::area_selector::RegionSelection;
 use selectors::{monitor_selector, window_selector};
-use crate::record::{start_recording, RecordHandle, RecordResult, WfRecorderArgs};
-use crate::common::*;
-use crate::utils::{default_screenshot_path, query_outputs};
+use std::path::PathBuf;
+use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub enum CaptureArea {
@@ -91,8 +91,7 @@ pub fn record_screen<S, D>(
     _delay: Duration,
     on_started: S,
     on_done: D,
-)
-where
+) where
     S: FnOnce(anyhow::Result<RecordHandle>) + Send + 'static,
     D: FnOnce(anyhow::Result<RecordResult>) + Send + 'static,
 {
@@ -120,34 +119,33 @@ where
                 Ok(o) => o,
                 Err(e) => return on_started(Err(e.into())),
             };
-            monitor_selector::select_monitor(&outputs, move |monitor_result| {
-                match monitor_result {
+            monitor_selector::select_monitor(
+                &outputs,
+                move |monitor_result| match monitor_result {
                     Ok(name) => {
                         let args = WfRecorderArgs::Monitor { name };
                         on_started(Ok(start_recording(request.audio, args, on_done)));
                     }
                     Err(e) => on_started(Err(e.into())),
-                }
-            });
+                },
+            );
         }
         CaptureArea::SelectWindow => {
             let outputs = match query_outputs() {
                 Ok(o) => o,
                 Err(e) => return on_started(Err(e.into())),
             };
-            window_selector::select_window(&outputs, move |window_result| {
-                match window_result {
-                    Ok(win) => {
-                        let args = WfRecorderArgs::Window {
-                            x: win.x,
-                            y: win.y,
-                            width: win.width,
-                            height: win.height,
-                        };
-                        on_started(Ok(start_recording(request.audio, args, on_done)));
-                    }
-                    Err(e) => on_started(Err(e.into())),
+            window_selector::select_window(&outputs, move |window_result| match window_result {
+                Ok(win) => {
+                    let args = WfRecorderArgs::Window {
+                        x: win.x,
+                        y: win.y,
+                        width: win.width,
+                        height: win.height,
+                    };
+                    on_started(Ok(start_recording(request.audio, args, on_done)));
                 }
+                Err(e) => on_started(Err(e.into())),
             });
         }
         CaptureArea::All => {
@@ -166,7 +164,11 @@ where
                     }
                 });
             } else {
-                on_started(Ok(start_recording(request.audio, WfRecorderArgs::All, on_done)));
+                on_started(Ok(start_recording(
+                    request.audio,
+                    WfRecorderArgs::All,
+                    on_done,
+                )));
             }
         }
     }
@@ -183,16 +185,14 @@ where
                 Err(e) => return on_done(Err(e)),
             };
             let target = request.target.clone();
-            select_region(&outputs, move |region_result| {
-                match region_result {
-                    Ok(region) => capture_and_finish_async(
-                        move || CaptureBackend::new()?.capture_region(&region),
-                        target,
-                        delay,
-                        on_done,
-                    ),
-                    Err(e) => on_done(Err(e)),
-                }
+            select_region(&outputs, move |region_result| match region_result {
+                Ok(region) => capture_and_finish_async(
+                    move || CaptureBackend::new()?.capture_region(&region),
+                    target,
+                    delay,
+                    on_done,
+                ),
+                Err(e) => on_done(Err(e)),
             });
         }
         CaptureArea::SelectMonitor => {
@@ -201,8 +201,9 @@ where
                 Err(e) => return on_done(Err(e)),
             };
             let target = request.target.clone();
-            monitor_selector::select_monitor(&outputs, move |monitor_result| {
-                match monitor_result {
+            monitor_selector::select_monitor(
+                &outputs,
+                move |monitor_result| match monitor_result {
                     Ok(name) => capture_and_finish_async(
                         move || CaptureBackend::new()?.capture_output(&name),
                         target,
@@ -210,8 +211,8 @@ where
                         on_done,
                     ),
                     Err(e) => on_done(Err(e)),
-                }
-            });
+                },
+            );
         }
         CaptureArea::SelectWindow => {
             let outputs = match query_outputs() {
@@ -219,16 +220,14 @@ where
                 Err(e) => return on_done(Err(e)),
             };
             let target = request.target.clone();
-            window_selector::select_window(&outputs, move |window_result| {
-                match window_result {
-                    Ok(win) => capture_and_finish_async(
-                        move || CaptureBackend::new()?.capture_window(&win),
-                        target,
-                        delay,
-                        on_done,
-                    ),
-                    Err(e) => on_done(Err(e)),
-                }
+            window_selector::select_window(&outputs, move |window_result| match window_result {
+                Ok(win) => capture_and_finish_async(
+                    move || CaptureBackend::new()?.capture_window(&win),
+                    target,
+                    delay,
+                    on_done,
+                ),
+                Err(e) => on_done(Err(e)),
             });
         }
         CaptureArea::All => {
@@ -354,5 +353,3 @@ fn copy_to_clipboard(image: &image::RgbaImage) -> Result<()> {
 
     Ok(())
 }
-
-

@@ -1,9 +1,8 @@
-use relm4::{gtk::{
-    self,
-    prelude::*,
-    glib,
-}, Component, ComponentParts, ComponentSender, RelmWidgetExt};
-use okshell_clipboard::{clipboard_service, ClipboardEntry, EntryPreview};
+use okshell_clipboard::{ClipboardEntry, EntryPreview, clipboard_service};
+use relm4::{
+    Component, ComponentParts, ComponentSender, RelmWidgetExt,
+    gtk::{self, glib, prelude::*},
+};
 
 #[derive(Debug, Clone)]
 pub(crate) struct ClipboardItemModel {
@@ -88,9 +87,7 @@ impl Component for ClipboardItemModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let model = ClipboardItemModel {
-            entry: params,
-        };
+        let model = ClipboardItemModel { entry: params };
         let widgets = view_output!();
 
         // Build the preview content based on entry type.
@@ -108,7 +105,11 @@ impl Component for ClipboardItemModel {
                 label.add_css_class("label-small-bold");
                 widgets.preview_box.append(&label);
             }
-            EntryPreview::Image { rgba, width, height } => {
+            EntryPreview::Image {
+                rgba,
+                width,
+                height,
+            } => {
                 let bytes = glib::Bytes::from(rgba);
                 let texture = gtk::gdk::MemoryTexture::new(
                     *width as i32,

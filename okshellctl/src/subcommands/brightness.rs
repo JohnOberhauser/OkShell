@@ -1,5 +1,5 @@
-use clap::Subcommand;
 use crate::bus::bus_command;
+use clap::Subcommand;
 
 #[derive(Subcommand, Debug)]
 pub enum BrightnessCommands {
@@ -11,8 +11,12 @@ pub enum BrightnessCommands {
 
 pub async fn execute(command: BrightnessCommands) -> anyhow::Result<()> {
     match command {
-        BrightnessCommands::Up => { bus_command("BrightnessUp").await?; },
-        BrightnessCommands::Down => { bus_command("BrightnessDown").await?; },
+        BrightnessCommands::Up => {
+            bus_command("BrightnessUp").await?;
+        }
+        BrightnessCommands::Down => {
+            bus_command("BrightnessDown").await?;
+        }
     }
     Ok(())
 }

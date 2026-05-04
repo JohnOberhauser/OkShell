@@ -126,24 +126,42 @@ pub struct Palettes {
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Palette {
-    #[serde(rename = "0")]   pub t0: ColorEntry,
-    #[serde(rename = "5")]   pub t5: ColorEntry,
-    #[serde(rename = "10")]  pub t10: ColorEntry,
-    #[serde(rename = "15")]  pub t15: ColorEntry,
-    #[serde(rename = "20")]  pub t20: ColorEntry,
-    #[serde(rename = "25")]  pub t25: ColorEntry,
-    #[serde(rename = "30")]  pub t30: ColorEntry,
-    #[serde(rename = "35")]  pub t35: ColorEntry,
-    #[serde(rename = "40")]  pub t40: ColorEntry,
-    #[serde(rename = "50")]  pub t50: ColorEntry,
-    #[serde(rename = "60")]  pub t60: ColorEntry,
-    #[serde(rename = "70")]  pub t70: ColorEntry,
-    #[serde(rename = "80")]  pub t80: ColorEntry,
-    #[serde(rename = "90")]  pub t90: ColorEntry,
-    #[serde(rename = "95")]  pub t95: ColorEntry,
-    #[serde(rename = "98")]  pub t98: ColorEntry,
-    #[serde(rename = "99")]  pub t99: ColorEntry,
-    #[serde(rename = "100")] pub t100: ColorEntry,
+    #[serde(rename = "0")]
+    pub t0: ColorEntry,
+    #[serde(rename = "5")]
+    pub t5: ColorEntry,
+    #[serde(rename = "10")]
+    pub t10: ColorEntry,
+    #[serde(rename = "15")]
+    pub t15: ColorEntry,
+    #[serde(rename = "20")]
+    pub t20: ColorEntry,
+    #[serde(rename = "25")]
+    pub t25: ColorEntry,
+    #[serde(rename = "30")]
+    pub t30: ColorEntry,
+    #[serde(rename = "35")]
+    pub t35: ColorEntry,
+    #[serde(rename = "40")]
+    pub t40: ColorEntry,
+    #[serde(rename = "50")]
+    pub t50: ColorEntry,
+    #[serde(rename = "60")]
+    pub t60: ColorEntry,
+    #[serde(rename = "70")]
+    pub t70: ColorEntry,
+    #[serde(rename = "80")]
+    pub t80: ColorEntry,
+    #[serde(rename = "90")]
+    pub t90: ColorEntry,
+    #[serde(rename = "95")]
+    pub t95: ColorEntry,
+    #[serde(rename = "98")]
+    pub t98: ColorEntry,
+    #[serde(rename = "99")]
+    pub t99: ColorEntry,
+    #[serde(rename = "100")]
+    pub t100: ColorEntry,
 }
 
 #[allow(dead_code)]
@@ -172,7 +190,9 @@ pub struct Sizing {
 
 impl Default for ColorEntry {
     fn default() -> Self {
-        Self { color: "#000000".to_string() }
+        Self {
+            color: "#000000".to_string(),
+        }
     }
 }
 
@@ -360,7 +380,9 @@ impl ColorEntry {
 }
 
 pub fn color(hex: &str) -> ThemedColor {
-    let entry = ColorEntry { color: hex.to_string() };
+    let entry = ColorEntry {
+        color: hex.to_string(),
+    };
     ThemedColor {
         dark: entry.clone(),
         default: entry.clone(),
@@ -369,8 +391,12 @@ pub fn color(hex: &str) -> ThemedColor {
 }
 
 pub fn tc(dark: &str, light: &str) -> ThemedColor {
-    let entry_dark = ColorEntry { color: dark.to_string() };
-    let entry_light = ColorEntry { color: light.to_string() };
+    let entry_dark = ColorEntry {
+        color: dark.to_string(),
+    };
+    let entry_light = ColorEntry {
+        color: light.to_string(),
+    };
     ThemedColor {
         dark: entry_dark.clone(),
         default: entry_dark,

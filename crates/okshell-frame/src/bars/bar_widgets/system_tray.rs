@@ -1,13 +1,15 @@
-use std::sync::Arc;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::{Orientation, RevealerTransitionType};
-use relm4::gtk::prelude::*;
-use okshell_common::watch;
-use wayle_systray::core::item::TrayItem;
-use okshell_services::sys_tray_service;
 use crate::bars::bar_widgets::system_tray_item::SystemTrayItemModel;
-use okshell_common::dynamic_box::dynamic_box::{DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel};
+use okshell_common::dynamic_box::dynamic_box::{
+    DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
+};
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
+use okshell_common::watch;
+use okshell_services::sys_tray_service;
+use relm4::gtk::prelude::*;
+use relm4::gtk::{Orientation, RevealerTransitionType};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use wayle_systray::core::item::TrayItem;
 
 pub(crate) struct SystemTrayModel {
     dynamic_box: Controller<DynamicBoxModel<Arc<TrayItem>, String>>,
@@ -29,7 +31,7 @@ pub(crate) struct SystemTrayInit {
 
 #[derive(Debug)]
 pub(crate) enum SystemTrayCommandOutput {
-    ItemsChanged(Vec<Arc<TrayItem>>)
+    ItemsChanged(Vec<Arc<TrayItem>>),
 }
 
 #[relm4::component(pub)]
@@ -83,16 +85,14 @@ impl Component for SystemTrayModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         Self::spawn_system_tray_watcher(&sender);
 
         let factory = DynamicBoxFactory::<Arc<TrayItem>, String> {
             id: Box::new(|item| item.id.get()),
             create: Box::new(move |item| {
-                let controller: Controller<SystemTrayItemModel> =
-                    SystemTrayItemModel::builder()
-                        .launch(item.clone().into())
-                        .detach();
+                let controller: Controller<SystemTrayItemModel> = SystemTrayItemModel::builder()
+                    .launch(item.clone().into())
+                    .detach();
                 Box::new(controller) as Box<dyn GenericWidgetController>
             }),
             update: None,
@@ -106,7 +106,7 @@ impl Component for SystemTrayModel {
 
         let dynamic: Controller<DynamicBoxModel<Arc<TrayItem>, String>> =
             DynamicBoxModel::builder()
-                .launch(DynamicBoxInit{
+                .launch(DynamicBoxInit {
                     factory,
                     orientation: params.orientation,
                     spacing: 0,
@@ -153,21 +153,22 @@ impl Component for SystemTrayModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         _sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             SystemTrayCommandOutput::ItemsChanged(items) => {
                 widgets.root.set_visible(items.len() > 0);
-                self.dynamic_box.sender().send(DynamicBoxInput::SetItems(items)).unwrap();
+                self.dynamic_box
+                    .sender()
+                    .send(DynamicBoxInput::SetItems(items))
+                    .unwrap();
             }
         }
     }
 }
 
 impl SystemTrayModel {
-    fn spawn_system_tray_watcher(
-        sender: &ComponentSender<Self>,
-    ) {
+    fn spawn_system_tray_watcher(sender: &ComponentSender<Self>) {
         let service = sys_tray_service();
         let items = service.items.clone();
 

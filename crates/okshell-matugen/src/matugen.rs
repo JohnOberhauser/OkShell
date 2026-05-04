@@ -1,12 +1,12 @@
+use crate::css_mapping::to_css;
+use crate::json_struct::{MatugenTheme, MatugenThemeCustomOnly};
+use okshell_config::schema::config::Matugen;
+use relm4::gtk::glib;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
-use relm4::gtk::glib;
 use tracing::{debug, info};
-use okshell_config::schema::config::Matugen;
-use crate::css_mapping::to_css;
-use crate::json_struct::{MatugenTheme, MatugenThemeCustomOnly};
 
 enum MatugenJob {
     Image {
@@ -59,19 +59,22 @@ impl MatugenJob {
 
     fn run(self) -> MatugenResult {
         match self {
-            MatugenJob::Image { wallpaper, matugen, theme } => {
-                apply_matugen(&wallpaper, matugen, theme)
-            }
-            MatugenJob::Static { theme } => {
-                apply_matugen_from_theme(&theme)
-            }
+            MatugenJob::Image {
+                wallpaper,
+                matugen,
+                theme,
+            } => apply_matugen(&wallpaper, matugen, theme),
+            MatugenJob::Static { theme } => apply_matugen_from_theme(&theme),
         }
     }
 }
 
 struct RunnerState {
     running: bool,
-    waiting: Option<(MatugenJob, Box<dyn FnOnce(anyhow::Result<String>) + Send + 'static>)>,
+    waiting: Option<(
+        MatugenJob,
+        Box<dyn FnOnce(anyhow::Result<String>) + Send + 'static>,
+    )>,
 }
 
 static RUNNER: Mutex<Option<Arc<Mutex<RunnerState>>>> = Mutex::new(None);
@@ -88,10 +91,7 @@ fn get_runner() -> Arc<Mutex<RunnerState>> {
         .clone()
 }
 
-fn submit_job(
-    job: MatugenJob,
-    on_done: impl FnOnce(anyhow::Result<String>) + Send + 'static,
-) {
+fn submit_job(job: MatugenJob, on_done: impl FnOnce(anyhow::Result<String>) + Send + 'static) {
     let runner = get_runner();
     let mut state = runner.lock().unwrap();
 
@@ -158,7 +158,11 @@ pub fn apply_matugen_from_image_queued(
     on_done: impl FnOnce(anyhow::Result<String>) + Send + 'static,
 ) {
     submit_job(
-        MatugenJob::Image { wallpaper, matugen, theme },
+        MatugenJob::Image {
+            wallpaper,
+            matugen,
+            theme,
+        },
         on_done,
     );
 }
@@ -167,10 +171,7 @@ pub fn apply_matugen_from_theme_queued(
     theme: MatugenTheme,
     on_done: impl FnOnce(anyhow::Result<String>) + Send + 'static,
 ) {
-    submit_job(
-        MatugenJob::Static { theme },
-        on_done,
-    );
+    submit_job(MatugenJob::Static { theme }, on_done);
 }
 
 fn apply_matugen(
@@ -180,14 +181,21 @@ fn apply_matugen(
 ) -> MatugenResult {
     let child = Command::new("matugen")
         .args([
-            "image", wallpaper.to_str().unwrap(),
+            "image",
+            wallpaper.to_str().unwrap(),
             "--quiet",
-            "--json", "hex",
-            "--prefer", matugen.preference.to_string().as_str(),
-            "--type", matugen.scheme_type.to_string().as_str(),
-            "--mode", matugen.mode.to_string().as_str(),
-            "--contrast", matugen.contrast.to_string().as_str(),
-            "--import-json-string", serde_json::to_string(&theme).unwrap().as_str(),
+            "--json",
+            "hex",
+            "--prefer",
+            matugen.preference.to_string().as_str(),
+            "--type",
+            matugen.scheme_type.to_string().as_str(),
+            "--mode",
+            matugen.mode.to_string().as_str(),
+            "--contrast",
+            matugen.contrast.to_string().as_str(),
+            "--import-json-string",
+            serde_json::to_string(&theme).unwrap().as_str(),
         ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -195,19 +203,24 @@ fn apply_matugen(
 
     match child {
         Ok(child) => read_json_from_child(child),
-        Err(e) => MatugenResult { css: Err(e.into()), waiter: None },
+        Err(e) => MatugenResult {
+            css: Err(e.into()),
+            waiter: None,
+        },
     }
 }
 
-fn apply_matugen_from_theme(
-    theme: &MatugenTheme,
-) -> MatugenResult {
+fn apply_matugen_from_theme(theme: &MatugenTheme) -> MatugenResult {
     let child = Command::new("matugen")
         .args([
-            "color", "hex", "000000",
+            "color",
+            "hex",
+            "000000",
             "--quiet",
-            "--json", "hex",
-            "--import-json-string", serde_json::to_string(&theme).unwrap().as_str(),
+            "--json",
+            "hex",
+            "--import-json-string",
+            serde_json::to_string(&theme).unwrap().as_str(),
         ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -215,17 +228,22 @@ fn apply_matugen_from_theme(
 
     match child {
         Ok(child) => read_json_from_child(child),
-        Err(e) => MatugenResult { css: Err(e.into()), waiter: None },
+        Err(e) => MatugenResult {
+            css: Err(e.into()),
+            waiter: None,
+        },
     }
 }
 
 fn read_json_from_child(mut child: std::process::Child) -> MatugenResult {
     let stdout = match child.stdout.take() {
         Some(s) => s,
-        None => return MatugenResult {
-            css: Err(anyhow::anyhow!("failed to capture matugen stdout")),
-            waiter: None,
-        },
+        None => {
+            return MatugenResult {
+                css: Err(anyhow::anyhow!("failed to capture matugen stdout")),
+                waiter: None,
+            };
+        }
     };
 
     let stderr = child.stderr.take();
@@ -241,12 +259,16 @@ fn read_json_from_child(mut child: std::process::Child) -> MatugenResult {
         line.clear();
         let n = match reader.read_line(&mut line) {
             Ok(n) => n,
-            Err(e) => return MatugenResult {
-                css: Err(e.into()),
-                waiter: None,
-            },
+            Err(e) => {
+                return MatugenResult {
+                    css: Err(e.into()),
+                    waiter: None,
+                };
+            }
         };
-        if n == 0 { break; }
+        if n == 0 {
+            break;
+        }
 
         let mut log_line = true;
 
@@ -274,12 +296,16 @@ fn read_json_from_child(mut child: std::process::Child) -> MatugenResult {
             debug!("matugen: {}", line.trim());
         }
 
-        if ended { break; }
+        if ended {
+            break;
+        }
     }
 
     if !ended {
         return MatugenResult {
-            css: Err(anyhow::anyhow!("matugen stdout ended before JSON was complete")),
+            css: Err(anyhow::anyhow!(
+                "matugen stdout ended before JSON was complete"
+            )),
             waiter: None,
         };
     }
@@ -291,6 +317,10 @@ fn read_json_from_child(mut child: std::process::Child) -> MatugenResult {
 
     MatugenResult {
         css,
-        waiter: Some(ChildWaiter { reader, stderr, child }),
+        waiter: Some(ChildWaiter {
+            reader,
+            stderr,
+            child,
+        }),
     }
 }

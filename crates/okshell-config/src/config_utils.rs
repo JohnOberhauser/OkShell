@@ -1,34 +1,28 @@
 use figment::{
-    providers::{Format, Serialized, Yaml},
     Figment,
+    providers::{Format, Serialized, Yaml},
 };
-use tracing::info;
 use std::{
-    sync::{
-        mpsc,
-    },
+    sync::mpsc,
     time::{Duration, Instant},
 };
+use tracing::info;
 
 use notify::{Event, EventKind};
 use reactive_stores::{ArcStore, Patch};
 
-use crate::paths::{profile_path, active_profile_cache_path, profiles_dir};
+use crate::paths::{active_profile_cache_path, profile_path, profiles_dir};
 use crate::schema::config::Config;
-use std::fs;
-use std::path::Path;
 use reactive_graph::prelude::ReadUntracked;
 use serde::Serialize;
+use std::fs;
+use std::path::Path;
 
 pub(crate) fn read_active_profile_from_cache() -> Option<String> {
     let p = active_profile_cache_path();
     let s = fs::read_to_string(p).ok()?;
     let name = s.trim().to_string();
-    if name.is_empty() {
-        None
-    } else {
-        Some(name)
-    }
+    if name.is_empty() { None } else { Some(name) }
 }
 
 pub(crate) fn write_active_profile_to_cache(name: Option<&str>) {
@@ -50,7 +44,9 @@ pub fn list_available_profiles() -> Vec<String> {
     let dir = profiles_dir();
     let mut out = Vec::new();
 
-    let Ok(rd) = fs::read_dir(dir) else { return out };
+    let Ok(rd) = fs::read_dir(dir) else {
+        return out;
+    };
     for ent in rd.flatten() {
         let path = ent.path();
         if path.extension().and_then(|s| s.to_str()) != Some("yaml") {
@@ -64,7 +60,9 @@ pub fn list_available_profiles() -> Vec<String> {
     out
 }
 
-pub(crate) fn load_effective_config(active_profile: Option<&str>) -> Result<Config, figment::Error> {
+pub(crate) fn load_effective_config(
+    active_profile: Option<&str>,
+) -> Result<Config, figment::Error> {
     let mut figment = Figment::from(Serialized::defaults(Config::default()));
 
     if let Some(name) = active_profile {
@@ -132,7 +130,10 @@ pub(crate) fn is_relevant_config_event(event: &Event) -> bool {
     })
 }
 
-pub(crate) fn persist_config_layer<T: Serialize>(value: &T, path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub(crate) fn persist_config_layer<T: Serialize>(
+    value: &T,
+    path: &Path,
+) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }

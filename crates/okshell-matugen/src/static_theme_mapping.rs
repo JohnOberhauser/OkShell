@@ -1,4 +1,3 @@
-use okshell_config::schema::themes::Themes;
 use crate::json_struct::{MatugenTheme, OkShell};
 use crate::static_themes::bloodrust::blood_rust;
 use crate::static_themes::catppuccin_frappe::catppuccin_frappe;
@@ -39,11 +38,9 @@ use crate::static_themes::tokyo_night::tokyo_night;
 use crate::static_themes::tokyo_night_light::tokyo_night_light;
 use crate::static_themes::tokyo_night_storm::tokyo_night_storm;
 use crate::static_themes::varda::varda;
+use okshell_config::schema::themes::Themes;
 
-pub fn static_theme(
-    theme: &Themes,
-    okshell: Option<OkShell>,
-) -> Option<MatugenTheme> {
+pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenTheme> {
     let okshell = okshell.unwrap_or_default();
     match theme {
         Themes::Default | Themes::Wallpaper => None,

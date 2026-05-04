@@ -1,9 +1,9 @@
-use gtk4_layer_shell::{Edge, Layer, LayerShell};
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
-use relm4::gtk::gdk::Monitor;
-use relm4::gtk::Orientation;
-use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
 use crate::bars::bar::BarType;
+use gtk4_layer_shell::{Edge, Layer, LayerShell};
+use relm4::gtk::Orientation;
+use relm4::gtk::gdk::Monitor;
+use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct FrameSpacerModel {
@@ -69,7 +69,6 @@ impl Component for FrameSpacerModel {
         root: Self::Root,
         _sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         root.init_layer_shell();
         root.set_monitor(Some(&params.monitor));
         root.set_layer(Layer::Background);
@@ -101,18 +100,10 @@ impl Component for FrameSpacerModel {
         }
 
         let orientation = match params.bar_type {
-            BarType::Top => {
-                Orientation::Horizontal
-            }
-            BarType::Bottom => {
-                Orientation::Horizontal
-            }
-            BarType::Left => {
-                Orientation::Vertical
-            }
-            BarType::Right => {
-                Orientation::Vertical
-            }
+            BarType::Top => Orientation::Horizontal,
+            BarType::Bottom => Orientation::Horizontal,
+            BarType::Left => Orientation::Vertical,
+            BarType::Right => Orientation::Vertical,
         };
         let model = FrameSpacerModel {
             orientation,
@@ -132,7 +123,7 @@ impl Component for FrameSpacerModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root
+        _root: &Self::Root,
     ) {
         match message {
             FrameSpacerInput::WidthUpdated(val) => {
@@ -141,9 +132,7 @@ impl Component for FrameSpacerModel {
             FrameSpacerInput::HeightUpdated(val) => {
                 self.height = val;
             }
-            FrameSpacerInput::BorderWidthUpdated(width) => {
-                self.border_width = width
-            }
+            FrameSpacerInput::BorderWidthUpdated(width) => self.border_width = width,
             FrameSpacerInput::BorderHeightUpdated(height) => {
                 self.border_height = height;
             }

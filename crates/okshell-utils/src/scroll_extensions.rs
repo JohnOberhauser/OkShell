@@ -1,13 +1,11 @@
 use relm4::gtk;
-use relm4::gtk::prelude::*;
 use relm4::gtk::glib;
+use relm4::gtk::prelude::*;
 use std::cell::Cell;
 use std::rc::Rc;
 
 pub fn wire_vertical_to_horizontal(scroll_window: &gtk::ScrolledWindow, step: f64) {
-    let controller = gtk::EventControllerScroll::new(
-        gtk::EventControllerScrollFlags::VERTICAL,
-    );
+    let controller = gtk::EventControllerScroll::new(gtk::EventControllerScrollFlags::VERTICAL);
 
     let hadj = scroll_window.hadjustment();
     let target = Rc::new(Cell::new(hadj.value()));
@@ -20,8 +18,10 @@ pub fn wire_vertical_to_horizontal(scroll_window: &gtk::ScrolledWindow, step: f6
 
     controller.connect_scroll(move |_, dx, dy| {
         let delta = if dx.abs() > dy.abs() { dx } else { dy };
-        let new_target = (target_clone.get() + delta * step)
-            .clamp(hadj_clone.lower(), hadj_clone.upper() - hadj_clone.page_size());
+        let new_target = (target_clone.get() + delta * step).clamp(
+            hadj_clone.lower(),
+            hadj_clone.upper() - hadj_clone.page_size(),
+        );
         target_clone.set(new_target);
 
         if !animating_clone.get() {

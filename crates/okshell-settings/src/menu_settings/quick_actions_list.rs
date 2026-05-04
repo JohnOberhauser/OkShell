@@ -1,9 +1,9 @@
-use relm4::{gtk, Component, ComponentParts, ComponentSender};
+use crate::menu_settings::quick_actions_row::{QuickActionRowModel, QuickActionRowOutput};
+use okshell_config::schema::menu_widgets::QuickActionWidget;
 use relm4::factory::{DynamicIndex, FactoryVecDeque};
 use relm4::gtk::gio;
 use relm4::gtk::prelude::{ActionMapExt, BoxExt, OrientableExt, WidgetExt};
-use okshell_config::schema::menu_widgets::QuickActionWidget;
-use crate::menu_settings::quick_actions_row::{QuickActionRowModel, QuickActionRowOutput};
+use relm4::{Component, ComponentParts, ComponentSender, gtk};
 
 #[derive(Debug)]
 pub struct QuickActionListModel {
@@ -121,9 +121,8 @@ impl Component for QuickActionListModel {
 
 impl QuickActionListModel {
     fn emit_changed(&self, sender: &ComponentSender<Self>) {
-        let actions: Vec<QuickActionWidget> = self.actions.iter()
-            .map(|row| row.action.clone())
-            .collect();
+        let actions: Vec<QuickActionWidget> =
+            self.actions.iter().map(|row| row.action.clone()).collect();
         let _ = sender.output(QuickActionListOutput::Changed(actions));
     }
 
@@ -186,7 +185,9 @@ impl QuickActionListModel {
             );
         }
 
-        widgets.add_action_button.insert_action_group("quickaction", Some(&action_group));
+        widgets
+            .add_action_button
+            .insert_action_group("quickaction", Some(&action_group));
         widgets.add_action_button.set_menu_model(Some(&menu));
     }
 }

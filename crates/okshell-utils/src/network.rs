@@ -1,15 +1,13 @@
-use std::sync::Arc;
-use relm4::{gtk, ComponentSender, Component};
-use tokio_util::sync::CancellationToken;
 use okshell_common::{watch, watch_cancellable};
+use okshell_services::network_service;
+use relm4::{Component, ComponentSender, gtk};
+use std::sync::Arc;
+use tokio_util::sync::CancellationToken;
 use wayle_network::NetworkService;
 use wayle_network::types::connectivity::ConnectionType;
 use wayle_network::types::states::NetworkStatus;
-use okshell_services::network_service;
 
-pub fn set_network_icon(
-    image: &gtk::Image,
-) {
+pub fn set_network_icon(image: &gtk::Image) {
     let network = network_service();
     let primary = network.primary.get();
 
@@ -43,16 +41,12 @@ pub fn set_network_icon(
 fn get_wifi_icon(network: &Arc<NetworkService>) -> Option<&'static str> {
     if let Some(wifi) = network.wifi.get() {
         if !wifi.enabled.get() {
-            return Some("network-wireless-disabled-symbolic")
+            return Some("network-wireless-disabled-symbolic");
         }
 
         match wifi.connectivity.get() {
-            NetworkStatus::Connecting => {
-                Some("network-wireless-acquiring-symbolic")
-            }
-            NetworkStatus::Disconnected => {
-                Some("network-wireless-offline-symbolic")
-            }
+            NetworkStatus::Connecting => Some("network-wireless-acquiring-symbolic"),
+            NetworkStatus::Disconnected => Some("network-wireless-offline-symbolic"),
             NetworkStatus::Connected => {
                 if let Some(strength) = wifi.strength.get() {
                     Some(get_wifi_icon_for_strength(strength))
@@ -69,15 +63,9 @@ fn get_wifi_icon(network: &Arc<NetworkService>) -> Option<&'static str> {
 fn get_wired_icon(network: &Arc<NetworkService>) -> Option<&'static str> {
     if let Some(wired) = network.wired.get() {
         match wired.connectivity.get() {
-            NetworkStatus::Connecting => {
-                Some("network-wired-acquiring-symbolic")
-            }
-            NetworkStatus::Disconnected => {
-                Some("network-wired-disconnected-symbolic")
-            }
-            NetworkStatus::Connected => {
-                Some("network-wired-symbolic")
-            }
+            NetworkStatus::Connecting => Some("network-wired-acquiring-symbolic"),
+            NetworkStatus::Disconnected => Some("network-wired-disconnected-symbolic"),
+            NetworkStatus::Connected => Some("network-wired-symbolic"),
         }
     } else {
         None
@@ -98,9 +86,7 @@ pub fn get_wifi_icon_for_strength(strength: u8) -> &'static str {
     }
 }
 
-pub fn set_network_label(
-    label: &gtk::Label,
-) {
+pub fn set_network_label(label: &gtk::Label) {
     let network = network_service();
     let primary = network.primary.get();
 
@@ -149,9 +135,7 @@ fn get_wifi_label(network: &Arc<NetworkService>) -> Option<String> {
                     Some("Connecting…".to_string())
                 }
             }
-            NetworkStatus::Disconnected => {
-                Some("Not Connected".to_string())
-            }
+            NetworkStatus::Disconnected => Some("Not Connected".to_string()),
             NetworkStatus::Connected => {
                 if let Some(ssdi) = wifi.ssid.get() {
                     Some(ssdi)
@@ -168,15 +152,9 @@ fn get_wifi_label(network: &Arc<NetworkService>) -> Option<String> {
 fn get_wired_label(network: &Arc<NetworkService>) -> Option<&'static str> {
     if let Some(wired) = network.wired.get() {
         match wired.connectivity.get() {
-            NetworkStatus::Connecting => {
-                Some("Connecting…")
-            }
-            NetworkStatus::Disconnected => {
-                Some("Not Connected")
-            }
-            NetworkStatus::Connected => {
-                Some("Wired")
-            }
+            NetworkStatus::Connecting => Some("Connecting…"),
+            NetworkStatus::Disconnected => Some("Not Connected"),
+            NetworkStatus::Connected => Some("Wired"),
         }
     } else {
         None
@@ -188,8 +166,7 @@ pub fn spawn_network_watcher<C>(
     map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
     map_wifi: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
     map_wired: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
@@ -211,8 +188,7 @@ where
 pub fn spawn_wifi_available_watcher<C>(
     sender: &ComponentSender<C>,
     map_wifi: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
@@ -227,33 +203,32 @@ pub fn spawn_wifi_enabled_watcher<C>(
     sender: &ComponentSender<C>,
     cancellation_token: CancellationToken,
     map: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
     let network = network_service();
-    let Some(wifi) = network.wifi.get() else { return };
+    let Some(wifi) = network.wifi.get() else {
+        return;
+    };
     let enabled = wifi.enabled.clone();
-    watch_cancellable!(
-        sender,
-        cancellation_token,
-        [enabled.watch()],
-        |out| { let _ = out.send(map()); }
-    );
+    watch_cancellable!(sender, cancellation_token, [enabled.watch()], |out| {
+        let _ = out.send(map());
+    });
 }
 
 pub fn spawn_wifi_watcher<C>(
     sender: &ComponentSender<C>,
     cancellation_token: CancellationToken,
     map: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
     let network = network_service();
-    let Some(wifi) = network.wifi.get() else { return };
+    let Some(wifi) = network.wifi.get() else {
+        return;
+    };
     let enabled = wifi.enabled.clone();
     let connectivity = wifi.connectivity.clone();
     let ssid = wifi.ssid.clone();
@@ -261,8 +236,15 @@ where
     watch_cancellable!(
         sender,
         cancellation_token,
-        [enabled.watch(), connectivity.watch(), ssid.watch(), strength.watch()],
-        |out| { let _ = out.send(map()); }
+        [
+            enabled.watch(),
+            connectivity.watch(),
+            ssid.watch(),
+            strength.watch()
+        ],
+        |out| {
+            let _ = out.send(map());
+        }
     );
 }
 
@@ -270,23 +252,23 @@ pub fn spawn_available_wifi_networks_watcher<C>(
     sender: &ComponentSender<C>,
     cancellation_token: CancellationToken,
     map: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
     let network = network_service();
-    let Some(wifi) = network.wifi.get() else { return };
+    let Some(wifi) = network.wifi.get() else {
+        return;
+    };
     let ssid = wifi.ssid.clone();
     let access_points = wifi.access_points.clone();
     watch_cancellable!(
         sender,
         cancellation_token,
-        [
-            ssid.watch(),
-            access_points.watch(),
-        ],
-        |out| { let _ = out.send(map()); }
+        [ssid.watch(), access_points.watch(),],
+        |out| {
+            let _ = out.send(map());
+        }
     );
 }
 
@@ -294,13 +276,14 @@ pub fn spawn_wired_watcher<C>(
     sender: &ComponentSender<C>,
     cancellation_token: CancellationToken,
     map: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
-)
-where
+) where
     C: Component,
     C::CommandOutput: Send + 'static,
 {
     let network = network_service();
-    let Some(wired) = network.wired.get() else { return };
+    let Some(wired) = network.wired.get() else {
+        return;
+    };
     let connectivity = wired.connectivity.clone();
     watch_cancellable!(sender, cancellation_token, [connectivity.watch()], |out| {
         let _ = out.send(map());

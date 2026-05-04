@@ -3,7 +3,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use tokio::sync::watch;
 
-use crate::{GammaState, wayland::GammaManager, TEMP_NEUTRAL};
+use crate::{GammaState, TEMP_NEUTRAL, wayland::GammaManager};
 
 const TRANSITION_MS: u64 = 500;
 /// Interval between ramp updates — ~60fps.
@@ -33,7 +33,9 @@ impl GammaService {
                 }
             })?;
 
-        Ok(Self { inner: Arc::new(Inner { tx }) })
+        Ok(Self {
+            inner: Arc::new(Inner { tx }),
+        })
     }
 
     pub fn state(&self) -> GammaState {
@@ -84,8 +86,7 @@ impl GammaService {
 fn run_wayland_thread(mut rx: watch::Receiver<GammaState>) -> Result<()> {
     let mut mgr = GammaManager::connect()?;
 
-    let rt = tokio::runtime::Builder::new_current_thread()
-        .build()?;
+    let rt = tokio::runtime::Builder::new_current_thread().build()?;
 
     // The temperature currently applied to the compositor.
     let initial = rx.borrow_and_update().clone();
@@ -142,7 +143,11 @@ fn run_wayland_thread(mut rx: watch::Receiver<GammaState>) -> Result<()> {
 }
 
 fn target_temp(state: &GammaState) -> u32 {
-    if state.enabled { state.night_temp } else { TEMP_NEUTRAL }
+    if state.enabled {
+        state.night_temp
+    } else {
+        TEMP_NEUTRAL
+    }
 }
 
 /// Linear interpolation between two Kelvin values.

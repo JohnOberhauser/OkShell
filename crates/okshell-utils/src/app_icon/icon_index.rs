@@ -43,10 +43,7 @@ impl IconIndex {
 
         // User-local theme dir (highest priority)
         if let Some(home) = glib::home_dir().to_str().map(|s| s.to_string()) {
-            let user_theme = PathBuf::from(format!(
-                "{}/.local/share/icons/{}",
-                home, theme_name
-            ));
+            let user_theme = PathBuf::from(format!("{}/.local/share/icons/{}", home, theme_name));
             if user_theme.is_dir() {
                 search_dirs.push(user_theme);
             }
@@ -101,10 +98,7 @@ impl IconIndex {
                 Self::scan_dir(&path, icons);
             } else {
                 // Only index image files we can actually load
-                let dominated_ext = path
-                    .extension()
-                    .and_then(|e| e.to_str())
-                    .unwrap_or("");
+                let dominated_ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
 
                 match dominated_ext {
                     "png" | "svg" | "xpm" | "jpg" | "jpeg" | "webp" => {}

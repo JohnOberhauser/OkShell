@@ -1,14 +1,23 @@
-use std::time::Duration;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::glib;
-use relm4::gtk::prelude::WidgetExt;
-use tokio::select;
+use crate::common_widgets::revealer_row::revealer_row::{
+    RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput,
+};
+use crate::common_widgets::revealer_row::revealer_row_label::{
+    RevealerRowLabelInit, RevealerRowLabelModel,
+};
+use crate::menus::menu_widgets::network::network_revealed_content::{
+    NetworkRevealedContentInit, NetworkRevealedContentInput, NetworkRevealedContentModel,
+};
 use okshell_common::WatcherToken;
 use okshell_services::network_service;
-use crate::common_widgets::revealer_row::revealer_row::{RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput};
-use crate::common_widgets::revealer_row::revealer_row_label::{RevealerRowLabelInit, RevealerRowLabelModel};
-use crate::menus::menu_widgets::network::network_revealed_content::{NetworkRevealedContentInit, NetworkRevealedContentInput, NetworkRevealedContentModel};
-use okshell_utils::network::{set_network_icon, set_network_label, spawn_network_watcher, spawn_wifi_watcher, spawn_wired_watcher};
+use okshell_utils::network::{
+    set_network_icon, set_network_label, spawn_network_watcher, spawn_wifi_watcher,
+    spawn_wired_watcher,
+};
+use relm4::gtk::glib;
+use relm4::gtk::prelude::WidgetExt;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::time::Duration;
+use tokio::select;
 
 pub(crate) struct NetworkMenuWidgetModel {
     revealer_row: Controller<RevealerRowModel<RevealerRowLabelModel, NetworkRevealedContentModel>>,
@@ -50,7 +59,7 @@ impl Component for NetworkMenuWidgetModel {
         #[root]
         gtk::Box {
             add_css_class: "network-menu-widget",
-            
+
             model.revealer_row.widget().clone() {},
         }
     }
@@ -60,7 +69,6 @@ impl Component for NetworkMenuWidgetModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         spawn_network_watcher(
             &sender,
             || NetworkMenuWidgetCommandOutput::StateChanged,
@@ -75,29 +83,24 @@ impl Component for NetworkMenuWidgetModel {
             .detach();
 
         let network_revealed_content = NetworkRevealedContentModel::builder()
-            .launch(NetworkRevealedContentInit{})
+            .launch(NetworkRevealedContentInit {})
             .detach();
 
-        let revealer_row = RevealerRowModel::<RevealerRowLabelModel, NetworkRevealedContentModel>::builder()
-            .launch(RevealerRowInit {
-                icon_name: "network-wireless-disabled-symbolic".into(),
-                action_button_sensitive: false,
-                content: row_content,
-                revealed_content: network_revealed_content,
-            })
-            .forward(sender.input_sender(), |msg| {
-                match msg {
+        let revealer_row =
+            RevealerRowModel::<RevealerRowLabelModel, NetworkRevealedContentModel>::builder()
+                .launch(RevealerRowInit {
+                    icon_name: "network-wireless-disabled-symbolic".into(),
+                    action_button_sensitive: false,
+                    content: row_content,
+                    revealed_content: network_revealed_content,
+                })
+                .forward(sender.input_sender(), |msg| match msg {
                     RevealerRowOutput::ActionButtonClicked => {
                         NetworkMenuWidgetInput::ActionButtonClicked
                     }
-                    RevealerRowOutput::Revealed => {
-                        NetworkMenuWidgetInput::RevealerRowRevealed
-                    }
-                    RevealerRowOutput::Hidden => {
-                        NetworkMenuWidgetInput::RevealerRowHidden
-                    }
-                }
-            });
+                    RevealerRowOutput::Revealed => NetworkMenuWidgetInput::RevealerRowRevealed,
+                    RevealerRowOutput::Hidden => NetworkMenuWidgetInput::RevealerRowHidden,
+                });
 
         let model = NetworkMenuWidgetModel {
             revealer_row,
@@ -126,7 +129,10 @@ impl Component for NetworkMenuWidgetModel {
             NetworkMenuWidgetInput::RevealerRowRevealed => {
                 let network = network_service();
                 if let Some(wifi) = network.wifi.get() {
-                    self.revealer_row.model().revealed_content.emit(NetworkRevealedContentInput::SetScanning(true));
+                    self.revealer_row
+                        .model()
+                        .revealed_content
+                        .emit(NetworkRevealedContentInput::SetScanning(true));
                     let sender = self.revealer_row.model().revealed_content.sender().clone();
 
                     let token = self.scan_token.reset(); // cancel previous, get new token
@@ -157,7 +163,10 @@ impl Component for NetworkMenuWidgetModel {
             NetworkMenuWidgetInput::ActionButtonClicked => {}
             NetworkMenuWidgetInput::ResetChildren => {
                 self.scan_token.reset();
-                self.revealer_row.model().revealed_content.emit(NetworkRevealedContentInput::Reset);
+                self.revealer_row
+                    .model()
+                    .revealed_content
+                    .emit(NetworkRevealedContentInput::Reset);
             }
             NetworkMenuWidgetInput::ParentRevealChanged(revealed) => {
                 if !revealed {
@@ -180,19 +189,15 @@ impl Component for NetworkMenuWidgetModel {
             }
             NetworkMenuWidgetCommandOutput::WifiChanged => {
                 let token = self.wifi_watcher_token.reset();
-                spawn_wifi_watcher(
-                    &sender,
-                    token,
-                    || NetworkMenuWidgetCommandOutput::StateChanged
-                );
+                spawn_wifi_watcher(&sender, token, || {
+                    NetworkMenuWidgetCommandOutput::StateChanged
+                });
             }
             NetworkMenuWidgetCommandOutput::WiredChanged => {
                 let token = self.wired_watcher_token.reset();
-                spawn_wired_watcher(
-                    &sender,
-                    token,
-                    || NetworkMenuWidgetCommandOutput::StateChanged
-                );
+                spawn_wired_watcher(&sender, token, || {
+                    NetworkMenuWidgetCommandOutput::StateChanged
+                });
             }
         }
     }

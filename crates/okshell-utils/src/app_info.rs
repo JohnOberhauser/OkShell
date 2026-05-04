@@ -1,8 +1,4 @@
-use relm4::{
-    gtk::{
-        gio,
-    }
-};
+use relm4::gtk::gio;
 use relm4::gtk::gio::DesktopAppInfo;
 use relm4::gtk::prelude::{AppInfoExt, Cast};
 

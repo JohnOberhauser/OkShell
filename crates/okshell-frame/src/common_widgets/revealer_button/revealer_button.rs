@@ -1,9 +1,12 @@
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
 use relm4::gtk::Orientation;
 use relm4::gtk::prelude::*;
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use std::fmt::Debug;
 
-pub(crate) struct RevealerButtonModel<ContentComponent: Component, RevealedContentComponent: Component> {
+pub(crate) struct RevealerButtonModel<
+    ContentComponent: Component,
+    RevealedContentComponent: Component,
+> {
     pub content: Controller<ContentComponent>,
     pub revealed_content: Controller<RevealedContentComponent>,
     revealed: bool,
@@ -18,7 +21,10 @@ pub(crate) enum RevealerButtonInput {
 #[derive(Debug)]
 pub(crate) enum RevealerButtonOutput {}
 
-pub(crate) struct RevealerButtonInit<ContentComponent: Component, RevealedContentComponent: Component> {
+pub(crate) struct RevealerButtonInit<
+    ContentComponent: Component,
+    RevealedContentComponent: Component,
+> {
     pub content: Controller<ContentComponent>,
     pub revealed_content: Controller<RevealedContentComponent>,
 }
@@ -27,7 +33,8 @@ pub(crate) struct RevealerButtonInit<ContentComponent: Component, RevealedConten
 pub(crate) enum RevealerButtonCommandOutput {}
 
 #[relm4::component(pub)]
-impl<ContentComponent, RevealedContentComponent> Component for RevealerButtonModel<ContentComponent, RevealedContentComponent>
+impl<ContentComponent, RevealedContentComponent> Component
+    for RevealerButtonModel<ContentComponent, RevealedContentComponent>
 where
     ContentComponent: Component<Output = ()> + 'static,
     ContentComponent::Input: Debug,
@@ -69,7 +76,7 @@ where
                 gtk::Box {
                     add_css_class: "revealer-button-content",
                     set_orientation: Orientation::Vertical,
-                    
+
                     model.revealed_content.widget().clone() {},
                 },
             },

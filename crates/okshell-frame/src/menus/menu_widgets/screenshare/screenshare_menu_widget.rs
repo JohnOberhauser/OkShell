@@ -1,9 +1,9 @@
-use gtk4_layer_shell::{KeyboardMode, LayerShell};
-use relm4::{gtk, Component, ComponentParts, ComponentSender, RelmWidgetExt};
-use relm4::gtk::{gdk, glib};
-use relm4::gtk::prelude::*;
-use okshell_screenshot::{select_screen, ScreenSelectAreaRequest, ScreenSelection};
 use crate::common_widgets::big_button::BigButton;
+use gtk4_layer_shell::{KeyboardMode, LayerShell};
+use okshell_screenshot::{ScreenSelectAreaRequest, ScreenSelection, select_screen};
+use relm4::gtk::prelude::*;
+use relm4::gtk::{gdk, glib};
+use relm4::{Component, ComponentParts, ComponentSender, RelmWidgetExt, gtk};
 
 #[derive(Debug, Clone)]
 pub(crate) struct ScreenShareWindow {
@@ -117,18 +117,15 @@ impl Component for ScreenshareMenuWidgetModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let key_controller = gtk::EventControllerKey::new();
         let sender_clone = sender.clone();
-        key_controller.connect_key_pressed(move |_, key, _, _| {
-            match key {
-                gdk::Key::Escape => {
-                    sender_clone.input(ScreenshareMenuWidgetInput::SendReply(String::new()));
-                    let _ = sender_clone.output(ScreenshareMenuWidgetOutput::CloseMenu);
-                    glib::Propagation::Stop
-                }
-                _ => glib::Propagation::Proceed
+        key_controller.connect_key_pressed(move |_, key, _, _| match key {
+            gdk::Key::Escape => {
+                sender_clone.input(ScreenshareMenuWidgetInput::SendReply(String::new()));
+                let _ = sender_clone.output(ScreenshareMenuWidgetOutput::CloseMenu);
+                glib::Propagation::Stop
             }
+            _ => glib::Propagation::Proceed,
         });
 
         let model = ScreenshareMenuWidgetModel {
@@ -180,22 +177,24 @@ impl Component for ScreenshareMenuWidgetModel {
             ScreenshareMenuWidgetInput::MonitorClicked => {
                 let _ = sender.output(ScreenshareMenuWidgetOutput::CloseMenu);
                 let sender_clone = sender.clone();
-                select_screen(ScreenSelectAreaRequest::SelectMonitor, move |result| {
-                    match result {
+                select_screen(
+                    ScreenSelectAreaRequest::SelectMonitor,
+                    move |result| match result {
                         Ok(selection) => {
                             complete_selection(&selection, &sender_clone);
                         }
                         Err(e) => {
                             eprintln!("Selection failed: {e}");
                         }
-                    }
-                });
+                    },
+                );
             }
             ScreenshareMenuWidgetInput::AreaClicked => {
                 let _ = sender.output(ScreenshareMenuWidgetOutput::CloseMenu);
                 let sender_clone = sender.clone();
-                select_screen(ScreenSelectAreaRequest::SelectRegion, move |result| {
-                    match result {
+                select_screen(
+                    ScreenSelectAreaRequest::SelectRegion,
+                    move |result| match result {
                         Ok(selection) => {
                             complete_selection(&selection, &sender_clone);
                         }
@@ -203,8 +202,8 @@ impl Component for ScreenshareMenuWidgetModel {
                             eprintln!("Selection failed: {e}");
                             sender.input(ScreenshareMenuWidgetInput::SendReply(String::new()));
                         }
-                    }
-                });
+                    },
+                );
             }
         }
     }
@@ -216,13 +215,15 @@ fn complete_selection(
 ) {
     match selection {
         ScreenSelection::Monitor(name) => {
-            sender.input(ScreenshareMenuWidgetInput::SendReply(format!("[SELECTION]/screen:{name}")));
+            sender.input(ScreenshareMenuWidgetInput::SendReply(format!(
+                "[SELECTION]/screen:{name}"
+            )));
         }
         ScreenSelection::Region(region) => {
-            sender.input(ScreenshareMenuWidgetInput::SendReply(
-                format!("[SELECTION]/region:{}@{},{},{},{}", region.output, region.x, region.y, region.width, region.height)
-            ));
-
+            sender.input(ScreenshareMenuWidgetInput::SendReply(format!(
+                "[SELECTION]/region:{}@{},{},{},{}",
+                region.output, region.x, region.y, region.width, region.height
+            )));
         }
     }
 }
@@ -262,9 +263,9 @@ fn rebuild_programs_list(
             let sender_clone = sender.clone();
             button.connect_clicked(move |_| {
                 let _ = sender_clone.output(ScreenshareMenuWidgetOutput::CloseMenu);
-                sender_clone.input(ScreenshareMenuWidgetInput::SendReply(
-                    format!("[SELECTION]/window:{window_id}")
-                ));
+                sender_clone.input(ScreenshareMenuWidgetInput::SendReply(format!(
+                    "[SELECTION]/window:{window_id}"
+                )));
             });
 
             program_box.append(&button);
@@ -289,7 +290,10 @@ fn parse_screen_share_string(input: &str) -> Vec<ScreenShareWindow> {
         .filter_map(|part| {
             let (window_id, rest) = part.split_once("[HC>]")?;
             let (window_program, instance_title) = rest.split_once("[HT>]")?;
-            let instance_title = instance_title.split("[HE>]").next().unwrap_or(instance_title);
+            let instance_title = instance_title
+                .split("[HE>]")
+                .next()
+                .unwrap_or(instance_title);
             Some(ScreenShareWindow {
                 window_id: window_id.trim().to_string(),
                 window_program: window_program.trim().to_string(),
@@ -316,7 +320,9 @@ fn group_by_window_program(windows: Vec<ScreenShareWindow>) -> Vec<Program> {
     grouped.sort_by(|a, b| a.name.cmp(&b.name));
 
     for program in &mut grouped {
-        program.windows.sort_by(|a, b| a.instance_title.cmp(&b.instance_title));
+        program
+            .windows
+            .sort_by(|a, b| a.instance_title.cmp(&b.instance_title));
     }
 
     grouped

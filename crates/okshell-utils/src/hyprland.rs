@@ -1,12 +1,12 @@
+use okshell_services::hyprland_service;
 use std::sync::Arc;
 use tracing::error;
 use wayle_hyprland::{Workspace, WorkspaceInfo};
-use okshell_services::hyprland_service;
 
 pub fn get_active_workspaces() -> Vec<WorkspaceInfo> {
     let hyprland = hyprland_service();
     let mut active_workspaces: Vec<WorkspaceInfo> = Vec::new();
-    for monitor in  hyprland.monitors.get() {
+    for monitor in hyprland.monitors.get() {
         active_workspaces.push(monitor.active_workspace.get());
     }
     active_workspaces
@@ -15,7 +15,7 @@ pub fn get_active_workspaces() -> Vec<WorkspaceInfo> {
 pub fn is_an_active_workspace(workspace: &Arc<Workspace>) -> bool {
     get_active_workspaces()
         .iter()
-        .find(|p| p.id  == workspace.id.get())
+        .find(|p| p.id == workspace.id.get())
         .is_some()
 }
 

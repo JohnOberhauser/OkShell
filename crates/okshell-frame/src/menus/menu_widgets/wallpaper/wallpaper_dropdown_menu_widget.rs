@@ -1,8 +1,14 @@
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
+use crate::common_widgets::revealer_row::revealer_row::{
+    RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput,
+};
+use crate::common_widgets::revealer_row::revealer_row_label::{
+    RevealerRowLabelInit, RevealerRowLabelModel,
+};
+use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{
+    WallpaperMenuWidgetInit, WallpaperMenuWidgetModel,
+};
 use relm4::gtk::prelude::WidgetExt;
-use crate::common_widgets::revealer_row::revealer_row::{RevealerRowInit, RevealerRowInput, RevealerRowModel, RevealerRowOutput};
-use crate::common_widgets::revealer_row::revealer_row_label::{RevealerRowLabelInit, RevealerRowLabelModel};
-use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{WallpaperMenuWidgetInit, WallpaperMenuWidgetModel};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 
 pub(crate) struct WallpaperDropdownMenuWidgetModel {
     revealer_row: Controller<RevealerRowModel<RevealerRowLabelModel, WallpaperMenuWidgetModel>>,
@@ -35,7 +41,7 @@ impl Component for WallpaperDropdownMenuWidgetModel {
         #[root]
         gtk::Box {
             add_css_class: "wallpaper-dropdown-menu-widget",
-            
+
             model.revealer_row.widget().clone() {}
         }
     }
@@ -45,7 +51,6 @@ impl Component for WallpaperDropdownMenuWidgetModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-
         let row_content = RevealerRowLabelModel::builder()
             .launch(RevealerRowLabelInit {
                 label: "Wallpaper".to_string(),
@@ -60,15 +65,15 @@ impl Component for WallpaperDropdownMenuWidgetModel {
             })
             .detach();
 
-        let revealer_row = RevealerRowModel::<RevealerRowLabelModel, WallpaperMenuWidgetModel>::builder()
-            .launch(RevealerRowInit {
-                icon_name: "wallpaper-symbolic".into(),
-                action_button_sensitive: false,
-                content: row_content,
-                revealed_content,
-            })
-            .forward(sender.input_sender(), |msg| {
-                match msg {
+        let revealer_row =
+            RevealerRowModel::<RevealerRowLabelModel, WallpaperMenuWidgetModel>::builder()
+                .launch(RevealerRowInit {
+                    icon_name: "wallpaper-symbolic".into(),
+                    action_button_sensitive: false,
+                    content: row_content,
+                    revealed_content,
+                })
+                .forward(sender.input_sender(), |msg| match msg {
                     RevealerRowOutput::ActionButtonClicked => {
                         WallpaperDropdownMenuWidgetInput::ActionButtonClicked
                     }
@@ -78,12 +83,9 @@ impl Component for WallpaperDropdownMenuWidgetModel {
                     RevealerRowOutput::Hidden => {
                         WallpaperDropdownMenuWidgetInput::RevealerRowHidden
                     }
-                }
-            });
+                });
 
-        let model = WallpaperDropdownMenuWidgetModel {
-            revealer_row,
-        };
+        let model = WallpaperDropdownMenuWidgetModel { revealer_row };
 
         let widgets = view_output!();
 
@@ -98,15 +100,9 @@ impl Component for WallpaperDropdownMenuWidgetModel {
         _root: &Self::Root,
     ) {
         match message {
-            WallpaperDropdownMenuWidgetInput::RevealerRowRevealed => {
-
-            }
-            WallpaperDropdownMenuWidgetInput::RevealerRowHidden => {
-
-            }
-            WallpaperDropdownMenuWidgetInput::ActionButtonClicked => {
-
-            }
+            WallpaperDropdownMenuWidgetInput::RevealerRowRevealed => {}
+            WallpaperDropdownMenuWidgetInput::RevealerRowHidden => {}
+            WallpaperDropdownMenuWidgetInput::ActionButtonClicked => {}
             WallpaperDropdownMenuWidgetInput::ParentRevealChanged(revealed) => {
                 if !revealed {
                     self.revealer_row.emit(RevealerRowInput::SetRevealed(false))

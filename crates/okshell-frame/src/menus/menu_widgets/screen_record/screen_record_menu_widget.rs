@@ -1,23 +1,31 @@
-use std::sync::Arc;
-use std::time::Duration;
-use reactive_graph::traits::{Get, GetUntracked};
-use reactive_stores::Patch;
-use relm4::{gtk, Component, ComponentController, ComponentParts, ComponentSender, Controller};
-use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
-use wayle_audio::core::device::input::InputDevice;
-use okshell_common::watch;
-use okshell_common::scoped_effects::EffectScope;
-use okshell_screenshot::{CaptureArea, ScreenRecordRequest};
-use okshell_screenshot::record::{RecordHandle, RecordResult};
-use okshell_services::audio_service;
 use crate::common_widgets::big_button::BigButton;
 use crate::common_widgets::option_list::{OptionsListInput, OptionsListOutput};
-use crate::common_widgets::revealer_row::revealer_row::{RevealerRowInit, RevealerRowInput, RevealerRowModel};
-use crate::common_widgets::revealer_row::revealer_row_label::{RevealerRowLabelInit, RevealerRowLabelModel};
+use crate::common_widgets::revealer_row::revealer_row::{
+    RevealerRowInit, RevealerRowInput, RevealerRowModel,
+};
 use crate::common_widgets::revealer_row::revealer_row_label::RevealerRowLabelInput::SetLabel;
-use crate::menus::menu_widgets::screen_record::audio_option::{get_audio_option_icon_name, get_audio_option_label, AudioOption, AudioOptionsList};
-use crate::menus::menu_widgets::screen_record::recording_service::{recording_state, RecordingState, RecordingStateStoreFields};
+use crate::common_widgets::revealer_row::revealer_row_label::{
+    RevealerRowLabelInit, RevealerRowLabelModel,
+};
+use crate::menus::menu_widgets::screen_record::audio_option::{
+    AudioOption, AudioOptionsList, get_audio_option_icon_name, get_audio_option_label,
+};
+use crate::menus::menu_widgets::screen_record::recording_service::{
+    RecordingState, RecordingStateStoreFields, recording_state,
+};
+use okshell_common::scoped_effects::EffectScope;
+use okshell_common::watch;
+use okshell_screenshot::record::{RecordHandle, RecordResult};
+use okshell_screenshot::{CaptureArea, ScreenRecordRequest};
+use okshell_services::audio_service;
 use okshell_utils::notifications::show_file_saved_notification;
+use reactive_graph::traits::{Get, GetUntracked};
+use reactive_stores::Patch;
+use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use std::sync::Arc;
+use std::time::Duration;
+use wayle_audio::core::device::input::InputDevice;
 
 pub(crate) struct ScreenRecordMenuWidgetModel {
     audio_row: Controller<RevealerRowModel<RevealerRowLabelModel, AudioOptionsList>>,
@@ -215,14 +223,10 @@ impl Component for ScreenRecordMenuWidgetModel {
             .detach();
 
         let revealed_content = AudioOptionsList::builder()
-            .launch(vec![
-                AudioOption { value: None },
-            ])
-            .forward(sender.input_sender(), |msg| {
-                match msg {
-                    OptionsListOutput::Selected(opt) => {
-                        ScreenRecordMenuWidgetInput::AudioOptionSelected(opt)
-                    }
+            .launch(vec![AudioOption { value: None }])
+            .forward(sender.input_sender(), |msg| match msg {
+                OptionsListOutput::Selected(opt) => {
+                    ScreenRecordMenuWidgetInput::AudioOptionSelected(opt)
                 }
             });
 
@@ -271,14 +275,25 @@ impl Component for ScreenRecordMenuWidgetModel {
         match message {
             ScreenRecordMenuWidgetInput::AudioOptionSelected(opt) => {
                 self.selected_audio_option = opt.clone();
-                self.audio_row.model().content.emit(SetLabel(get_audio_option_label(&opt)));
-                self.audio_row.emit(RevealerRowInput::UpdateActionIconName(get_audio_option_icon_name(&opt)));
+                self.audio_row
+                    .model()
+                    .content
+                    .emit(SetLabel(get_audio_option_label(&opt)));
+                self.audio_row.emit(RevealerRowInput::UpdateActionIconName(
+                    get_audio_option_icon_name(&opt),
+                ));
                 self.audio_row.emit(RevealerRowInput::SetRevealed(false));
             }
             ScreenRecordMenuWidgetInput::AllClicked => self.start_record(CaptureArea::All, sender),
-            ScreenRecordMenuWidgetInput::WindowClicked => self.start_record(CaptureArea::SelectWindow, sender),
-            ScreenRecordMenuWidgetInput::MonitorClicked => self.start_record(CaptureArea::SelectMonitor, sender),
-            ScreenRecordMenuWidgetInput::AreaClicked => self.start_record(CaptureArea::SelectRegion, sender),
+            ScreenRecordMenuWidgetInput::WindowClicked => {
+                self.start_record(CaptureArea::SelectWindow, sender)
+            }
+            ScreenRecordMenuWidgetInput::MonitorClicked => {
+                self.start_record(CaptureArea::SelectMonitor, sender)
+            }
+            ScreenRecordMenuWidgetInput::AreaClicked => {
+                self.start_record(CaptureArea::SelectRegion, sender)
+            }
             ScreenRecordMenuWidgetInput::StopClicked => {
                 if let Some(handle) = &self.recording_handle {
                     handle.stop();
@@ -288,9 +303,7 @@ impl Component for ScreenRecordMenuWidgetModel {
                 self.recording_handle = handle;
             }
             ScreenRecordMenuWidgetInput::RecordingStopped(result) => {
-                recording_state().patch(RecordingState {
-                    handle: None,
-                });
+                recording_state().patch(RecordingState { handle: None });
                 if let Some(path) = result.saved_path {
                     show_file_saved_notification("Screenshot saved & copied".to_string(), path);
                 }
@@ -310,59 +323,61 @@ impl Component for ScreenRecordMenuWidgetModel {
             ScreenRecordMenuWidgetCommandOutput::AudioDevicesChanges(devices) => {
                 let mut devices: Vec<AudioOption> = devices
                     .iter()
-                    .map(|d| AudioOption{
-                        value: Some(d.clone())
+                    .map(|d| AudioOption {
+                        value: Some(d.clone()),
                     })
                     .collect();
 
-                devices.insert(0, AudioOption{value: None});
+                devices.insert(0, AudioOption { value: None });
 
-                self.audio_row.model().revealed_content.emit(
-                    OptionsListInput::SetOptions(
-                        devices
-                    )
-                )
+                self.audio_row
+                    .model()
+                    .revealed_content
+                    .emit(OptionsListInput::SetOptions(devices))
             }
         }
     }
 }
 
 impl ScreenRecordMenuWidgetModel {
-    fn spawn_default_output_watcher(
-        sender: &ComponentSender<Self>,
-    ) {
+    fn spawn_default_output_watcher(sender: &ComponentSender<Self>) {
         let audio = audio_service();
         let input_devices = audio.input_devices.clone();
 
         watch!(sender, [input_devices.watch()], |out| {
-            let _ = out.send(ScreenRecordMenuWidgetCommandOutput::AudioDevicesChanges(input_devices.get()));
+            let _ = out.send(ScreenRecordMenuWidgetCommandOutput::AudioDevicesChanges(
+                input_devices.get(),
+            ));
         });
     }
 
     fn start_record(&self, area: CaptureArea, sender: ComponentSender<Self>) {
-        if self.recording_handle.is_some() { return; }
+        if self.recording_handle.is_some() {
+            return;
+        }
         let _ = sender.output(ScreenRecordMenuWidgetOutput::CloseMenu);
-        let audio: Option<String> = self.selected_audio_option.value.as_ref()
+        let audio: Option<String> = self
+            .selected_audio_option
+            .value
+            .as_ref()
             .and_then(|v| Some(v.name.get()));
         let sender_clone = sender.clone();
         okshell_screenshot::record_screen(
             ScreenRecordRequest { area, audio },
             Duration::ZERO,
-            move |handle_result| {
-                match handle_result {
-                    Ok(handle) => {
-                        recording_state().patch(RecordingState {
-                            handle: Some(handle),
-                        });
-                    },
-                    Err(e) => eprintln!("Failed to start recording: {e}"),
+            move |handle_result| match handle_result {
+                Ok(handle) => {
+                    recording_state().patch(RecordingState {
+                        handle: Some(handle),
+                    });
                 }
+                Err(e) => eprintln!("Failed to start recording: {e}"),
             },
-            move |done_result| {
-                match done_result {
-                    Ok(result) => sender_clone.input(ScreenRecordMenuWidgetInput::RecordingStopped(result)),
-                    Err(e) => eprintln!("Recording failed: {e}"),
+            move |done_result| match done_result {
+                Ok(result) => {
+                    sender_clone.input(ScreenRecordMenuWidgetInput::RecordingStopped(result))
                 }
+                Err(e) => eprintln!("Recording failed: {e}"),
             },
         );
     }

@@ -1,10 +1,13 @@
-use std::path::PathBuf;
-use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
-use std::process::{Command, Child};
-use anyhow::Result;
-use nix::sys::signal::{kill, Signal};
-use nix::unistd::Pid;
 use crate::utils::default_recording_path;
+use anyhow::Result;
+use nix::sys::signal::{Signal, kill};
+use nix::unistd::Pid;
+use std::path::PathBuf;
+use std::process::{Child, Command};
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+};
 
 #[derive(Debug, Clone)]
 pub struct RecordResult {
@@ -30,7 +33,9 @@ pub(crate) fn start_recording(
     on_done: impl FnOnce(Result<RecordResult>) + Send + 'static,
 ) -> RecordHandle {
     let stopped = Arc::new(AtomicBool::new(false));
-    let handle = RecordHandle { stopped: stopped.clone() };
+    let handle = RecordHandle {
+        stopped: stopped.clone(),
+    };
 
     std::thread::spawn(move || {
         let path = default_recording_path();
@@ -41,13 +46,23 @@ pub(crate) fn start_recording(
 
         let mut cmd = Command::new("wf-recorder");
         match args {
-            WfRecorderArgs::Region { x, y, width, height } => {
+            WfRecorderArgs::Region {
+                x,
+                y,
+                width,
+                height,
+            } => {
                 cmd.args(["--geometry", &format!("{x},{y} {width}x{height}")]);
             }
             WfRecorderArgs::Monitor { name } => {
                 cmd.args(["-o", &name]);
             }
-            WfRecorderArgs::Window { x, y, width, height } => {
+            WfRecorderArgs::Window {
+                x,
+                y,
+                width,
+                height,
+            } => {
                 cmd.args(["--geometry", &format!("{x},{y} {width}x{height}")]);
             }
             WfRecorderArgs::All => {}
@@ -81,15 +96,29 @@ pub(crate) fn start_recording(
             std::thread::sleep(std::time::Duration::from_millis(100));
         }
 
-        on_done(Ok(RecordResult { saved_path: Some(path) }));
+        on_done(Ok(RecordResult {
+            saved_path: Some(path),
+        }));
     });
 
     handle
 }
 
 pub(crate) enum WfRecorderArgs {
-    Region { x: i32, y: i32, width: i32, height: i32 },
-    Monitor { name: String },
-    Window { x: i32, y: i32, width: i32, height: i32 },
+    Region {
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+    },
+    Monitor {
+        name: String,
+    },
+    Window {
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+    },
     All,
 }

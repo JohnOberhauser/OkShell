@@ -1,7 +1,7 @@
-use std::fmt;
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum Themes {
@@ -324,10 +324,7 @@ impl fmt::Display for MatugenMode {
 
 impl MatugenMode {
     pub fn all() -> &'static [Self] {
-        &[
-            Self::Light,
-            Self::Dark,
-        ]
+        &[Self::Light, Self::Dark]
     }
 
     pub fn label(&self) -> &'static str {

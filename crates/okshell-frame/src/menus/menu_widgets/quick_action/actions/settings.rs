@@ -1,6 +1,6 @@
-use relm4::{gtk, ComponentParts, ComponentSender, SimpleComponent};
-use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use okshell_settings::open_settings;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
+use relm4::{ComponentParts, ComponentSender, SimpleComponent, gtk};
 
 pub(crate) struct SettingsModel {}
 
@@ -14,8 +14,7 @@ pub(crate) enum SettingsOutput {
     CloseMenu,
 }
 
-pub(crate) struct SettingsInit {
-}
+pub(crate) struct SettingsInit {}
 
 #[relm4::component(pub)]
 impl SimpleComponent for SettingsModel {
@@ -59,11 +58,7 @@ impl SimpleComponent for SettingsModel {
         ComponentParts { model, widgets }
     }
 
-    fn update(
-        &mut self,
-        message: Self::Input,
-        sender: ComponentSender<Self>,
-    ) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
             SettingsInput::Clicked => {
                 let _ = sender.output(SettingsOutput::CloseMenu);
