@@ -1,6 +1,7 @@
 use crate::bars::bar::{BarInit, BarInput, BarModel, BarOutput, BarType};
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use okshell_common::box_with_resize::BoxWithResize;
+use okshell_common::diagonal_revealer::DiagonalRevealer;
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::*;
@@ -204,13 +205,13 @@ impl Component for Frame {
                                     BoxWithResize::new() -> BoxWithResize {
 
                                         #[name = "top_left_revealer"]
-                                        append = &gtk::Revealer {
-                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                        append = &DiagonalRevealer::new() {
                                             #[watch]
-                                            set_reveal_child: model.top_left_revealed,
+                                            set_revealed: model.top_left_revealed,
 
+                                            #[wrap(Some)]
                                             #[name = "top_left_stack"]
-                                            gtk::Stack {
+                                            set_child = &gtk::Stack {
                                                 set_transition_type: gtk::StackTransitionType::Crossfade,
                                                 set_transition_duration: 200,
                                                 set_vhomogeneous: false,
@@ -237,13 +238,13 @@ impl Component for Frame {
                                     BoxWithResize::new() -> BoxWithResize {
 
                                         #[name = "bottom_left_revealer"]
-                                        append = &gtk::Revealer {
-                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                        append = &DiagonalRevealer::new() {
                                             #[watch]
-                                            set_reveal_child: model.bottom_left_revealed,
+                                            set_revealed: model.bottom_left_revealed,
 
+                                            #[wrap(Some)]
                                             #[name = "bottom_left_stack"]
-                                            gtk::Stack {
+                                            set_child = &gtk::Stack {
                                                 set_transition_type: gtk::StackTransitionType::Crossfade,
                                                 set_transition_duration: 200,
                                                 set_vhomogeneous: false,
@@ -278,13 +279,13 @@ impl Component for Frame {
                                     BoxWithResize::new() -> BoxWithResize {
 
                                         #[name = "top_revealer"]
-                                        append = &gtk::Revealer {
-                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                        append = &DiagonalRevealer::new() {
                                             #[watch]
-                                            set_reveal_child: model.top_revealed,
+                                            set_revealed: model.top_revealed,
 
+                                            #[wrap(Some)]
                                             #[name = "top_stack"]
-                                            gtk::Stack {
+                                            set_child = &gtk::Stack {
                                                 set_transition_type: gtk::StackTransitionType::Crossfade,
                                                 set_transition_duration: 200,
                                                 set_vhomogeneous: false,
@@ -315,13 +316,13 @@ impl Component for Frame {
                                     BoxWithResize::new() -> BoxWithResize {
 
                                         #[name = "bottom_revealer"]
-                                        append = &gtk::Revealer {
-                                            set_transition_type: gtk::RevealerTransitionType::SlideUp,
+                                        append = &DiagonalRevealer::new() {
                                             #[watch]
-                                            set_reveal_child: model.bottom_revealed,
+                                            set_revealed: model.bottom_revealed,
 
+                                            #[wrap(Some)]
                                             #[name = "bottom_stack"]
-                                            gtk::Stack {
+                                            set_child = &gtk::Stack {
                                                 set_transition_type: gtk::StackTransitionType::Crossfade,
                                                 set_transition_duration: 200,
                                                 set_vhomogeneous: false,
@@ -356,13 +357,13 @@ impl Component for Frame {
                                     BoxWithResize::new() -> BoxWithResize {
 
                                         #[name = "top_right_revealer"]
-                                        append = &gtk::Revealer {
-                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                        append = &DiagonalRevealer::new() {
                                             #[watch]
-                                            set_reveal_child: model.top_right_revealed,
+                                            set_revealed: model.top_right_revealed,
 
+                                            #[wrap(Some)]
                                             #[name = "top_right_stack"]
-                                            gtk::Stack {
+                                            set_child = &gtk::Stack {
                                                 set_transition_type: gtk::StackTransitionType::Crossfade,
                                                 set_transition_duration: 200,
                                                 set_vhomogeneous: false,
@@ -389,13 +390,13 @@ impl Component for Frame {
                                     BoxWithResize::new() -> BoxWithResize {
 
                                         #[name = "bottom_right_revealer"]
-                                        append = &gtk::Revealer {
-                                            set_transition_type: gtk::RevealerTransitionType::SlideDown,
+                                        append = &DiagonalRevealer::new() {
                                             #[watch]
-                                            set_reveal_child: model.bottom_right_revealed,
+                                            set_revealed: model.bottom_right_revealed,
 
+                                            #[wrap(Some)]
                                             #[name = "bottom_right_stack"]
-                                            gtk::Stack {
+                                            set_child = &gtk::Stack {
                                                 set_transition_type: gtk::StackTransitionType::Crossfade,
                                                 set_transition_duration: 200,
                                                 set_vhomogeneous: false,
