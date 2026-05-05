@@ -200,10 +200,6 @@ impl Component for Frame {
                                 // from matching each other's width if one is larger than the other
                                 gtk::Box {
 
-                                    gtk::Box {
-                                        set_hexpand: true,
-                                    },
-
                                     #[name = "top_left_revealer_container"]
                                     BoxWithResize::new() -> BoxWithResize {
 
@@ -236,10 +232,6 @@ impl Component for Frame {
                                 // This box is required to prevent the top and bottom menus
                                 // from matching each other's width if one is larger than the other
                                 gtk::Box {
-
-                                    gtk::Box {
-                                        set_hexpand: true,
-                                    },
 
                                     #[name = "bottom_left_revealer_container"]
                                     BoxWithResize::new() -> BoxWithResize {
@@ -378,10 +370,6 @@ impl Component for Frame {
                                             },
                                         },
                                     },
-
-                                    gtk::Box {
-                                        set_hexpand: true,
-                                    },
                                 },
 
                                 gtk::Box {
@@ -414,10 +402,6 @@ impl Component for Frame {
                                                 set_hhomogeneous: false,
                                             },
                                         },
-                                    },
-
-                                    gtk::Box {
-                                        set_hexpand: true,
                                     },
                                 },
                             },
