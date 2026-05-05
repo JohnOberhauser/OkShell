@@ -1,8 +1,19 @@
-.ok-bar-widget {
-  min-width: 48px;
-  min-height: 36px;
+.bar-left .ok-bar-widget,
+.bar-right .ok-bar-widget {
+    min-width: 48px;
+    min-height: 36px;
 
-  > * {
-    padding: 10px;
-  }
+    > * {
+        padding: 10px;
+    }
+}
+
+.bar-top .ok-bar-widget,
+.bar-bottom .ok-bar-widget {
+    min-width: 36px;
+    min-height: 48px;
+
+    > * {
+        padding: 10px;
+    }
 }
