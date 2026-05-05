@@ -52,7 +52,7 @@ mod imp {
             (0, scaled, -1, -1)
         }
 
-        fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
+        fn size_allocate(&self, _width: i32, _height: i32, baseline: i32) {
             let Some(child) = self.child.upgrade() else {
                 return;
             };
