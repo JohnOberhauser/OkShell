@@ -40,6 +40,7 @@ pub mod saga;
 pub mod seoul;
 pub mod solarized_dark;
 pub mod solarized_light;
+pub mod solitude;
 pub mod synthwave_84;
 pub mod tokyo_night;
 pub mod tokyo_night_light;

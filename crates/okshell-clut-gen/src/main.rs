@@ -134,6 +134,7 @@ fn static_themes() -> Vec<(&'static str, Themes)> {
         ("seoul", Themes::Seoul),
         ("solarized_dark", Themes::SolarizedDark),
         ("solarized_light", Themes::SolarizedLight),
+        ("solitude", Themes::Solitude),
         ("synthwave_84", Themes::Synthwave84),
         ("tokyo_night", Themes::TokyoNight),
         ("tokyo_night_storm", Themes::TokyoNightStorm),

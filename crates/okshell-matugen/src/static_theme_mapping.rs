@@ -41,6 +41,7 @@ use crate::static_themes::saga::saga;
 use crate::static_themes::seoul::seoul;
 use crate::static_themes::solarized_dark::solarized_dark;
 use crate::static_themes::solarized_light::solarized_light;
+use crate::static_themes::solitude::solitude;
 use crate::static_themes::synthwave_84::synthwave84;
 use crate::static_themes::tokyo_night::tokyo_night;
 use crate::static_themes::tokyo_night_light::tokyo_night_light;
@@ -94,6 +95,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::Seoul => Some(seoul(okshell)),
         Themes::SolarizedDark => Some(solarized_dark(okshell)),
         Themes::SolarizedLight => Some(solarized_light(okshell)),
+        Themes::Solitude => Some(solitude(okshell)),
         Themes::Synthwave84 => Some(synthwave84(okshell)),
         Themes::TokyoNight => Some(tokyo_night(okshell)),
         Themes::TokyoNightStorm => Some(tokyo_night_storm(okshell)),

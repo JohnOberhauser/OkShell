@@ -51,6 +51,7 @@ const CLUT_SAGA: &[u8] = include_bytes!("../cluts/saga.bin");
 const CLUT_SEOUL: &[u8] = include_bytes!("../cluts/seoul.bin");
 const CLUT_SOLARIZED_DARK: &[u8] = include_bytes!("../cluts/solarized_dark.bin");
 const CLUT_SOLARIZED_LIGHT: &[u8] = include_bytes!("../cluts/solarized_light.bin");
+const CLUT_SOLITUDE: &[u8] = include_bytes!("../cluts/solitude.bin");
 const CLUT_SYNTHWAVE_84: &[u8] = include_bytes!("../cluts/synthwave_84.bin");
 const CLUT_TOKYO_NIGHT: &[u8] = include_bytes!("../cluts/tokyo_night.bin");
 const CLUT_TOKYO_NIGHT_STORM: &[u8] = include_bytes!("../cluts/tokyo_night_storm.bin");
@@ -104,6 +105,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
         Themes::Seoul => Some(CLUT_SEOUL),
         Themes::SolarizedDark => Some(CLUT_SOLARIZED_DARK),
         Themes::SolarizedLight => Some(CLUT_SOLARIZED_LIGHT),
+        Themes::Solitude => Some(CLUT_SOLITUDE),
         Themes::Synthwave84 => Some(CLUT_SYNTHWAVE_84),
         Themes::TokyoNight => Some(CLUT_TOKYO_NIGHT),
         Themes::TokyoNightStorm => Some(CLUT_TOKYO_NIGHT_STORM),
