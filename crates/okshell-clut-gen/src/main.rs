@@ -93,6 +93,7 @@ fn extract_palette(theme: &MatugenTheme) -> Vec<[u8; 3]> {
 fn static_themes() -> Vec<(&'static str, Themes)> {
     vec![
         ("bauhaus", Themes::Bauhaus),
+        ("black_turq", Themes::BlackTurq),
         ("blood_rust", Themes::BloodRust),
         ("catppuccin_frappe", Themes::CatppuccinFrappe),
         ("catppuccin_latte", Themes::CatppuccinLatte),

@@ -10,6 +10,7 @@ use relm4::gtk::gdk_pixbuf::Pixbuf;
 use relm4::gtk::prelude::{Cast, GskRendererExt, SnapshotExt, TextureExt, TextureExtManual};
 
 const CLUT_BAUHAUS: &[u8] = include_bytes!("../cluts/bauhaus.bin");
+const CLUT_BLACK_TURQ: &[u8] = include_bytes!("../cluts/black_turq.bin");
 const CLUT_BLOOD_RUST: &[u8] = include_bytes!("../cluts/blood_rust.bin");
 const CLUT_CATPPUCCIN_FRAPPE: &[u8] = include_bytes!("../cluts/catppuccin_frappe.bin");
 const CLUT_CATPPUCCIN_LATTE: &[u8] = include_bytes!("../cluts/catppuccin_latte.bin");
@@ -64,6 +65,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
     match theme {
         Themes::Default | Themes::Wallpaper => None,
         Themes::Bauhaus => Some(CLUT_BAUHAUS),
+        Themes::BlackTurq => Some(CLUT_BLACK_TURQ),
         Themes::BloodRust => Some(CLUT_BLOOD_RUST),
         Themes::CatppuccinFrappe => Some(CLUT_CATPPUCCIN_FRAPPE),
         Themes::CatppuccinLatte => Some(CLUT_CATPPUCCIN_LATTE),
