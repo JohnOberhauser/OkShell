@@ -46,20 +46,27 @@ mod imp {
             let Some(child) = self.child.upgrade() else {
                 return (0, 0, -1, -1);
             };
-            let (_, nat, _, _) = child.measure(orientation, for_size);
             let pos = self.current_pos.get();
-            let scaled = (nat as f64 * pos) as i32;
-            (0, scaled, -1, -1)
+
+            let child_for_size = if for_size >= 0 && pos > 0.0 {
+                (for_size as f64 / pos) as i32
+            } else {
+                for_size
+            };
+
+            let (min, nat, min_baseline, nat_baseline) = child.measure(orientation, child_for_size);
+
+            let scaled_min = (min as f64 * pos) as i32;
+            let scaled_nat = (nat as f64 * pos) as i32;
+
+            (scaled_min, scaled_nat, min_baseline, nat_baseline)
         }
 
-        fn size_allocate(&self, _width: i32, _height: i32, baseline: i32) {
+        fn size_allocate(&self, width: i32, height: i32, baseline: i32) {
             let Some(child) = self.child.upgrade() else {
                 return;
             };
-            // Allocate child its full natural size; we clip via overflow
-            let (_, nat_w, _, _) = child.measure(gtk::Orientation::Horizontal, -1);
-            let (_, nat_h, _, _) = child.measure(gtk::Orientation::Vertical, nat_w);
-            child.allocate(nat_w, nat_h, baseline, None);
+            child.allocate(width, height, baseline, None);
         }
 
         fn snapshot(&self, snapshot: &gtk::Snapshot) {
