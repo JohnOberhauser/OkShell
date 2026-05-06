@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use image::RgbImage;
 use lutgen::GenerateLut;
 use lutgen::interpolation::GaussianRemapper;
-use okshell_config::schema::config::Theme;
 use okshell_config::schema::themes::Themes;
 use okshell_matugen::json_struct::MatugenTheme;
 use okshell_matugen::static_theme_mapping::static_theme;
@@ -121,6 +120,7 @@ fn static_themes() -> Vec<(&'static str, Themes)> {
         ("kanagawa_lotus", Themes::KanagawaLotus),
         ("kanagawa_wave", Themes::KanagawaWave),
         ("miasma", Themes::Miasma),
+        ("monokai_classic", Themes::MonokaiClassic),
         ("nord_dark", Themes::NordDark),
         ("nord_light", Themes::NordLight),
         ("oceanic_next", Themes::OceanicNext),
