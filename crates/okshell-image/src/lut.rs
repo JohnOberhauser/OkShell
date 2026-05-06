@@ -43,6 +43,7 @@ const CLUT_NORD_LIGHT: &[u8] = include_bytes!("../cluts/nord_light.bin");
 const CLUT_OCEANIC_NEXT: &[u8] = include_bytes!("../cluts/oceanic_next.bin");
 const CLUT_ONE_DARK: &[u8] = include_bytes!("../cluts/one_dark.bin");
 const CLUT_POIMANDRES: &[u8] = include_bytes!("../cluts/poimandres.bin");
+const CLUT_RETRO_82: &[u8] = include_bytes!("../cluts/retro_82.bin");
 const CLUT_ROSE_PINE: &[u8] = include_bytes!("../cluts/rose_pine.bin");
 const CLUT_ROSE_PINE_DAWN: &[u8] = include_bytes!("../cluts/rose_pine_dawn.bin");
 const CLUT_ROSE_PINE_MOON: &[u8] = include_bytes!("../cluts/rose_pine_moon.bin");
@@ -95,6 +96,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
         Themes::OceanicNext => Some(CLUT_OCEANIC_NEXT),
         Themes::OneDark => Some(CLUT_ONE_DARK),
         Themes::Poimandres => Some(CLUT_POIMANDRES),
+        Themes::Retro82 => Some(CLUT_RETRO_82),
         Themes::RosePine => Some(CLUT_ROSE_PINE),
         Themes::RosePineDawn => Some(CLUT_ROSE_PINE_DAWN),
         Themes::RosePineMoon => Some(CLUT_ROSE_PINE_MOON),
