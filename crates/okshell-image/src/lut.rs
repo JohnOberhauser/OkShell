@@ -29,6 +29,7 @@ const CLUT_GRUVBOX_DARK_SOFT: &[u8] = include_bytes!("../cluts/gruvbox_dark_soft
 const CLUT_GRUVBOX_LIGHT_HARD: &[u8] = include_bytes!("../cluts/gruvbox_light_hard.bin");
 const CLUT_GRUVBOX_LIGHT_MEDIUM: &[u8] = include_bytes!("../cluts/gruvbox_light_medium.bin");
 const CLUT_GRUVBOX_LIGHT_SOFT: &[u8] = include_bytes!("../cluts/gruvbox_light_soft.bin");
+const CLUT_HACKERMAN: &[u8] = include_bytes!("../cluts/hackerman.bin");
 const CLUT_KANAGAWA_DRAGON: &[u8] = include_bytes!("../cluts/kanagawa_dragon.bin");
 const CLUT_KANAGAWA_LOTUS: &[u8] = include_bytes!("../cluts/kanagawa_lotus.bin");
 const CLUT_KANAGAWA_WAVE: &[u8] = include_bytes!("../cluts/kanagawa_wave.bin");
@@ -74,6 +75,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
         Themes::GruvboxLightHard => Some(CLUT_GRUVBOX_LIGHT_HARD),
         Themes::GruvboxLightMedium => Some(CLUT_GRUVBOX_LIGHT_MEDIUM),
         Themes::GruvboxLightSoft => Some(CLUT_GRUVBOX_LIGHT_SOFT),
+        Themes::Hackerman => Some(CLUT_HACKERMAN),
         Themes::KanagawaDragon => Some(CLUT_KANAGAWA_DRAGON),
         Themes::KanagawaLotus => Some(CLUT_KANAGAWA_LOTUS),
         Themes::KanagawaWave => Some(CLUT_KANAGAWA_WAVE),

@@ -18,6 +18,7 @@ pub mod gruvbox_dark_soft;
 pub mod gruvbox_light_hard;
 pub mod gruvbox_light_medium;
 pub mod gruvbox_light_soft;
+pub mod hackerman;
 pub mod kanagawa_dragon;
 pub mod kanagawa_lotus;
 pub mod kanagawa_wave;

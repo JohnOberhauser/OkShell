@@ -112,6 +112,7 @@ fn static_themes() -> Vec<(&'static str, Themes)> {
         ("gruvbox_light_hard", Themes::GruvboxLightHard),
         ("gruvbox_light_medium", Themes::GruvboxLightMedium),
         ("gruvbox_light_soft", Themes::GruvboxLightSoft),
+        ("hackerman", Themes::Hackerman),
         ("kanagawa_dragon", Themes::KanagawaDragon),
         ("kanagawa_lotus", Themes::KanagawaLotus),
         ("kanagawa_wave", Themes::KanagawaWave),

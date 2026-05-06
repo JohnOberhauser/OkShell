@@ -19,6 +19,7 @@ use crate::static_themes::gruvbox_dark_soft::gruvbox_dark_soft;
 use crate::static_themes::gruvbox_light_hard::gruvbox_light_hard;
 use crate::static_themes::gruvbox_light_medium::gruvbox_light_medium;
 use crate::static_themes::gruvbox_light_soft::gruvbox_light_soft;
+use crate::static_themes::hackerman::hackerman;
 use crate::static_themes::kanagawa_dragon::kanagawa_dragon;
 use crate::static_themes::kanagawa_lotus::kanagawa_lotus;
 use crate::static_themes::kanagawa_wave::kanagawa_wave;
@@ -64,6 +65,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::GruvboxLightHard => Some(gruvbox_light_hard(okshell)),
         Themes::GruvboxLightMedium => Some(gruvbox_light_medium(okshell)),
         Themes::GruvboxLightSoft => Some(gruvbox_light_soft(okshell)),
+        Themes::Hackerman => Some(hackerman(okshell)),
         Themes::KanagawaDragon => Some(kanagawa_dragon(okshell)),
         Themes::KanagawaLotus => Some(kanagawa_lotus(okshell)),
         Themes::KanagawaWave => Some(kanagawa_wave(okshell)),
