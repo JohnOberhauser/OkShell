@@ -26,6 +26,7 @@ use crate::static_themes::inky_pinky::inky_pinky;
 use crate::static_themes::kanagawa_dragon::kanagawa_dragon;
 use crate::static_themes::kanagawa_lotus::kanagawa_lotus;
 use crate::static_themes::kanagawa_wave::kanagawa_wave;
+use crate::static_themes::miasma::miasma;
 use crate::static_themes::nord_dark::nord_dark;
 use crate::static_themes::nord_light::nord_light;
 use crate::static_themes::oceanic_next::oceanic_next;
@@ -75,6 +76,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::KanagawaDragon => Some(kanagawa_dragon(okshell)),
         Themes::KanagawaLotus => Some(kanagawa_lotus(okshell)),
         Themes::KanagawaWave => Some(kanagawa_wave(okshell)),
+        Themes::Miasma => Some(miasma(okshell)),
         Themes::NordDark => Some(nord_dark(okshell)),
         Themes::NordLight => Some(nord_light(okshell)),
         Themes::OceanicNext => Some(oceanic_next(okshell)),
