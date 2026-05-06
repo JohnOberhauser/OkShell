@@ -33,6 +33,7 @@ use crate::static_themes::nord_dark::nord_dark;
 use crate::static_themes::nord_light::nord_light;
 use crate::static_themes::oceanic_next::oceanic_next;
 use crate::static_themes::one_dark::one_dark;
+use crate::static_themes::osaka_jade::osaka_jade;
 use crate::static_themes::poimandres::poimandres;
 use crate::static_themes::retro_82::retro_82;
 use crate::static_themes::rose_pine::rose_pine;
@@ -88,6 +89,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::NordLight => Some(nord_light(okshell)),
         Themes::OceanicNext => Some(oceanic_next(okshell)),
         Themes::OneDark => Some(one_dark(okshell)),
+        Themes::OsakaJade => Some(osaka_jade(okshell)),
         Themes::Poimandres => Some(poimandres(okshell)),
         Themes::Retro82 => Some(retro_82(okshell)),
         Themes::RosePine => Some(rose_pine(okshell)),

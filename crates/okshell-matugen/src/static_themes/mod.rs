@@ -32,6 +32,7 @@ pub mod nord_dark;
 pub mod nord_light;
 pub mod oceanic_next;
 pub mod one_dark;
+pub mod osaka_jade;
 pub mod poimandres;
 pub mod retro_82;
 pub mod rose_pine;

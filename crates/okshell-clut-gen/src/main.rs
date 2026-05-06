@@ -126,6 +126,7 @@ fn static_themes() -> Vec<(&'static str, Themes)> {
         ("nord_light", Themes::NordLight),
         ("oceanic_next", Themes::OceanicNext),
         ("one_dark", Themes::OneDark),
+        ("osaka_jade", Themes::OsakaJade),
         ("poimandres", Themes::Poimandres),
         ("retro_82", Themes::Retro82),
         ("rose_pine", Themes::RosePine),
