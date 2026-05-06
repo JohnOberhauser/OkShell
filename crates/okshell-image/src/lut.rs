@@ -18,6 +18,7 @@ const CLUT_CATPPUCCIN_MOCHA: &[u8] = include_bytes!("../cluts/catppuccin_mocha.b
 const CLUT_CYBERPUNK: &[u8] = include_bytes!("../cluts/cyberpunk.bin");
 const CLUT_DESERT_POWER: &[u8] = include_bytes!("../cluts/desert_power.bin");
 const CLUT_DRACULA: &[u8] = include_bytes!("../cluts/dracula.bin");
+const CLUT_ELDRITCH: &[u8] = include_bytes!("../cluts/eldritch.bin");
 const CLUT_EVERFOREST_DARK_HARD: &[u8] = include_bytes!("../cluts/everforest_dark_hard.bin");
 const CLUT_EVERFOREST_DARK_MEDIUM: &[u8] = include_bytes!("../cluts/everforest_dark_medium.bin");
 const CLUT_EVERFOREST_DARK_SOFT: &[u8] = include_bytes!("../cluts/everforest_dark_soft.bin");
@@ -65,6 +66,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
         Themes::Cyberpunk => Some(CLUT_CYBERPUNK),
         Themes::DesertPower => Some(CLUT_DESERT_POWER),
         Themes::Dracula => Some(CLUT_DRACULA),
+        Themes::Eldritch => Some(CLUT_ELDRITCH),
         Themes::EverforestDarkHard => Some(CLUT_EVERFOREST_DARK_HARD),
         Themes::EverforestDarkMedium => Some(CLUT_EVERFOREST_DARK_MEDIUM),
         Themes::EverforestDarkSoft => Some(CLUT_EVERFOREST_DARK_SOFT),
