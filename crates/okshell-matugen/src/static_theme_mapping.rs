@@ -35,6 +35,7 @@ use crate::static_themes::poimandres::poimandres;
 use crate::static_themes::rose_pine::rose_pine;
 use crate::static_themes::rose_pine_dawn::rose_pine_dawn;
 use crate::static_themes::rose_pine_moon::rose_pine_moon;
+use crate::static_themes::saga::saga;
 use crate::static_themes::seoul::seoul;
 use crate::static_themes::solarized_dark::solarized_dark;
 use crate::static_themes::solarized_light::solarized_light;
@@ -85,6 +86,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::RosePine => Some(rose_pine(okshell)),
         Themes::RosePineDawn => Some(rose_pine_dawn(okshell)),
         Themes::RosePineMoon => Some(rose_pine_moon(okshell)),
+        Themes::Saga => Some(saga(okshell)),
         Themes::Seoul => Some(seoul(okshell)),
         Themes::SolarizedDark => Some(solarized_dark(okshell)),
         Themes::SolarizedLight => Some(solarized_light(okshell)),

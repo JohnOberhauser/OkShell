@@ -34,6 +34,7 @@ pub mod poimandres;
 pub mod rose_pine;
 pub mod rose_pine_dawn;
 pub mod rose_pine_moon;
+pub mod saga;
 pub mod seoul;
 pub mod solarized_dark;
 pub mod solarized_light;
