@@ -1,3 +1,4 @@
+pub mod bauhaus;
 pub mod bloodrust;
 pub mod catppuccin_frappe;
 pub mod catppuccin_latte;

@@ -7,6 +7,7 @@ use std::fmt;
 pub enum Themes {
     Default,
     Wallpaper,
+    Bauhaus,
     BloodRust,
     CatppuccinFrappe,
     CatppuccinLatte,
@@ -69,6 +70,7 @@ impl Themes {
         match self {
             Self::Default => "Default",
             Self::Wallpaper => "Wallpaper",
+            Self::Bauhaus => "Bauhaus",
             Self::BloodRust => "Blood Rust",
             Self::CatppuccinFrappe => "Catppuccin Frappé",
             Self::CatppuccinLatte => "Catppuccin Latte",
@@ -116,6 +118,7 @@ impl Themes {
         &[
             Self::Default,
             Self::Wallpaper,
+            Self::Bauhaus,
             Self::BloodRust,
             Self::CatppuccinFrappe,
             Self::CatppuccinLatte,

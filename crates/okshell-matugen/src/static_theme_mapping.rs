@@ -1,4 +1,5 @@
 use crate::json_struct::{MatugenTheme, OkShell};
+use crate::static_themes::bauhaus::bauhaus;
 use crate::static_themes::bloodrust::blood_rust;
 use crate::static_themes::catppuccin_frappe::catppuccin_frappe;
 use crate::static_themes::catppuccin_latte::catppuccin_latte;
@@ -45,6 +46,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
     let okshell = okshell.unwrap_or_default();
     match theme {
         Themes::Default | Themes::Wallpaper => None,
+        Themes::Bauhaus => Some(bauhaus(okshell)),
         Themes::BloodRust => Some(blood_rust(okshell)),
         Themes::CatppuccinFrappe => Some(catppuccin_frappe(okshell)),
         Themes::CatppuccinLatte => Some(catppuccin_latte(okshell)),
