@@ -10,6 +10,7 @@ use crate::static_themes::cyberpunk::cyberpunk;
 use crate::static_themes::desert_power::desert_power;
 use crate::static_themes::dracula::dracula;
 use crate::static_themes::eldritch::eldritch;
+use crate::static_themes::ethereal::ethereal;
 use crate::static_themes::everforest_dark_hard::everforest_dark_hard;
 use crate::static_themes::everforest_dark_medium::everforest_dark_medium;
 use crate::static_themes::everforest_dark_soft::everforest_dark_soft;
@@ -66,6 +67,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::DesertPower => Some(desert_power(okshell)),
         Themes::Dracula => Some(dracula(okshell)),
         Themes::Eldritch => Some(eldritch(okshell)),
+        Themes::Ethereal => Some(ethereal(okshell)),
         Themes::EverforestDarkHard => Some(everforest_dark_hard(okshell)),
         Themes::EverforestDarkMedium => Some(everforest_dark_medium(okshell)),
         Themes::EverforestDarkSoft => Some(everforest_dark_soft(okshell)),

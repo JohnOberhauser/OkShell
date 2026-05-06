@@ -103,6 +103,7 @@ fn static_themes() -> Vec<(&'static str, Themes)> {
         ("desert_power", Themes::DesertPower),
         ("dracula", Themes::Dracula),
         ("eldritch", Themes::Eldritch),
+        ("ethereal", Themes::Ethereal),
         ("everforest_dark_hard", Themes::EverforestDarkHard),
         ("everforest_dark_medium", Themes::EverforestDarkMedium),
         ("everforest_dark_soft", Themes::EverforestDarkSoft),
