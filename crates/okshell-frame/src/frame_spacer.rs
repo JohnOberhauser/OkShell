@@ -75,6 +75,7 @@ impl Component for FrameSpacerModel {
         root.auto_exclusive_zone_enable();
         root.set_decorated(false);
         root.set_visible(true);
+        root.set_namespace(Some("okshell-spacer"));
 
         match params.bar_type {
             BarType::Top => {

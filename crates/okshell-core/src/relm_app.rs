@@ -97,6 +97,7 @@ impl Component for Shell {
         root.set_layer(Layer::Background);
         root.set_default_size(1, 1);
         root.set_visible(false);
+        root.set_namespace(Some("okshell-invisible-root"));
 
         let widgets = view_output!();
 
