@@ -5,15 +5,40 @@ use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, ThemeStoreFields};
 use okshell_config::schema::themes::Themes;
+use okshell_matugen::static_theme_mapping::static_theme;
 use okshell_utils::scroll_extensions::wire_vertical_to_horizontal;
 use reactive_graph::prelude::Get;
+use reactive_graph::traits::GetUntracked;
 use relm4::factory::FactoryVecDeque;
 use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
 use relm4::{Component, ComponentParts, ComponentSender, RelmWidgetExt, gtk};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ThemeFilter {
+    All,
+    Light,
+    Dark,
+}
+
+impl ThemeFilter {
+    pub fn all() -> &'static [ThemeFilter] {
+        &[ThemeFilter::All, ThemeFilter::Light, ThemeFilter::Dark]
+    }
+
+    pub fn label(&self) -> &'static str {
+        match self {
+            ThemeFilter::All => "All",
+            ThemeFilter::Light => "Light",
+            ThemeFilter::Dark => "Dark",
+        }
+    }
+}
+
 #[derive(Debug)]
 pub(crate) struct ThemePickerMenuWidgetModel {
     theme_cards: Option<FactoryVecDeque<ThemeCardModel>>,
+    theme_filters: gtk::StringList,
+    active_theme_filter: ThemeFilter,
     _effects: EffectScope,
 }
 
@@ -21,6 +46,7 @@ pub(crate) struct ThemePickerMenuWidgetModel {
 pub(crate) enum ThemePickerMenuWidgetInput {
     ThemeSelected(Themes),
     ThemeEffect(Themes),
+    ThemeFilterSelected(ThemeFilter),
 }
 
 #[derive(Debug)]
@@ -45,7 +71,7 @@ impl Component for ThemePickerMenuWidgetModel {
             set_orientation: gtk::Orientation::Vertical,
 
             gtk::Box {
-                set_orientation: gtk::Orientation::Vertical,
+                set_orientation: gtk::Orientation::Horizontal,
                 set_margin_all: 26,
                 set_spacing: 20,
 
@@ -53,6 +79,26 @@ impl Component for ThemePickerMenuWidgetModel {
                     add_css_class: "label-xl-bold",
                     set_label: "Color Scheme",
                     set_halign: gtk::Align::Start,
+                },
+
+                #[name = "theme_filter_dropdown"]
+                gtk::DropDown {
+                    set_width_request: 120,
+                    set_valign: gtk::Align::Center,
+                    set_halign: gtk::Align::End,
+                    set_model: Some(&model.theme_filters),
+                    #[watch]
+                    #[block_signal(filter_handler)]
+                    set_selected: ThemeFilter::all()
+                        .iter()
+                        .position(|f| f == &model.active_theme_filter)
+                        .unwrap_or(0) as u32,
+                    connect_selected_notify[sender] => move |dd| {
+                        let idx = dd.selected() as usize;
+                        if let Some(filter) = ThemeFilter::all().get(idx) {
+                            sender.input(ThemePickerMenuWidgetInput::ThemeFilterSelected(*filter));
+                        }
+                    } @filter_handler,
                 },
             },
 
@@ -97,8 +143,17 @@ impl Component for ThemePickerMenuWidgetModel {
             sender_clone.input(ThemePickerMenuWidgetInput::ThemeEffect(value));
         });
 
+        let theme_filters = gtk::StringList::new(
+            &ThemeFilter::all()
+                .iter()
+                .map(|f| f.label())
+                .collect::<Vec<_>>(),
+        );
+
         let mut model = ThemePickerMenuWidgetModel {
             theme_cards: None,
+            theme_filters,
+            active_theme_filter: ThemeFilter::All,
             _effects: effects,
         };
 
@@ -152,6 +207,36 @@ impl Component for ThemePickerMenuWidgetModel {
                     for i in 0..guard.len() {
                         guard.send(i, ThemeCardInput::SelectionChanged(theme));
                     }
+                }
+            }
+            ThemePickerMenuWidgetInput::ThemeFilterSelected(filter) => {
+                self.active_theme_filter = filter;
+                let Some(theme_cards) = &mut self.theme_cards else {
+                    return;
+                };
+
+                let mut guard = theme_cards.guard();
+                guard.clear();
+
+                for theme in Themes::all() {
+                    let is_dark = static_theme(theme, None).map(|t| t.is_dark_mode);
+
+                    let matches = match (self.active_theme_filter, is_dark) {
+                        (ThemeFilter::All, _) => true,
+                        (ThemeFilter::Light, Some(false)) => true,
+                        (ThemeFilter::Dark, Some(true)) => true,
+                        _ => false,
+                    };
+
+                    if matches {
+                        guard.push_back(*theme);
+                    }
+                }
+
+                // Re-sync selection state on freshly populated cards
+                let current = config_manager().config().theme().theme().get_untracked();
+                for i in 0..guard.len() {
+                    guard.send(i, ThemeCardInput::SelectionChanged(current));
                 }
             }
         }
