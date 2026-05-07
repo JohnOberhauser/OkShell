@@ -204,30 +204,34 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                         app_sender.emit(ShellInput::BarToggleRight(None));
                     }
                 }
-                IPCCommand::BarToggleAll => {
+                IPCCommand::BarToggleAll(exclude_hidden_by_default) => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarToggleAll(Some(
-                            active_workspace.monitor.get(),
-                        )));
+                        app_sender.emit(ShellInput::BarToggleAll(
+                            Some(active_workspace.monitor.get()),
+                            exclude_hidden_by_default,
+                        ));
                     } else {
-                        app_sender.emit(ShellInput::BarToggleAll(None));
+                        app_sender.emit(ShellInput::BarToggleAll(None, exclude_hidden_by_default));
                     }
                 }
-                IPCCommand::BarRevealAll => {
+                IPCCommand::BarRevealAll(exclude_hidden_by_default) => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender.emit(ShellInput::BarRevealAll(Some(
-                            active_workspace.monitor.get(),
-                        )));
+                        app_sender.emit(ShellInput::BarRevealAll(
+                            Some(active_workspace.monitor.get()),
+                            exclude_hidden_by_default,
+                        ));
                     } else {
-                        app_sender.emit(ShellInput::BarRevealAll(None));
+                        app_sender.emit(ShellInput::BarRevealAll(None, exclude_hidden_by_default));
                     }
                 }
-                IPCCommand::BarHideAll => {
+                IPCCommand::BarHideAll(exclude_hidden_by_default) => {
                     if let Some(active_workspace) = hyprland_service().active_workspace().await {
-                        app_sender
-                            .emit(ShellInput::BarHideAll(Some(active_workspace.monitor.get())));
+                        app_sender.emit(ShellInput::BarHideAll(
+                            Some(active_workspace.monitor.get()),
+                            exclude_hidden_by_default,
+                        ));
                     } else {
-                        app_sender.emit(ShellInput::BarHideAll(None));
+                        app_sender.emit(ShellInput::BarHideAll(None, exclude_hidden_by_default));
                     }
                 }
             }
@@ -261,9 +265,9 @@ enum IPCCommand {
     BarToggleBottom,
     BarToggleLeft,
     BarToggleRight,
-    BarToggleAll,
-    BarRevealAll,
-    BarHideAll,
+    BarToggleAll(bool),
+    BarRevealAll(bool),
+    BarHideAll(bool),
 }
 
 struct IPCService {
@@ -359,14 +363,20 @@ impl IPCService {
     async fn bar_toggle_right(&self) {
         let _ = self.tx.send(IPCCommand::BarToggleRight);
     }
-    async fn bar_toggle_all(&self) {
-        let _ = self.tx.send(IPCCommand::BarToggleAll);
+    async fn bar_toggle_all(&self, exclude_hidden_by_default: bool) {
+        let _ = self
+            .tx
+            .send(IPCCommand::BarToggleAll(exclude_hidden_by_default));
     }
-    async fn bar_reveal_all(&self) {
-        let _ = self.tx.send(IPCCommand::BarRevealAll);
+    async fn bar_reveal_all(&self, exclude_hidden_by_default: bool) {
+        let _ = self
+            .tx
+            .send(IPCCommand::BarRevealAll(exclude_hidden_by_default));
     }
-    async fn bar_hide_all(&self) {
-        let _ = self.tx.send(IPCCommand::BarHideAll);
+    async fn bar_hide_all(&self, exclude_hidden_by_default: bool) {
+        let _ = self
+            .tx
+            .send(IPCCommand::BarHideAll(exclude_hidden_by_default));
     }
 }
 

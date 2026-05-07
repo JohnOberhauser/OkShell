@@ -63,9 +63,9 @@ pub(crate) enum ShellInput {
     BarToggleBottom(Option<String>),
     BarToggleLeft(Option<String>),
     BarToggleRight(Option<String>),
-    BarToggleAll(Option<String>),
-    BarRevealAll(Option<String>),
-    BarHideAll(Option<String>),
+    BarToggleAll(Option<String>, bool),
+    BarRevealAll(Option<String>, bool),
+    BarHideAll(Option<String>, bool),
 }
 
 #[derive(Debug)]
@@ -333,19 +333,19 @@ impl Component for Shell {
                     frame.emit(FrameInput::BarToggleRight);
                 }
             }
-            ShellInput::BarToggleAll(monitor_name) => {
+            ShellInput::BarToggleAll(monitor_name, exclude_hidden_by_default) => {
                 if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
-                    frame.emit(FrameInput::BarToggleAll);
+                    frame.emit(FrameInput::BarToggleAll(exclude_hidden_by_default));
                 }
             }
-            ShellInput::BarRevealAll(monitor_name) => {
+            ShellInput::BarRevealAll(monitor_name, exclude_hidden_by_default) => {
                 if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
-                    frame.emit(FrameInput::BarRevealAll);
+                    frame.emit(FrameInput::BarRevealAll(exclude_hidden_by_default));
                 }
             }
-            ShellInput::BarHideAll(monitor_name) => {
+            ShellInput::BarHideAll(monitor_name, exclude_hidden_by_default) => {
                 if let Some(frame) = resolve_frame(&self.window_groups, &monitor_name) {
-                    frame.emit(FrameInput::BarHideAll);
+                    frame.emit(FrameInput::BarHideAll(exclude_hidden_by_default));
                 }
             }
         }

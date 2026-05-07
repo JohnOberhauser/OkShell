@@ -85,9 +85,9 @@ pub enum FrameInput {
     BarToggleBottom,
     BarToggleLeft,
     BarToggleRight,
-    BarToggleAll,
-    BarRevealAll,
-    BarHideAll,
+    BarToggleAll(bool),
+    BarRevealAll(bool),
+    BarHideAll(bool),
 }
 
 #[derive(Debug)]
@@ -801,23 +801,140 @@ impl Component for Frame {
             FrameInput::BarToggleRight => {
                 self.right_bar.sender().emit(BarInput::ToggleRevealed);
             }
-            FrameInput::BarToggleAll => {
-                self.top_bar.sender().emit(BarInput::ToggleRevealed);
-                self.bottom_bar.sender().emit(BarInput::ToggleRevealed);
-                self.left_bar.sender().emit(BarInput::ToggleRevealed);
-                self.right_bar.sender().emit(BarInput::ToggleRevealed);
+            FrameInput::BarToggleAll(exclude_hidden_by_default) => {
+                if exclude_hidden_by_default {
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .top_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.top_bar.sender().emit(BarInput::ToggleRevealed);
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .bottom_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.bottom_bar.sender().emit(BarInput::ToggleRevealed);
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .left_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.left_bar.sender().emit(BarInput::ToggleRevealed);
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .right_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.right_bar.sender().emit(BarInput::ToggleRevealed);
+                    }
+                } else {
+                    self.top_bar.sender().emit(BarInput::ToggleRevealed);
+                    self.bottom_bar.sender().emit(BarInput::ToggleRevealed);
+                    self.left_bar.sender().emit(BarInput::ToggleRevealed);
+                    self.right_bar.sender().emit(BarInput::ToggleRevealed);
+                }
             }
-            FrameInput::BarRevealAll => {
-                self.top_bar.sender().emit(BarInput::SetRevealed(true));
-                self.bottom_bar.sender().emit(BarInput::SetRevealed(true));
-                self.left_bar.sender().emit(BarInput::SetRevealed(true));
-                self.right_bar.sender().emit(BarInput::SetRevealed(true));
+            FrameInput::BarRevealAll(exclude_hidden_by_default) => {
+                if exclude_hidden_by_default {
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .top_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.top_bar.sender().emit(BarInput::SetRevealed(true));
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .bottom_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.bottom_bar.sender().emit(BarInput::SetRevealed(true));
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .left_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.left_bar.sender().emit(BarInput::SetRevealed(true));
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .right_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.right_bar.sender().emit(BarInput::SetRevealed(true));
+                    }
+                } else {
+                    self.top_bar.sender().emit(BarInput::SetRevealed(true));
+                    self.bottom_bar.sender().emit(BarInput::SetRevealed(true));
+                    self.left_bar.sender().emit(BarInput::SetRevealed(true));
+                    self.right_bar.sender().emit(BarInput::SetRevealed(true));
+                }
             }
-            FrameInput::BarHideAll => {
-                self.top_bar.sender().emit(BarInput::SetRevealed(false));
-                self.bottom_bar.sender().emit(BarInput::SetRevealed(false));
-                self.left_bar.sender().emit(BarInput::SetRevealed(false));
-                self.right_bar.sender().emit(BarInput::SetRevealed(false));
+            FrameInput::BarHideAll(exclude_hidden_by_default) => {
+                if exclude_hidden_by_default {
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .top_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.top_bar.sender().emit(BarInput::SetRevealed(false));
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .bottom_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.bottom_bar.sender().emit(BarInput::SetRevealed(false));
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .left_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.left_bar.sender().emit(BarInput::SetRevealed(false));
+                    }
+                    if config_manager()
+                        .config()
+                        .bars()
+                        .right_bar()
+                        .reveal_by_default()
+                        .get_untracked()
+                    {
+                        self.right_bar.sender().emit(BarInput::SetRevealed(false));
+                    }
+                } else {
+                    self.top_bar.sender().emit(BarInput::SetRevealed(false));
+                    self.bottom_bar.sender().emit(BarInput::SetRevealed(false));
+                    self.left_bar.sender().emit(BarInput::SetRevealed(false));
+                    self.right_bar.sender().emit(BarInput::SetRevealed(false));
+                }
             }
         }
         self.update_view(widgets, sender);
