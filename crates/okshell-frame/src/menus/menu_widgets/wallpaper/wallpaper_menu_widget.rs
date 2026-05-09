@@ -369,24 +369,17 @@ impl Component for WallpaperMenuWidgetModel {
                     set_can_target: false,
                 },
 
-                #[name = "scroll_window"]
-                gtk::ScrolledWindow {
-                    set_hexpand: true,
-                    set_vexpand: false,
-                    set_vscrollbar_policy: gtk::PolicyType::Never,
-                    set_hscrollbar_policy: gtk::PolicyType::External,
-                    set_propagate_natural_height: true,
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Vertical,
+                    set_height_request: (model.thumbnail_height * 2) + 10,
 
-                    gtk::Box {
-                        set_orientation: gtk::Orientation::Vertical,
-                        set_height_request: (model.thumbnail_height * 2) + 10,
-
-                        gtk::Label {
-                            #[watch]
-                            set_visible: model.files.is_empty(),
-                            set_css_classes: &["wallpaper-empty-message", "label-medium-bold"],
-                            set_label: "No wallpapers available",
-                        },
+                    #[name = "scroll_window"]
+                    gtk::ScrolledWindow {
+                        set_hexpand: true,
+                        set_vexpand: false,
+                        set_vscrollbar_policy: gtk::PolicyType::Never,
+                        set_hscrollbar_policy: gtk::PolicyType::External,
+                        set_propagate_natural_height: true,
 
                         #[name = "grid_view"]
                         gtk::GridView {
@@ -401,8 +394,15 @@ impl Component for WallpaperMenuWidgetModel {
                                 "wallpaper-grid"
                             },
                         }
-                    }
-                }
+                    },
+
+                    gtk::Label {
+                        #[watch]
+                        set_visible: model.files.is_empty(),
+                        set_css_classes: &["wallpaper-empty-message", "label-medium-bold"],
+                        set_label: "No wallpapers available",
+                    },
+                },
             }
         }
     }
