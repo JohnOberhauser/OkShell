@@ -361,17 +361,18 @@ impl Component for WallpaperMenuWidgetModel {
                 },
             },
 
-            gtk::Overlay {
-                add_overlay = &gtk::Box {
-                    add_css_class: "wallpaper-shadow",
-                    set_hexpand: true,
-                    set_vexpand: true,
-                    set_can_target: false,
-                },
+            gtk::Box {
+                set_orientation: gtk::Orientation::Vertical,
+                set_height_request: (model.thumbnail_height * 3) + 24,
 
-                gtk::Box {
-                    set_orientation: gtk::Orientation::Vertical,
-                    set_height_request: (model.thumbnail_height * 2) + 10,
+                gtk::Overlay {
+
+                    add_overlay = &gtk::Box {
+                        add_css_class: "wallpaper-shadow",
+                        set_hexpand: true,
+                        set_vexpand: true,
+                        set_can_target: false,
+                    },
 
                     #[name = "scroll_window"]
                     gtk::ScrolledWindow {
@@ -388,20 +389,16 @@ impl Component for WallpaperMenuWidgetModel {
                             set_visible: !model.files.is_empty(),
                             set_max_columns: model.row_count,
                             set_min_columns: model.row_count,
-                            add_css_class: if model.thumbnail_width < 200 {
-                                "wallpaper-grid-small"
-                            } else {
-                                "wallpaper-grid"
-                            },
+                            add_css_class: "wallpaper-grid",
                         }
                     },
+                },
 
-                    gtk::Label {
-                        #[watch]
-                        set_visible: model.files.is_empty(),
-                        set_css_classes: &["wallpaper-empty-message", "label-medium-bold"],
-                        set_label: "No wallpapers available",
-                    },
+                gtk::Label {
+                    #[watch]
+                    set_visible: model.files.is_empty(),
+                    set_css_classes: &["wallpaper-empty-message", "label-medium-bold"],
+                    set_label: "No wallpapers available",
                 },
             }
         }

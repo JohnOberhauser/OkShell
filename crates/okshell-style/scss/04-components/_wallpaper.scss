@@ -15,17 +15,9 @@
 .wallpaper-grid {
     all: unset;
     padding: 0 32px 0 32px;
-    margin: 0 32px 0 32px;
 }
 
-.wallpaper-grid-small {
-    all: unset;
-    padding: 0 32px 0 32px;
-    margin: 0 32px 0 32px;
-}
-
-.wallpaper-grid > child,
-.wallpaper-grid-small > child {
+.wallpaper-grid > child {
     background: transparent;
     box-shadow: none;
     outline: none;
@@ -34,18 +26,14 @@
 .wallpaper-grid > child:hover,
 .wallpaper-grid > child:selected,
 .wallpaper-grid > child:active,
-.wallpaper-grid > child:focus,
-.wallpaper-grid-small > child:hover,
-.wallpaper-grid-small > child:selected,
-.wallpaper-grid-small > child:active,
-.wallpaper-grid-small > child:focus {
+.wallpaper-grid > child:focus {
     background: transparent;
     box-shadow: none;
     outline: none;
 }
 
 .wallpaper-empty-message {
-    padding: 20px;
+    padding: 0 20px 0 20px;
 }
 
 .wallpaper-shadow {
