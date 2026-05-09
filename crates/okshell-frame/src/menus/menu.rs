@@ -19,9 +19,6 @@ use crate::menus::menu_widgets::screenshare::screenshare_menu_widget::{
     ScreenshareMenuWidgetInit, ScreenshareMenuWidgetInput, ScreenshareMenuWidgetModel,
     ScreenshareMenuWidgetOutput,
 };
-use crate::menus::menu_widgets::wallpaper::wallpaper_dropdown_menu_widget::{
-    WallpaperDropdownMenuWidgetInput, WallpaperDropdownMenuWidgetModel,
-};
 use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{
     WallpaperMenuWidgetInput, WallpaperMenuWidgetModel,
 };
@@ -321,16 +318,6 @@ impl Component for MenuModel {
                         controller
                             .sender()
                             .send(ScreenshareMenuWidgetInput::ParentRevealChanged(visible))
-                            .ok();
-                    }
-                    if let Some(controller) =
-                        controller.downcast_ref::<Controller<WallpaperDropdownMenuWidgetModel>>()
-                    {
-                        controller
-                            .sender()
-                            .send(WallpaperDropdownMenuWidgetInput::ParentRevealChanged(
-                                visible,
-                            ))
                             .ok();
                     }
                     if let Some(controller) =
