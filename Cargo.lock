@@ -3435,6 +3435,7 @@ name = "okshell-services"
 version = "0.9.0"
 dependencies = [
  "anyhow",
+ "tokio",
  "tracing",
  "wayle-audio",
  "wayle-battery",

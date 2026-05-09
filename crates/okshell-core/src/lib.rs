@@ -26,6 +26,7 @@ fn tokio_rt() -> &'static Runtime {
 }
 
 pub fn run() -> Result<(), Box<dyn Error>> {
+    let start = std::time::Instant::now();
     info!("Welcome to OkShell!");
 
     Executor::init_glib().expect("Executor could not be initialized.");
@@ -101,6 +102,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     });
 
     let app = RelmApp::new("okshell.main");
+    info!("Startup completed in {:?}", start.elapsed());
     app.run::<Shell>(ShellInit {});
 
     info!("Goodbye!");

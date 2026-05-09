@@ -21,44 +21,64 @@ pub async fn init_services(
     temperature_unit: TemperatureUnit,
 ) -> anyhow::Result<()> {
     info!("Initializing services...");
-    let audio = AudioService::new();
-    let battery = BatteryService::new();
-    let bluetooth = BluetoothService::new();
-    let brightness = BrightnessService::new();
-    let hyprland = HyprlandService::new();
-    let media = MediaService::new();
-    let network = NetworkService::new();
-    let notifications = NotificationService::new();
-    let power_profiles = PowerProfilesService::new();
+    let line_power_fut = async {
+        if let Some(path) = find_line_power_path().await? {
+            Ok::<_, anyhow::Error>(Some(
+                BatteryService::builder().device_path(path).build().await?,
+            ))
+        } else {
+            Ok(None)
+        }
+    };
+
+    let (
+        audio,
+        battery,
+        bluetooth,
+        brightness,
+        hyprland,
+        line_power,
+        media,
+        network,
+        notifications,
+        power_profiles,
+        systray,
+    ) = tokio::try_join!(
+        async { Ok::<_, anyhow::Error>(AudioService::new().await?) },
+        async { Ok::<_, anyhow::Error>(BatteryService::new().await?) },
+        async { Ok::<_, anyhow::Error>(BluetoothService::new().await?) },
+        async { Ok::<_, anyhow::Error>(BrightnessService::new().await?) },
+        async { Ok::<_, anyhow::Error>(HyprlandService::new().await?) },
+        line_power_fut,
+        async { Ok::<_, anyhow::Error>(MediaService::new().await?) },
+        async { Ok::<_, anyhow::Error>(NetworkService::new().await?) },
+        async { Ok::<_, anyhow::Error>(NotificationService::new().await?) },
+        async { Ok::<_, anyhow::Error>(PowerProfilesService::new().await?) },
+        async { Ok::<_, anyhow::Error>(SystemTrayService::builder().build().await?) },
+    )?;
     let sysinfo = SysinfoService::builder().build();
-    let systray = SystemTrayService::builder().build();
     let weather = WeatherServiceBuilder::new()
         .poll_interval(Duration::from_mins(15))
         .location(location_query)
         .units(temperature_unit)
         .build();
 
-    if let Some(path) = find_line_power_path().await? {
-        let line_power = BatteryService::builder().device_path(path).build();
-
-        LINE_POWER_SERVICE
-            .set(Some(Arc::new(line_power.await?)))
-            .ok();
+    AUDIO_SERVICE.set(audio).ok();
+    BATTERY_SERVICE.set(Arc::new(battery)).ok();
+    BLUETOOTH_SERVICE.set(Arc::new(bluetooth)).ok();
+    BRIGHTNESS_SERVICE.set(brightness).ok();
+    HYPRLAND_SERVICE.set(hyprland).ok();
+    if let Some(line_power) = line_power {
+        LINE_POWER_SERVICE.set(Some(Arc::new(line_power))).ok();
     } else {
         LINE_POWER_SERVICE.set(None).ok();
     }
-
-    AUDIO_SERVICE.set(audio.await?).ok();
-    BATTERY_SERVICE.set(Arc::new(battery.await?)).ok();
-    BLUETOOTH_SERVICE.set(Arc::new(bluetooth.await?)).ok();
-    BRIGHTNESS_SERVICE.set(brightness.await?).ok();
-    HYPRLAND_SERVICE.set(hyprland.await?).ok();
-    MEDIA_SERVICE.set(media.await?).ok();
-    NETWORK_SERVICE.set(Arc::new(network.await?)).ok();
-    NOTIFICATION_SERVICE.set(notifications.await?).ok();
-    POWER_PROFILE_SERVICE.set(power_profiles.await?).ok();
+    MEDIA_SERVICE.set(media).ok();
+    NETWORK_SERVICE.set(Arc::new(network)).ok();
+    NOTIFICATION_SERVICE.set(notifications).ok();
+    POWER_PROFILE_SERVICE.set(power_profiles).ok();
     SYS_INFO_SERVICE.set(Arc::new(sysinfo)).ok();
-    SYS_TRAY_SERVICE.set(systray.await?).ok();
+    SYS_TRAY_SERVICE.set(systray).ok();
     WEATHER_SERVICE.set(Arc::new(weather)).ok();
 
     info!("Done");
