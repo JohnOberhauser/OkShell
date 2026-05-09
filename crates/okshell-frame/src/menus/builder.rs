@@ -163,9 +163,9 @@ pub fn build_widget(
         MenuWidget::Wallpaper => Box::new(
             WallpaperMenuWidgetModel::builder()
                 .launch(WallpaperMenuWidgetInit {
-                    thumbnail_width: 300,
-                    thumbnail_height: 200,
-                    row_count: 2,
+                    thumbnail_width: 180,
+                    thumbnail_height: 120,
+                    row_count: 3,
                 })
                 .detach(),
         ),

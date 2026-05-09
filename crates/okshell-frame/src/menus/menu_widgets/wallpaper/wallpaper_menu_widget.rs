@@ -452,12 +452,7 @@ impl Component for WallpaperMenuWidgetModel {
             {
                 let cache = cache.lock().unwrap();
                 if let Some(texture) = cache.get(&path_str) {
-                    let paintable = ParallelogramPaintable::new(
-                        params.thumbnail_width,
-                        params.thumbnail_height,
-                    );
-                    paintable.set_texture(Some(texture.upcast_ref::<gdk::Texture>()));
-                    picture.set_paintable(Some(&paintable));
+                    picture.set_paintable(Some(texture));
                     return;
                 }
             }
@@ -514,12 +509,7 @@ impl Component for WallpaperMenuWidgetModel {
                         .unwrap()
                         .insert(path_str, texture.clone());
 
-                    let paintable = ParallelogramPaintable::new(
-                        params.thumbnail_width,
-                        params.thumbnail_height,
-                    );
-                    paintable.set_texture(Some(texture.upcast_ref::<gdk::Texture>()));
-                    picture.set_paintable(Some(&paintable));
+                    picture.set_paintable(Some(&texture));
                 }
             });
         });

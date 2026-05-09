@@ -1,41 +1,55 @@
 .wallpaper-thumbnail {
-  transition: opacity 150ms ease, transform 150ms ease;
-  opacity: 1;
+    transition:
+        border 150ms ease,
+        transform 150ms ease;
+    margin: 4px;
+    border: 2px solid var(--outline);
+    border-radius: var(--radius-widget);
 
-  &:hover {
-    opacity: 0.8;
-    transform: scale(1.02);
-  }
+    &:hover {
+        border: 2px solid var(--on-surface);
+        transform: scale(1.02);
+    }
 }
 
 .wallpaper-grid {
-  all: unset;
-  padding: 0 32px 0 32px;
-  margin: 0 32px 0 32px;
-
-  > child {
     all: unset;
-    margin: 2px 2px 2px -32px;
-  }
+    padding: 0 32px 0 32px;
+    margin: 0 32px 0 32px;
 }
 
 .wallpaper-grid-small {
-  all: unset;
-  padding: 0 32px 0 32px;
-  margin: 0 32px 0 32px;
-
-  > child {
     all: unset;
-    margin: 2px 2px 2px -16px;
-  }
+    padding: 0 32px 0 32px;
+    margin: 0 32px 0 32px;
+}
+
+.wallpaper-grid > child,
+.wallpaper-grid-small > child {
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.wallpaper-grid > child:hover,
+.wallpaper-grid > child:selected,
+.wallpaper-grid > child:active,
+.wallpaper-grid > child:focus,
+.wallpaper-grid-small > child:hover,
+.wallpaper-grid-small > child:selected,
+.wallpaper-grid-small > child:active,
+.wallpaper-grid-small > child:focus {
+    background: transparent;
+    box-shadow: none;
+    outline: none;
 }
 
 .wallpaper-empty-message {
-  padding: 20px
+    padding: 20px;
 }
 
 .wallpaper-shadow {
-  box-shadow:
-    inset 32px 0 16px -8px var(--surface),
-    inset -32px 0 16px -8px var(--surface);
+    box-shadow:
+        inset 32px 0 16px -8px var(--surface),
+        inset -32px 0 16px -8px var(--surface);
 }
