@@ -4,7 +4,7 @@ use crate::menu_settings::menu_settings::{MenuSettingsInit, MenuSettingsModel};
 use crate::notification_settings::{NotificationSettingsInit, NotificationSettingsModel};
 use crate::theme_settings::theme_settings::{ThemeSettingsInit, ThemeSettingsModel};
 use crate::wallpaper_settings::{WallpaperSettingsInit, WallpaperSettingsModel};
-use relm4::gtk::prelude::{GtkWindowExt, OrientableExt, WidgetExt};
+use relm4::gtk::prelude::{BoxExt, GtkWindowExt, OrientableExt, ToggleButtonExt, WidgetExt};
 use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 
 pub(crate) struct SettingsWindowModel {
@@ -36,7 +36,6 @@ impl Component for SettingsWindowModel {
 
     view! {
         #[root]
-        #[name = "root"]
         gtk::Window {
             add_css_class: "settings-window",
             set_decorated: true,
@@ -46,13 +45,128 @@ impl Component for SettingsWindowModel {
 
             gtk::Box {
                 set_orientation: gtk::Orientation::Horizontal,
-                set_hexpand: false,
-                set_vexpand: false,
 
-                #[name = "sidebar"]
-                gtk::StackSidebar {
+                gtk::Box {
                     add_css_class: "settings-sidebar",
-                    set_width_request: 150,
+                    set_orientation: gtk::Orientation::Vertical,
+                    set_width_request: 180,
+                    set_spacing: 4,
+                    set_hexpand: false,
+
+                    #[name = "general_btn"]
+                    gtk::ToggleButton {
+                        add_css_class: "sidebar-button",
+                        set_active: true,
+                        connect_toggled[stack] => move |b| {
+                            if b.is_active() { stack.set_visible_child_name("general"); }
+                        },
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 12,
+                            gtk::Image { set_icon_name: Some("settings-symbolic") },
+                            gtk::Label {
+                                set_label: "General",
+                                set_halign: gtk::Align::Start,
+                                set_hexpand: true,
+                            },
+                        },
+                    },
+
+                    gtk::ToggleButton {
+                        add_css_class: "sidebar-button",
+                        set_group: Some(&general_btn),
+                        connect_toggled[stack] => move |b| {
+                            if b.is_active() { stack.set_visible_child_name("theme"); }
+                        },
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 12,
+                            gtk::Image { set_icon_name: Some("palette-symbolic") },
+                            gtk::Label {
+                                set_label: "Theme",
+                                set_halign: gtk::Align::Start,
+                                set_hexpand: true,
+                            },
+                        },
+                    },
+
+                    gtk::ToggleButton {
+                        add_css_class: "sidebar-button",
+                        set_group: Some(&general_btn),
+                        connect_toggled[stack] => move |b| {
+                            if b.is_active() { stack.set_visible_child_name("wallpaper"); }
+                        },
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 12,
+                            gtk::Image { set_icon_name: Some("wallpaper-symbolic") },
+                            gtk::Label {
+                                set_label: "Wallpaper",
+                                set_halign: gtk::Align::Start,
+                                set_hexpand: true,
+                            },
+                        },
+                    },
+
+                    gtk::ToggleButton {
+                        add_css_class: "sidebar-button",
+                        set_group: Some(&general_btn),
+                        connect_toggled[stack] => move |b| {
+                            if b.is_active() { stack.set_visible_child_name("bar"); }
+                        },
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 12,
+                            gtk::Image { set_icon_name: Some("sidebar-symbolic") },
+                            gtk::Label {
+                                set_label: "Bar",
+                                set_halign: gtk::Align::Start,
+                                set_hexpand: true,
+                            },
+                        },
+                    },
+
+                    gtk::ToggleButton {
+                        add_css_class: "sidebar-button",
+                        set_group: Some(&general_btn),
+                        connect_toggled[stack] => move |b| {
+                            if b.is_active() { stack.set_visible_child_name("menus"); }
+                        },
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 12,
+                            gtk::Image { set_icon_name: Some("square-symbolic") },
+                            gtk::Label {
+                                set_label: "Menus",
+                                set_halign: gtk::Align::Start,
+                                set_hexpand: true,
+                            },
+                        },
+                    },
+
+                    gtk::ToggleButton {
+                        add_css_class: "sidebar-button",
+                        set_group: Some(&general_btn),
+                        connect_toggled[stack] => move |b| {
+                            if b.is_active() { stack.set_visible_child_name("notifications"); }
+                        },
+
+                        gtk::Box {
+                            set_orientation: gtk::Orientation::Horizontal,
+                            set_spacing: 12,
+                            gtk::Image { set_icon_name: Some("notification-symbolic") },
+                            gtk::Label {
+                                set_label: "Notifications",
+                                set_halign: gtk::Align::Start,
+                                set_hexpand: true,
+                            },
+                        },
+                    },
                 },
 
                 #[name = "stack"]
@@ -62,7 +176,7 @@ impl Component for SettingsWindowModel {
                     set_transition_duration: 50,
                     set_hexpand: true,
                     set_vexpand: true,
-                }
+                },
             },
         }
     }
@@ -107,7 +221,7 @@ impl Component for SettingsWindowModel {
 
         let widgets = view_output!();
 
-        widgets.sidebar.set_stack(&widgets.stack);
+        // widgets.sidebar.set_stack(&widgets.stack);
 
         widgets.stack.add_titled(
             model.general_settings_controller.widget(),
