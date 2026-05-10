@@ -6,9 +6,10 @@ use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::bar_widgets::BarWidget;
 use okshell_config::schema::config::{
-    BarsStoreFields, ConfigStoreFields, FrameStoreFields, HorizontalBarStoreFields,
-    VerticalBarStoreFields,
+    BarWidgetsStoreFields, BarsStoreFields, ConfigStoreFields, FrameStoreFields,
+    HorizontalBarStoreFields, QuickSettingsBarWidgetStoreFields, VerticalBarStoreFields,
 };
+use okshell_config::schema::quick_settings_icon::QuickSettingsIcon;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::factory::{DynamicIndex, FactoryVecDeque};
 use relm4::gtk::prelude::*;
@@ -41,6 +42,7 @@ pub(crate) struct BarSettingsModel {
     bottom_reveal_by_default: bool,
     left_reveal_by_default: bool,
     right_reveal_by_default: bool,
+    quick_settings_icon: QuickSettingsIcon,
     _effects: EffectScope,
 }
 
@@ -72,6 +74,7 @@ pub(crate) enum BarSettingsInput {
     BottomRevealByDefaultChanged(bool),
     LeftRevealByDefaultChanged(bool),
     RightRevealByDefaultChanged(bool),
+    QuickSettingsIconChanged(QuickSettingsIcon),
 
     TopStartEffect(Vec<BarWidget>),
     TopCenterEffect(Vec<BarWidget>),
@@ -93,6 +96,7 @@ pub(crate) enum BarSettingsInput {
     BottomRevealByDefaultEffect(bool),
     LeftRevealByDefaultEffect(bool),
     RightRevealByDefaultEffect(bool),
+    QuickSettingsIconEffect(QuickSettingsIcon),
 }
 
 #[derive(Debug)]
@@ -498,6 +502,54 @@ impl Component for BarSettingsModel {
                 model.bottom_bar_start_controller.widget().clone() {},
                 model.bottom_bar_center_controller.widget().clone() {},
                 model.bottom_bar_end_controller.widget().clone() {},
+
+                gtk::Separator {},
+
+                gtk::Label {
+                    add_css_class: "label-large-bold",
+                    set_label: "Bar Widgets",
+                    set_halign: gtk::Align::Start,
+                },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Quick Settings Icon",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "The icon for quick settings.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::DropDown {
+                        set_width_request: 150,
+                        set_valign: gtk::Align::Center,
+                        set_model: Some(&gtk::StringList::new(&QuickSettingsIcon::display_names())),
+                        #[watch]
+                        #[block_signal(handler)]
+                        set_selected: model.quick_settings_icon.to_index(),
+                        connect_selected_notify[sender] => move |dd| {
+                            sender.input(BarSettingsInput::QuickSettingsIconChanged(
+                                QuickSettingsIcon::from_index(dd.selected())
+                            ));
+                        } @handler,
+                    },
+                },
             },
         }
     }
@@ -690,6 +742,13 @@ impl Component for BarSettingsModel {
             let config = config_manager().config();
             let value = config.bars().right_bar().bottom_widgets().get();
             sender_clone.input(BarSettingsInput::RightEndEffect(value));
+        });
+
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let config = config_manager().config();
+            let value = config.bars().widgets().quick_settings().icon().get();
+            sender_clone.input(BarSettingsInput::QuickSettingsIconEffect(value));
         });
 
         let top_bar_start_controller = WidgetSectionModel::builder()
@@ -941,6 +1000,13 @@ impl Component for BarSettingsModel {
                 .right_bar()
                 .reveal_by_default()
                 .get_untracked(),
+            quick_settings_icon: config_manager()
+                .config()
+                .bars()
+                .widgets()
+                .quick_settings()
+                .icon()
+                .get_untracked(),
             _effects: effects,
         };
 
@@ -1127,6 +1193,12 @@ impl Component for BarSettingsModel {
                     config.bars.right_bar.reveal_by_default = reveal;
                 });
             }
+            BarSettingsInput::QuickSettingsIconChanged(icon) => {
+                self.quick_settings_icon = icon;
+                config_manager().update_config(|config| {
+                    config.bars.widgets.quick_settings.icon = icon;
+                });
+            }
             BarSettingsInput::TopStartEffect(widgets) => {
                 self.top_bar_start_controller
                     .emit(WidgetSectionInput::SetWidgetsEffect(widgets));
@@ -1198,6 +1270,9 @@ impl Component for BarSettingsModel {
             }
             BarSettingsInput::RightRevealByDefaultEffect(reveal) => {
                 self.right_reveal_by_default = reveal;
+            }
+            BarSettingsInput::QuickSettingsIconEffect(icon) => {
+                self.quick_settings_icon = icon;
             }
         }
 

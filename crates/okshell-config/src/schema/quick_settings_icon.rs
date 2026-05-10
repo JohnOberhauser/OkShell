@@ -26,3 +26,45 @@ impl PatchField for QuickSettingsIcon {
         }
     }
 }
+
+impl QuickSettingsIcon {
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            QuickSettingsIcon::Arch => "Arch",
+            QuickSettingsIcon::Fedora => "Fedora",
+            QuickSettingsIcon::Hyprland => "Hyprland",
+            QuickSettingsIcon::Nix => "Nix",
+        }
+    }
+
+    pub fn display_names() -> Vec<&'static str> {
+        Self::all().iter().map(|p| p.display_name()).collect()
+    }
+
+    pub fn all() -> &'static [QuickSettingsIcon] {
+        &[
+            QuickSettingsIcon::Arch,
+            QuickSettingsIcon::Fedora,
+            QuickSettingsIcon::Hyprland,
+            QuickSettingsIcon::Nix,
+        ]
+    }
+
+    pub fn to_index(&self) -> u32 {
+        match self {
+            QuickSettingsIcon::Arch => 0,
+            QuickSettingsIcon::Fedora => 1,
+            QuickSettingsIcon::Hyprland => 2,
+            QuickSettingsIcon::Nix => 3,
+        }
+    }
+
+    pub fn from_index(idx: u32) -> Self {
+        match idx {
+            0 => QuickSettingsIcon::Arch,
+            1 => QuickSettingsIcon::Fedora,
+            2 => QuickSettingsIcon::Hyprland,
+            _ => QuickSettingsIcon::Nix,
+        }
+    }
+}
