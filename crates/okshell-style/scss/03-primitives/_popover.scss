@@ -38,10 +38,3 @@ popover > arrow {
     border-width: var(--border-width);
     border-style: solid;
 }
-
-popover.menu modelbutton image {
-    -gtk-icon-size: 16px;
-    min-width: 16px;
-    min-height: 16px;
-    opacity: 1;
-}
