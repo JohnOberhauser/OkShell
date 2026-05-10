@@ -1,7 +1,8 @@
 use okshell_services::hyprland_service;
 use relm4::gtk::gio::prelude::ActionMapExt;
-use relm4::gtk::glib::object::CastNone;
-use relm4::gtk::prelude::{PopoverExt, WidgetExt};
+use relm4::gtk::glib::clone::Downgrade;
+use relm4::gtk::glib::variant::ToVariant;
+use relm4::gtk::prelude::{BoxExt, ButtonExt, PopoverExt, WidgetExt};
 use relm4::gtk::{Orientation, gio};
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
 use tracing::error;
@@ -67,22 +68,61 @@ impl Component for HyprlandLayoutModel {
         let action_group = gio::SimpleActionGroup::new();
         let menu = gio::Menu::new();
 
-        Self::add_layout(&sender, &menu, &action_group, "dwindle", "Dwindle");
-        Self::add_layout(&sender, &menu, &action_group, "master", "Master");
-        Self::add_layout(&sender, &menu, &action_group, "scrolling", "Scrolling");
-        Self::add_layout(&sender, &menu, &action_group, "monocle", "Monocle");
+        let layouts = [
+            Self::add_layout(
+                &sender,
+                &menu,
+                &action_group,
+                "dwindle",
+                "Dwindle",
+                "layout-dwindle-symbolic",
+            ),
+            Self::add_layout(
+                &sender,
+                &menu,
+                &action_group,
+                "master",
+                "Master",
+                "layout-master-symbolic",
+            ),
+            Self::add_layout(
+                &sender,
+                &menu,
+                &action_group,
+                "scrolling",
+                "Scrolling",
+                "layout-scrolling-symbolic",
+            ),
+            Self::add_layout(
+                &sender,
+                &menu,
+                &action_group,
+                "monocle",
+                "Monocle",
+                "layout-monocle-symbolic",
+            ),
+        ];
 
-        widgets.menu_button.set_menu_model(Some(&menu));
+        let popover = gtk::PopoverMenu::from_model_full(&menu, gtk::PopoverMenuFlags::NESTED);
+        popover.set_has_arrow(false);
+
+        for (custom_id, widget) in &layouts {
+            popover.add_child(widget, custom_id);
+        }
+
+        widgets.menu_button.set_popover(Some(&popover));
         widgets
             .menu_button
             .insert_action_group("main", Some(&action_group));
 
-        if let Some(popover) = widgets
-            .menu_button
-            .popover()
-            .and_downcast::<gtk::PopoverMenu>()
-        {
-            popover.set_has_arrow(false);
+        for (custom_id, button) in &layouts {
+            popover.add_child(button, custom_id);
+            let popover_weak = popover.downgrade();
+            button.connect_clicked(move |_| {
+                if let Some(p) = popover_weak.upgrade() {
+                    p.popdown();
+                }
+            });
         }
 
         ComponentParts { model, widgets }
@@ -120,13 +160,34 @@ impl HyprlandLayoutModel {
         action_group: &gio::SimpleActionGroup,
         id: &'static str,
         name: &'static str,
-    ) {
+        icon_name: &str,
+    ) -> (String, gtk::Button) {
         let action = gio::SimpleAction::new(id, None);
-        let sender = sender.clone();
+        let sender_clone = sender.clone();
         action.connect_activate(move |_, _| {
-            let _ = sender.input(HyprlandLayoutInput::SetLayout(id));
+            let _ = sender_clone.input(HyprlandLayoutInput::SetLayout(id));
         });
         action_group.add_action(&action);
-        menu.append(Some(name), Some(format!("main.{}", id).as_str()));
+
+        let custom_id = format!("layout-{}", id);
+
+        let item = gio::MenuItem::new(Some(name), Some(&format!("main.{}", id)));
+        item.set_attribute_value("custom", Some(&custom_id.to_variant()));
+        menu.append_item(&item);
+
+        let row = gtk::Box::builder()
+            .orientation(Orientation::Horizontal)
+            .spacing(8)
+            .build();
+        row.append(&gtk::Image::from_icon_name(icon_name));
+        row.append(&gtk::Label::new(Some(name)));
+
+        let button = gtk::Button::builder()
+            .child(&row)
+            .action_name(&format!("main.{}", id))
+            .css_classes(["ok-button-surface"])
+            .build();
+
+        (custom_id, button)
     }
 }
