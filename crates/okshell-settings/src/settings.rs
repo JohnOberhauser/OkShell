@@ -40,7 +40,7 @@ impl Component for SettingsWindowModel {
         gtk::Window {
             add_css_class: "settings-window",
             set_decorated: true,
-            set_resizable: false,
+            set_resizable: true,
             set_visible: true,
             set_default_size: (800, 700),
 
