@@ -8,6 +8,7 @@ use crate::bars::bar_widgets::hypr_picker::{HyprPickerInit, HyprPickerModel};
 use crate::bars::bar_widgets::hyprland_dock::{
     HyprlandDockInit, HyprlandDockModel, HyprlandDockOutput,
 };
+use crate::bars::bar_widgets::hyprland_layout::{HyprlandLayoutInit, HyprlandLayoutModel};
 use crate::bars::bar_widgets::hyprland_workspaces::{
     HyprlandWorkspacesInit, HyprlandWorkspacesModel,
 };
@@ -512,6 +513,11 @@ impl BarModel {
                     .forward(sender.output_sender(), |msg| match msg {
                         HyprlandDockOutput::AppLauncherClicked => BarOutput::AppLauncherClicked,
                     }),
+            ),
+            BarWidget::HyprlandLayout => Box::new(
+                HyprlandLayoutModel::builder()
+                    .launch(HyprlandLayoutInit { orientation })
+                    .detach(),
             ),
             BarWidget::HyprlandWorkspaces => Box::new(
                 HyprlandWorkspacesModel::builder()

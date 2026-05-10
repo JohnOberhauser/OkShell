@@ -8,6 +8,7 @@ pub(crate) mod clock;
 pub(crate) mod hypr_picker;
 pub(crate) mod hyprland_dock;
 pub(crate) mod hyprland_dock_item;
+pub(crate) mod hyprland_layout;
 pub(crate) mod hyprland_workspace;
 pub(crate) mod hyprland_workspaces;
 pub(crate) mod lock;
