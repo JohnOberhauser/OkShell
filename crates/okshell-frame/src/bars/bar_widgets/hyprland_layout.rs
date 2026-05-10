@@ -1,6 +1,7 @@
 use okshell_services::hyprland_service;
 use relm4::gtk::gio::prelude::ActionMapExt;
-use relm4::gtk::prelude::{ButtonExt, PopoverExt, WidgetExt};
+use relm4::gtk::glib::object::CastNone;
+use relm4::gtk::prelude::{PopoverExt, WidgetExt};
 use relm4::gtk::{Orientation, gio};
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
 use tracing::error;
@@ -8,12 +9,10 @@ use tracing::error;
 #[derive(Debug)]
 pub(crate) struct HyprlandLayoutModel {
     orientation: Orientation,
-    popover: Option<gtk::PopoverMenu>,
 }
 
 #[derive(Debug)]
 pub(crate) enum HyprlandLayoutInput {
-    Clicked,
     SetLayout(&'static str),
 }
 
@@ -43,23 +42,13 @@ impl Component for HyprlandLayoutModel {
             set_halign: gtk::Align::Center,
             set_valign: gtk::Align::Center,
 
-            #[name = "button"]
-            gtk::Button {
+            #[name = "menu_button"]
+            gtk::MenuButton {
                 set_css_classes: &["ok-button-surface", "ok-bar-widget"],
                 set_hexpand: false,
                 set_vexpand: false,
-                connect_clicked[sender] => move |_| {
-                    sender.input(HyprlandLayoutInput::Clicked);
-                },
-
-                #[name="image"]
-                gtk::Image {
-                    set_hexpand: true,
-                    set_vexpand: true,
-                    set_halign: gtk::Align::Center,
-                    set_valign: gtk::Align::Center,
-                    set_icon_name: Some("layout-symbolic"),
-                }
+                set_icon_name: "layout-symbolic",
+                set_always_show_arrow: false,
             }
         }
     }
@@ -71,42 +60,42 @@ impl Component for HyprlandLayoutModel {
     ) -> ComponentParts<Self> {
         let model = HyprlandLayoutModel {
             orientation: params.orientation,
-            popover: None,
         };
 
         let widgets = view_output!();
+
+        let action_group = gio::SimpleActionGroup::new();
+        let menu = gio::Menu::new();
+
+        Self::add_layout(&sender, &menu, &action_group, "dwindle", "Dwindle");
+        Self::add_layout(&sender, &menu, &action_group, "master", "Master");
+        Self::add_layout(&sender, &menu, &action_group, "scrolling", "Scrolling");
+        Self::add_layout(&sender, &menu, &action_group, "monocle", "Monocle");
+
+        widgets.menu_button.set_menu_model(Some(&menu));
+        widgets
+            .menu_button
+            .insert_action_group("main", Some(&action_group));
+
+        if let Some(popover) = widgets
+            .menu_button
+            .popover()
+            .and_downcast::<gtk::PopoverMenu>()
+        {
+            popover.set_has_arrow(false);
+        }
 
         ComponentParts { model, widgets }
     }
 
     fn update_with_view(
         &mut self,
-        widgets: &mut Self::Widgets,
+        _widgets: &mut Self::Widgets,
         message: Self::Input,
-        sender: ComponentSender<Self>,
+        _sender: ComponentSender<Self>,
         _root: &Self::Root,
     ) {
         match message {
-            HyprlandLayoutInput::Clicked => {
-                let action_group = gio::SimpleActionGroup::new();
-                let menu = gio::Menu::new();
-
-                Self::add_layout(&sender, &menu, &action_group, "dwindle", "Dwindle");
-                Self::add_layout(&sender, &menu, &action_group, "master", "Master");
-                Self::add_layout(&sender, &menu, &action_group, "scrolling", "Scrolling");
-                Self::add_layout(&sender, &menu, &action_group, "monocle", "Monocle");
-
-                let popover = gtk::PopoverMenu::from_model(Some(&menu));
-                popover.set_has_arrow(false);
-                popover.insert_action_group("main", Some(&action_group));
-                popover.set_parent(&widgets.button);
-
-                popover.popup();
-
-                self.popover = Some(popover);
-
-                widgets.button.unset_state_flags(gtk::StateFlags::PRELIGHT);
-            }
             HyprlandLayoutInput::SetLayout(layout) => {
                 tokio::spawn(async move {
                     let hyprland = hyprland_service();
