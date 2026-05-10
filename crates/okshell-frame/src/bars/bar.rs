@@ -514,7 +514,7 @@ impl BarModel {
                         HyprlandDockOutput::AppLauncherClicked => BarOutput::AppLauncherClicked,
                     }),
             ),
-            BarWidget::HyprlandLayout => Box::new(
+            BarWidget::HyprlandLayoutSwitcher => Box::new(
                 HyprlandLayoutModel::builder()
                     .launch(HyprlandLayoutInit { orientation })
                     .detach(),
