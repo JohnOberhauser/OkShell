@@ -48,7 +48,7 @@ impl SimpleComponent for QuickSettingsModel {
                     set_vexpand: true,
                     set_halign: gtk::Align::Center,
                     set_valign: gtk::Align::Center,
-                    set_icon_name: Some("quick-settings-symbolic"),
+                    set_icon_name: Some("arch-symbolic"),
                 }
             }
         }

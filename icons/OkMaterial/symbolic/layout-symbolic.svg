@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   width="32"
-   height="32"
-   fill="#000000"
-   viewBox="0 0 256 256"
+   viewBox="0 0 24 24"
    version="1.1"
    id="svg1"
    xmlns="http://www.w3.org/2000/svg"
@@ -11,6 +8,6 @@
   <defs
      id="defs1" />
   <path
-     d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,16V96H40V56ZM40,112H96v88H40Zm176,88H112V112H216v88Z"
+     d="M3,5V19H22V5H3M5,7H20V11H5V7M5,17V13H9V17H5M11,17V13H20V17H11Z"
      id="path1" />
 </svg>
