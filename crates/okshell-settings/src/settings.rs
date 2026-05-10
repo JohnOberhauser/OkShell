@@ -53,6 +53,23 @@ impl Component for SettingsWindowModel {
                     set_spacing: 4,
                     set_hexpand: false,
 
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Horizontal,
+                        set_spacing: 12,
+                        gtk::Label {
+                            add_css_class: "label-large-bold",
+                            set_margin_start: 8,
+                            set_margin_bottom: 8,
+                            set_margin_end: 8,
+                            set_margin_top: 8,
+                            set_label: "Settings",
+                            set_halign: gtk::Align::Start,
+                            set_hexpand: true,
+                        },
+                    },
+
+                    gtk::Separator {},
+
                     #[name = "general_btn"]
                     gtk::ToggleButton {
                         add_css_class: "sidebar-button",
@@ -66,6 +83,7 @@ impl Component for SettingsWindowModel {
                             set_spacing: 12,
                             gtk::Image { set_icon_name: Some("settings-symbolic") },
                             gtk::Label {
+                                add_css_class: "label-medium",
                                 set_label: "General",
                                 set_halign: gtk::Align::Start,
                                 set_hexpand: true,
@@ -85,6 +103,7 @@ impl Component for SettingsWindowModel {
                             set_spacing: 12,
                             gtk::Image { set_icon_name: Some("palette-symbolic") },
                             gtk::Label {
+                                add_css_class: "label-medium",
                                 set_label: "Theme",
                                 set_halign: gtk::Align::Start,
                                 set_hexpand: true,
@@ -104,6 +123,7 @@ impl Component for SettingsWindowModel {
                             set_spacing: 12,
                             gtk::Image { set_icon_name: Some("wallpaper-symbolic") },
                             gtk::Label {
+                                add_css_class: "label-medium",
                                 set_label: "Wallpaper",
                                 set_halign: gtk::Align::Start,
                                 set_hexpand: true,
@@ -123,6 +143,7 @@ impl Component for SettingsWindowModel {
                             set_spacing: 12,
                             gtk::Image { set_icon_name: Some("sidebar-symbolic") },
                             gtk::Label {
+                                add_css_class: "label-medium",
                                 set_label: "Bar",
                                 set_halign: gtk::Align::Start,
                                 set_hexpand: true,
@@ -142,6 +163,7 @@ impl Component for SettingsWindowModel {
                             set_spacing: 12,
                             gtk::Image { set_icon_name: Some("square-symbolic") },
                             gtk::Label {
+                                add_css_class: "label-medium",
                                 set_label: "Menus",
                                 set_halign: gtk::Align::Start,
                                 set_hexpand: true,
@@ -161,6 +183,7 @@ impl Component for SettingsWindowModel {
                             set_spacing: 12,
                             gtk::Image { set_icon_name: Some("notification-symbolic") },
                             gtk::Label {
+                                add_css_class: "label-medium",
                                 set_label: "Notifications",
                                 set_halign: gtk::Align::Start,
                                 set_hexpand: true,
