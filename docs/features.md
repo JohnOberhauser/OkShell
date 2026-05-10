@@ -20,6 +20,7 @@ Bluetooth
 Clipboard  
 Clock  
 Hyprland Dock  
+Hyprland Layout Switcher  
 Hyprland Workspaces  
 HyprPicker  
 Lock  
@@ -81,7 +82,7 @@ Quick Action: Shutdown
 Screenshots  
 Screen Recording  
 Spacer  
-ThemePicker    
+ThemePicker  
 Wallpaper  
 Weather  
 :::
