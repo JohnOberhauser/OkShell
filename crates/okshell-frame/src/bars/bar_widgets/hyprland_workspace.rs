@@ -102,7 +102,7 @@ impl Component for HyprlandWorkspaceModel {
                 let hyprland = hyprland_service();
                 let workspace_id = self.workspace.id.get();
                 tokio::spawn(async move {
-                    let command = format!("workspace {}", workspace_id);
+                    let command = format!("hl.dsp.focus({{ workspace = \"{}\" }})", workspace_id);
                     if let Err(e) = hyprland.dispatch(&command).await {
                         error!(error = %e, workspace = workspace_id, "Failed to switch workspace");
                     }

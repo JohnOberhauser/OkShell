@@ -323,15 +323,13 @@ impl Component for HyprlandDockItemModel {
                     if let Some(idx) = current_idx {
                         let next_idx = (idx + 1) % matching.len();
                         let client_to_focus = matching[next_idx];
-                        let client_workspace = client_to_focus.workspace.get();
                         let client_address = client_to_focus.address.get();
 
                         tokio::spawn(async move {
-                            let command = format!("workspace {}", client_workspace.id);
-                            if let Err(e) = hyprland.dispatch(&command).await {
-                                error!(error = %e, workspace = client_workspace.id, "Failed to switch workspace");
-                            }
-                            let command = format!("focuswindow address:0x{}", client_address);
+                            let command = format!(
+                                "hl.dsp.focus({{ window = \"address:0x{}\" }})",
+                                client_address
+                            );
                             if let Err(e) = hyprland.dispatch(&command).await {
                                 error!(error = %e, "Failed to focus client");
                             }
@@ -357,16 +355,12 @@ impl Component for HyprlandDockItemModel {
                         clients_on_workspace[0]
                     };
 
-                    let client_workspace_id = client_to_focus.workspace.get().id;
                     let client_address = client_to_focus.address.get();
 
-                    if Some(client_workspace_id) != active_workspace_id {
-                        let command = format!("workspace {}", client_workspace_id);
-                        if let Err(e) = hyprland.dispatch(&command).await {
-                            error!(error = %e, "Failed to switch workspace");
-                        }
-                    }
-                    let command = format!("focuswindow address:0x{}", client_address);
+                    let command = format!(
+                        "hl.dsp.focus({{ window = \"address:0x{}\" }})",
+                        client_address
+                    );
                     if let Err(e) = hyprland.dispatch(&command).await {
                         error!(error = %e, "Failed to focus client");
                     }
@@ -628,7 +622,8 @@ fn add_move_focused_client_to_menu(
                 let workspace_id = workspace.id.get();
                 let hyprland_clone = hyprland.clone();
                 tokio::spawn(async move {
-                    let command = format!("movetoworkspace {}", workspace_id);
+                    let command =
+                        format!("hl.dsp.window.move({{ workspace = \"{}\" }})", workspace_id);
                     if let Err(e) = hyprland_clone.dispatch(&command).await {
                         error!(error = %e, "Failed to switch workspace");
                     }

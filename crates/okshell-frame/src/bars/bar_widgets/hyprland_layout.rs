@@ -141,8 +141,11 @@ impl Component for HyprlandLayoutModel {
                     let hyprland = hyprland_service();
                     if let Some(active_workspace) = hyprland.active_workspace().await {
                         let workspace_id = active_workspace.id.get();
-                        let command = format!("workspace {}, layout:{}", workspace_id, layout);
-                        let result = hyprland.keyword(&command).await;
+                        let command = format!(
+                            "hl.workspace_rule({{ workspace = \"{}\", layout = \"{}\"}})",
+                            workspace_id, layout
+                        );
+                        let result = hyprland.eval(&command).await;
                         if let Err(e) = result {
                             error!(error = %e, workspace = workspace_id, "Failed set workspace layout");
                         }

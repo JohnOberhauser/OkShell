@@ -22,7 +22,10 @@ pub fn is_an_active_workspace(workspace: &Arc<Workspace>) -> bool {
 pub fn go_up_workspace() {
     let hyprland = hyprland_service();
     tokio::spawn(async move {
-        if let Err(e) = hyprland.dispatch("workspace r-1").await {
+        if let Err(e) = hyprland
+            .dispatch("hl.dsp.focus({ workspace = \"r-1\" })")
+            .await
+        {
             error!(error = %e, "Failed to switch workspace");
         }
     });
@@ -31,7 +34,10 @@ pub fn go_up_workspace() {
 pub fn go_down_workspace() {
     let hyprland = hyprland_service();
     tokio::spawn(async move {
-        if let Err(e) = hyprland.dispatch("workspace r+1").await {
+        if let Err(e) = hyprland
+            .dispatch("hl.dsp.focus({ workspace = \"r+1\" })")
+            .await
+        {
             error!(error = %e, "Failed to switch workspace");
         }
     });
