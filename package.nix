@@ -29,7 +29,7 @@
 
 rustPlatform.buildRustPackage rec {
   pname = "okshell";
-  version = "0.10.0";
+  version = "0.10.1";
 
   src = ./.;
 

@@ -3113,7 +3113,7 @@ dependencies = [
 
 [[package]]
 name = "okshell"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "clap",
  "okshell-cli-style",
@@ -3123,7 +3123,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-auth"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "futures",
  "tokio",
@@ -3133,7 +3133,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-cache"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "image",
  "okshell-config",
@@ -3146,14 +3146,14 @@ dependencies = [
 
 [[package]]
 name = "okshell-cli-style"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "clap",
 ]
 
 [[package]]
 name = "okshell-clipboard"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "image",
  "libc 1.0.0-alpha.3",
@@ -3166,7 +3166,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-clut-gen"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "image",
  "lutgen",
@@ -3177,7 +3177,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-common"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "futures",
  "gtk4-layer-shell",
@@ -3194,7 +3194,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-config"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "dirs",
  "figment",
@@ -3210,7 +3210,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-core"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "any_spawner",
  "anyhow",
@@ -3244,7 +3244,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-frame"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "cairo-rs 0.22.0",
  "futures",
@@ -3283,7 +3283,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-gamma"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "libc 1.0.0-alpha.3",
@@ -3294,7 +3294,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-idle"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "tokio",
  "tokio-stream",
@@ -3304,7 +3304,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-image"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "image",
  "lutgen",
@@ -3316,7 +3316,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-lockscreen"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "gtk4",
  "gtk4-layer-shell",
@@ -3337,14 +3337,14 @@ dependencies = [
 
 [[package]]
 name = "okshell-logging"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "tracing-subscriber",
 ]
 
 [[package]]
 name = "okshell-matugen"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "gtk4",
@@ -3357,7 +3357,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-notification-popups"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "gtk4",
  "gtk4-layer-shell",
@@ -3375,7 +3375,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-osd"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "gtk4",
  "gtk4-layer-shell",
@@ -3393,7 +3393,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-polkit"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "gtk4",
@@ -3407,7 +3407,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-screenshot"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "dirs",
@@ -3432,7 +3432,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-services"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "tokio",
@@ -3454,7 +3454,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-session"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "futures",
  "gtk4-layer-shell",
@@ -3471,7 +3471,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-settings"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "dirs",
  "fontconfig",
@@ -3486,14 +3486,14 @@ dependencies = [
 
 [[package]]
 name = "okshell-sounds"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "rodio",
 ]
 
 [[package]]
 name = "okshell-style"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "grass",
@@ -3512,7 +3512,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-utils"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "futures",
@@ -3540,7 +3540,7 @@ dependencies = [
 
 [[package]]
 name = "okshell-wallpaper"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "gtk4",
  "gtk4-layer-shell",
@@ -3557,7 +3557,7 @@ dependencies = [
 
 [[package]]
 name = "okshellctl"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -3569,7 +3569,7 @@ dependencies = [
 
 [[package]]
 name = "okshellshare"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "anyhow",
  "clap",
