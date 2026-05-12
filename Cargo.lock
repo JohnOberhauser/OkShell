@@ -1433,7 +1433,7 @@ dependencies = [
  "libc 0.2.186",
  "log",
  "rustversion",
- "windows-link 0.1.3",
+ "windows-link 0.2.1",
  "windows-result 0.4.1",
 ]
 
@@ -5739,8 +5739,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "zbus",
 ]
 
@@ -5759,8 +5759,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "zbus",
 ]
 
@@ -5778,8 +5778,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "zbus",
 ]
 
@@ -5797,8 +5797,8 @@ dependencies = [
  "tokio-util",
  "tracing",
  "udev",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "zbus",
 ]
 
@@ -5818,23 +5818,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "wayle-core"
-version = "0.1.2"
-source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-lua#24f5b014b25ca230ac74258b5f318b646e1f6dda"
-dependencies = [
- "futures",
- "serde",
- "serde_json",
- "tokio",
- "tokio-stream",
- "tracing",
- "zbus",
-]
-
-[[package]]
 name = "wayle-hyprland"
-version = "0.1.2"
-source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-lua#24f5b014b25ca230ac74258b5f318b646e1f6dda"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1aab13eb54ff8a5b22129b7b78206475141e586062ce9b4eb7e563991f0e350c"
 dependencies = [
  "async-trait",
  "derive_more",
@@ -5846,8 +5833,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-lua)",
- "wayle-traits 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-lua)",
+ "wayle-core",
+ "wayle-traits",
 ]
 
 [[package]]
@@ -5868,8 +5855,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "wildcard",
  "zbus",
 ]
@@ -5890,8 +5877,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "zbus",
 ]
 
@@ -5914,8 +5901,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "wildcard",
  "zbus",
 ]
@@ -5935,8 +5922,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "zbus",
 ]
 
@@ -5953,7 +5940,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
 ]
 
 [[package]]
@@ -5975,8 +5962,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
  "zbus",
 ]
 
@@ -5985,11 +5972,6 @@ name = "wayle-traits"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0833629ad4481a1302cb6df07da2b438bdb1c99dc5e5844e3198d53945728a6d"
-
-[[package]]
-name = "wayle-traits"
-version = "0.1.2"
-source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-lua#24f5b014b25ca230ac74258b5f318b646e1f6dda"
 
 [[package]]
 name = "wayle-weather"
@@ -6007,8 +5989,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core",
+ "wayle-traits",
 ]
 
 [[package]]
@@ -6077,7 +6059,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
