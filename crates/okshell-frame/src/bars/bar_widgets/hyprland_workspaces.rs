@@ -239,6 +239,10 @@ impl HyprlandWorkspacesModel {
         let mut last_monitor: Option<MonitorId> = None;
 
         for workspace in workspaces {
+            // Hide special workspaces
+            if workspace.name.get().starts_with("special:") {
+                continue;
+            }
             if let Some(monitor) = workspace.monitor_id.get() {
                 if last_monitor.is_some_and(|m| m != monitor) {
                     out.push(WsRow::Divider(monitor));
