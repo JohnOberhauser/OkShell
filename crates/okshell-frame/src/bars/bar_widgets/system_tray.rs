@@ -53,6 +53,11 @@ impl Component for SystemTrayModel {
             set_valign: gtk::Align::Center,
 
             gtk::Revealer {
+                set_transition_type: if model.orientation == Orientation::Vertical {
+                    gtk::RevealerTransitionType::SlideUp
+                } else {
+                    gtk::RevealerTransitionType::SlideLeft
+                },
                 #[watch]
                 set_reveal_child: model.revealed,
 
