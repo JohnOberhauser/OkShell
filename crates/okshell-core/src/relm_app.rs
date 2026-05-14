@@ -102,7 +102,7 @@ impl Component for Shell {
         root.connect_realize(|window| {
             let window = window.clone();
             relm4::spawn_local(async move {
-                if let Err(e) = okshell_idle::wayland::IdleInhibitor::global()
+                if let Err(e) = okshell_idle::inhibitor::IdleInhibitor::global()
                     .init(&window)
                     .await
                 {

@@ -1,2 +1,2 @@
 // pub mod inhibitor;
-pub mod wayland;
+pub mod inhibitor;
