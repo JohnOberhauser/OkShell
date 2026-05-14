@@ -1,6 +1,6 @@
 use crate::ipc::init_ipc_shell_service;
 use crate::monitors;
-use gtk4_layer_shell::{Layer, LayerShell};
+use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{BarsStoreFields, ConfigStoreFields, FrameStoreFields};
 use okshell_frame::frame::{Frame, FrameInit, FrameInput};
@@ -95,10 +95,10 @@ impl Component for Shell {
 
         root.init_layer_shell();
         root.set_layer(Layer::Background);
+        root.set_anchor(Edge::Top, true);
+        root.set_anchor(Edge::Left, true);
         root.set_default_size(1, 1);
-        root.set_visible(true);
         root.set_namespace(Some("okshell-invisible-root"));
-
         root.connect_realize(|window| {
             let window = window.clone();
             relm4::spawn_local(async move {
@@ -110,6 +110,7 @@ impl Component for Shell {
                 }
             });
         });
+        root.set_visible(true);
 
         let widgets = view_output!();
 

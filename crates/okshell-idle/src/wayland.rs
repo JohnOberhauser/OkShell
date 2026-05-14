@@ -10,7 +10,7 @@ use gtk::prelude::{NativeExt, ObjectExt};
 use relm4::gtk;
 use tokio::sync::{Mutex, watch};
 use tokio_stream::wrappers::WatchStream;
-use tracing::warn;
+use tracing::{info, warn};
 use wayland_client::backend::{Backend, ObjectId};
 use wayland_client::protocol::{wl_registry, wl_surface};
 use wayland_client::{Connection, Dispatch, EventQueue, Proxy};
@@ -283,6 +283,7 @@ impl IdleInhibitor {
         if read_cached_state() {
             self.enable().await?;
         }
+        info!("Idle inhibitor initialized");
         Ok(())
     }
 
@@ -300,6 +301,7 @@ impl IdleInhibitor {
         inner.set_inhibit(true);
         let _ = self.state_tx.send(true);
         write_cached_state(true);
+        info!("Idle inhibitor enabled");
         Ok(())
     }
 
@@ -310,6 +312,7 @@ impl IdleInhibitor {
         }
         let _ = self.state_tx.send(false);
         write_cached_state(false);
+        info!("Idle inhibitor disabled");
     }
 
     pub async fn toggle(&self) -> Result<bool, IdleError> {
