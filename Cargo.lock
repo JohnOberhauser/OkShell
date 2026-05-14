@@ -1423,33 +1423,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gdk4-wayland"
-version = "0.10.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcb81f3e1e7d9dac156e91a9dc81be33d8c99338975254ed93ca9f1de5cb3168"
-dependencies = [
- "gdk4",
- "gdk4-wayland-sys",
- "gio",
- "glib 0.21.5",
- "libc 0.2.186",
- "wayland-backend",
- "wayland-client",
- "wayland-protocols",
-]
-
-[[package]]
-name = "gdk4-wayland-sys"
-version = "0.10.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d739aa4ae9a1abb15f01ab2d8b8dd14a7792104ffb60bbc09bb94d76b905cfeb"
-dependencies = [
- "glib-sys 0.21.5",
- "libc 0.2.186",
- "system-deps",
-]
-
-[[package]]
 name = "generator"
 version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3323,7 +3296,6 @@ dependencies = [
 name = "okshell-idle"
 version = "0.10.2"
 dependencies = [
- "gdk4-wayland",
  "relm4",
  "tokio",
  "tokio-stream",

@@ -8,7 +8,7 @@ use gtk4::glib::SignalHandlerId;
 use gtk4::prelude::{GtkWindowExt, MonitorExt, WidgetExt};
 use gtk4_layer_shell::{Layer, LayerShell};
 use okshell_auth::fingerprint::{FingerprintAuth, FingerprintEvent};
-use okshell_idle::inhibitor::IdleInhibitor;
+use okshell_idle::wayland::IdleInhibitor;
 use okshell_session::session_lock::session_lock;
 use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use std::time::Duration;

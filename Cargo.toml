@@ -49,7 +49,6 @@ figment = { version = "0.10.19", features = ["yaml"] }
 fontconfig = "0.10.1"
 futures = "0.3.32"
 grass = "0.13.4"
-gdk4-wayland = { version = "0.10.3", features = ["wayland_crate"] }
 gtk4 = { version = "0.10.3", features = ["v4_20"] }
 gtk4-layer-shell = "0.7.1"
 gtk4-session-lock = { version = "0.3.0", features = ["v1_2"] }

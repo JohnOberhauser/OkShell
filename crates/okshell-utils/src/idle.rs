@@ -1,5 +1,5 @@
 use okshell_common::watch;
-use okshell_idle::inhibitor::IdleInhibitor;
+use okshell_idle::wayland::IdleInhibitor;
 use relm4::{Component, ComponentSender};
 
 pub fn spawn_idle_inhibitor_watcher<C>(

@@ -1,4 +1,4 @@
-use okshell_idle::inhibitor::IdleInhibitor;
+use okshell_idle::wayland::IdleInhibitor;
 use okshell_utils::idle::spawn_idle_inhibitor_watcher;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
