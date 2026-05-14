@@ -8,7 +8,12 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
+gdk4-wayland.workspace = true
 tokio.workspace = true
 tokio-stream.workspace = true
 tracing.workspace = true
+relm4.workspace = true
+wayland-backend.workspace = true
+wayland-client.workspace = true
+wayland-protocols.workspace = true
 zbus.workspace = true
