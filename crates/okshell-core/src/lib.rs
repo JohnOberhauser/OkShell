@@ -7,7 +7,6 @@ use any_spawner::Executor;
 use okshell_config::schema::config::{
     ConfigStoreFields, GeneralStoreFields, IconsStoreFields, ThemeStoreFields,
 };
-use okshell_idle::inhibitor::IdleInhibitor;
 use okshell_services::weather_service;
 use reactive_graph::effect::Effect;
 use reactive_graph::traits::{Get, GetUntracked};
@@ -56,10 +55,6 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     tokio_rt().block_on(async {
         okshell_services::init_services(location_query, temperature_units).await
     })?;
-
-    tokio_rt().spawn(async move {
-        let _ = IdleInhibitor::global().init().await;
-    });
 
     Effect::new(move |_| {
         let theme = config_manager

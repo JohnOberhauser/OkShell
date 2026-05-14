@@ -108,8 +108,9 @@ tokio-util = "0.7.18"
 tracing = "0.1.44"
 tracing-appender = "0.2.5"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+wayland-backend = { version = "0.3.15", features = ["client_system"] }
 wayland-client = "0.31.14"
-wayland-protocols = { version = "0.32.12", features = ["staging", "client"] }
+wayland-protocols = { version = "0.32.12", features = ["staging", "client", "unstable"] }
 wayland-protocols-wlr = { version = "0.3.12", features = ["client"] }
 wayle-audio = "0.1.2"
 wayle-battery = "0.1.2"
