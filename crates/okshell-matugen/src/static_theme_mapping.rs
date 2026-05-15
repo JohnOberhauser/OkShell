@@ -2,10 +2,12 @@ use crate::json_struct::{MatugenTheme, OkShell};
 use crate::static_themes::bauhaus::bauhaus;
 use crate::static_themes::black_turq::black_turq;
 use crate::static_themes::bloodrust::blood_rust;
+use crate::static_themes::boo::boo;
 use crate::static_themes::catppuccin_frappe::catppuccin_frappe;
 use crate::static_themes::catppuccin_latte::catppuccin_latte;
 use crate::static_themes::catppuccin_macchiato::catppuccin_macchiato;
 use crate::static_themes::catppuccin_mocha::catppuccin_mocha;
+use crate::static_themes::crimson_moonlight::crimson_moonlight;
 use crate::static_themes::cyberpunk::cyberpunk;
 use crate::static_themes::desert_power::desert_power;
 use crate::static_themes::dracula::dracula;
@@ -17,6 +19,7 @@ use crate::static_themes::everforest_dark_soft::everforest_dark_soft;
 use crate::static_themes::everforest_light_hard::everforest_light_hard;
 use crate::static_themes::everforest_light_medium::everforest_light_medium;
 use crate::static_themes::everforest_light_soft::everforest_light_soft;
+use crate::static_themes::forest_stream::forest_stream;
 use crate::static_themes::gruvbox_dark_hard::gruvbox_dark_hard;
 use crate::static_themes::gruvbox_dark_medium::gruvbox_dark_medium;
 use crate::static_themes::gruvbox_dark_soft::gruvbox_dark_soft;
@@ -36,6 +39,7 @@ use crate::static_themes::oceanic_next::oceanic_next;
 use crate::static_themes::one_dark::one_dark;
 use crate::static_themes::osaka_jade::osaka_jade;
 use crate::static_themes::poimandres::poimandres;
+use crate::static_themes::radioactive::radioactive;
 use crate::static_themes::retro_82::retro_82;
 use crate::static_themes::rose_pine::rose_pine;
 use crate::static_themes::rose_pine_dawn::rose_pine_dawn;
@@ -45,6 +49,7 @@ use crate::static_themes::seoul::seoul;
 use crate::static_themes::solarized_dark::solarized_dark;
 use crate::static_themes::solarized_light::solarized_light;
 use crate::static_themes::solitude::solitude;
+use crate::static_themes::sunset_cloud::sunset_cloud;
 use crate::static_themes::synthwave_84::synthwave84;
 use crate::static_themes::tokyo_night::tokyo_night;
 use crate::static_themes::tokyo_night_light::tokyo_night_light;
@@ -59,10 +64,12 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::Bauhaus => Some(bauhaus(okshell)),
         Themes::BlackTurq => Some(black_turq(okshell)),
         Themes::BloodRust => Some(blood_rust(okshell)),
+        Themes::Boo => Some(boo(okshell)),
         Themes::CatppuccinFrappe => Some(catppuccin_frappe(okshell)),
         Themes::CatppuccinLatte => Some(catppuccin_latte(okshell)),
         Themes::CatppuccinMacchiato => Some(catppuccin_macchiato(okshell)),
         Themes::CatppuccinMocha => Some(catppuccin_mocha(okshell)),
+        Themes::CrimsonMoonlight => Some(crimson_moonlight(okshell)),
         Themes::Cyberpunk => Some(cyberpunk(okshell)),
         Themes::DesertPower => Some(desert_power(okshell)),
         Themes::Dracula => Some(dracula(okshell)),
@@ -74,6 +81,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::EverforestLightHard => Some(everforest_light_hard(okshell)),
         Themes::EverforestLightMedium => Some(everforest_light_medium(okshell)),
         Themes::EverforestLightSoft => Some(everforest_light_soft(okshell)),
+        Themes::ForestStream => Some(forest_stream(okshell)),
         Themes::GruvboxDarkHard => Some(gruvbox_dark_hard(okshell)),
         Themes::GruvboxDarkMedium => Some(gruvbox_dark_medium(okshell)),
         Themes::GruvboxDarkSoft => Some(gruvbox_dark_soft(okshell)),
@@ -93,6 +101,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::OneDark => Some(one_dark(okshell)),
         Themes::OsakaJade => Some(osaka_jade(okshell)),
         Themes::Poimandres => Some(poimandres(okshell)),
+        Themes::Radioactive => Some(radioactive(okshell)),
         Themes::Retro82 => Some(retro_82(okshell)),
         Themes::RosePine => Some(rose_pine(okshell)),
         Themes::RosePineDawn => Some(rose_pine_dawn(okshell)),
@@ -102,6 +111,7 @@ pub fn static_theme(theme: &Themes, okshell: Option<OkShell>) -> Option<MatugenT
         Themes::SolarizedDark => Some(solarized_dark(okshell)),
         Themes::SolarizedLight => Some(solarized_light(okshell)),
         Themes::Solitude => Some(solitude(okshell)),
+        Themes::SunsetCloud => Some(sunset_cloud(okshell)),
         Themes::Synthwave84 => Some(synthwave84(okshell)),
         Themes::TokyoNight => Some(tokyo_night(okshell)),
         Themes::TokyoNightStorm => Some(tokyo_night_storm(okshell)),
