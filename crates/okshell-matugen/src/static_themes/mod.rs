@@ -32,6 +32,7 @@ pub mod kanagawa_lotus;
 pub mod kanagawa_wave;
 pub mod miasma;
 pub mod monokai_classic;
+pub mod nightfox;
 pub mod nord_dark;
 pub mod nord_light;
 pub mod oceanic_next;

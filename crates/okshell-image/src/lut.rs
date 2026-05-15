@@ -43,6 +43,7 @@ const CLUT_KANAGAWA_LOTUS: &[u8] = include_bytes!("../cluts/kanagawa_lotus.bin")
 const CLUT_KANAGAWA_WAVE: &[u8] = include_bytes!("../cluts/kanagawa_wave.bin");
 const CLUT_MIASMA: &[u8] = include_bytes!("../cluts/miasma.bin");
 const CLUT_MONOKAI_CLASSIC: &[u8] = include_bytes!("../cluts/monokai_classic.bin");
+const CLUT_NIGHTFOX: &[u8] = include_bytes!("../cluts/nightfox.bin");
 const CLUT_NORD_DARK: &[u8] = include_bytes!("../cluts/nord_dark.bin");
 const CLUT_NORD_LIGHT: &[u8] = include_bytes!("../cluts/nord_light.bin");
 const CLUT_OCEANIC_NEXT: &[u8] = include_bytes!("../cluts/oceanic_next.bin");
@@ -105,6 +106,7 @@ pub fn embedded_clut(theme: &Themes) -> Option<&'static [u8]> {
         Themes::KanagawaWave => Some(CLUT_KANAGAWA_WAVE),
         Themes::Miasma => Some(CLUT_MIASMA),
         Themes::MonokaiClassic => Some(CLUT_MONOKAI_CLASSIC),
+        Themes::Nightfox => Some(CLUT_NIGHTFOX),
         Themes::NordDark => Some(CLUT_NORD_DARK),
         Themes::NordLight => Some(CLUT_NORD_LIGHT),
         Themes::OceanicNext => Some(CLUT_OCEANIC_NEXT),
