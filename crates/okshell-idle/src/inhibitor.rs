@@ -1,4 +1,3 @@
-//! Singleton idle inhibitor using the Wayland idle-inhibit protocol.
 use std::ffi::c_void;
 use std::fmt;
 use std::path::PathBuf;
