@@ -1,5 +1,10 @@
 use crate::bars::bar::BarType;
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
+use okshell_config::config_manager::config_manager;
+use okshell_config::schema::config::{
+    BarsStoreFields, ConfigStoreFields, HorizontalBarStoreFields, VerticalBarStoreFields,
+};
+use reactive_graph::traits::GetUntracked;
 use relm4::gtk::Orientation;
 use relm4::gtk::gdk::Monitor;
 use relm4::gtk::prelude::{GtkWindowExt, WidgetExt};
@@ -12,6 +17,7 @@ pub(crate) struct FrameSpacerModel {
     height: i32,
     border_width: i32,
     border_height: i32,
+    revealed: bool,
 }
 
 #[derive(Debug)]
@@ -20,6 +26,8 @@ pub(crate) enum FrameSpacerInput {
     HeightUpdated(i32),
     BorderWidthUpdated(i32),
     BorderHeightUpdated(i32),
+    SetRevealed(bool),
+    ToggleRevealed,
 }
 
 #[derive(Debug)]
@@ -54,13 +62,19 @@ impl Component for FrameSpacerModel {
             set_can_target: false,
             set_can_focus: false,
 
-            #[name = "spacer"]
-            gtk::Box {
+            gtk::Revealer {
                 #[watch]
-                set_width_request: model.width + model.border_width,
-                #[watch]
-                set_height_request: model.height + model.border_height,
-            }
+                set_reveal_child: model.revealed,
+                set_transition_type: transition_type,
+
+                #[name = "spacer"]
+                gtk::Box {
+                    #[watch]
+                    set_width_request: model.width + model.border_width,
+                    #[watch]
+                    set_height_request: model.height + model.border_height,
+                },
+            },
         },
     }
 
@@ -77,26 +91,57 @@ impl Component for FrameSpacerModel {
         root.set_visible(true);
         root.set_namespace(Some("okshell-spacer"));
 
+        let transition_type: gtk::RevealerTransitionType;
+        let reveal_by_default: bool;
+
         match params.bar_type {
             BarType::Top => {
                 root.set_anchor(Edge::Top, true);
                 root.set_anchor(Edge::Left, true);
                 root.set_anchor(Edge::Right, true);
+                transition_type = gtk::RevealerTransitionType::SlideDown;
+                reveal_by_default = config_manager()
+                    .config()
+                    .bars()
+                    .top_bar()
+                    .reveal_by_default()
+                    .get_untracked();
             }
             BarType::Bottom => {
                 root.set_anchor(Edge::Bottom, true);
                 root.set_anchor(Edge::Left, true);
                 root.set_anchor(Edge::Right, true);
+                transition_type = gtk::RevealerTransitionType::SlideUp;
+                reveal_by_default = config_manager()
+                    .config()
+                    .bars()
+                    .bottom_bar()
+                    .reveal_by_default()
+                    .get_untracked();
             }
             BarType::Left => {
                 root.set_anchor(Edge::Top, true);
                 root.set_anchor(Edge::Bottom, true);
                 root.set_anchor(Edge::Left, true);
+                transition_type = gtk::RevealerTransitionType::SlideRight;
+                reveal_by_default = config_manager()
+                    .config()
+                    .bars()
+                    .left_bar()
+                    .reveal_by_default()
+                    .get_untracked();
             }
             BarType::Right => {
                 root.set_anchor(Edge::Top, true);
                 root.set_anchor(Edge::Bottom, true);
                 root.set_anchor(Edge::Right, true);
+                transition_type = gtk::RevealerTransitionType::SlideLeft;
+                reveal_by_default = config_manager()
+                    .config()
+                    .bars()
+                    .right_bar()
+                    .reveal_by_default()
+                    .get_untracked();
             }
         }
 
@@ -112,6 +157,7 @@ impl Component for FrameSpacerModel {
             height: 0,
             border_width: 0,
             border_height: 0,
+            revealed: reveal_by_default,
         };
 
         let widgets = view_output!();
@@ -136,6 +182,12 @@ impl Component for FrameSpacerModel {
             FrameSpacerInput::BorderWidthUpdated(width) => self.border_width = width,
             FrameSpacerInput::BorderHeightUpdated(height) => {
                 self.border_height = height;
+            }
+            FrameSpacerInput::SetRevealed(revealed) => {
+                self.revealed = revealed;
+            }
+            FrameSpacerInput::ToggleRevealed => {
+                self.revealed = !self.revealed;
             }
         }
         self.update_view(widgets, sender);

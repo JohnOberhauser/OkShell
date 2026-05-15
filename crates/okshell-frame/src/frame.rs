@@ -791,15 +791,27 @@ impl Component for Frame {
             }
             FrameInput::BarToggleTop => {
                 self.top_bar.sender().emit(BarInput::ToggleRevealed);
+                self.top_spacer
+                    .sender()
+                    .emit(FrameSpacerInput::ToggleRevealed);
             }
             FrameInput::BarToggleBottom => {
                 self.bottom_bar.sender().emit(BarInput::ToggleRevealed);
+                self.bottom_spacer
+                    .sender()
+                    .emit(FrameSpacerInput::ToggleRevealed);
             }
             FrameInput::BarToggleLeft => {
                 self.left_bar.sender().emit(BarInput::ToggleRevealed);
+                self.left_spacer
+                    .sender()
+                    .emit(FrameSpacerInput::ToggleRevealed);
             }
             FrameInput::BarToggleRight => {
                 self.right_bar.sender().emit(BarInput::ToggleRevealed);
+                self.right_spacer
+                    .sender()
+                    .emit(FrameSpacerInput::ToggleRevealed);
             }
             FrameInput::BarToggleAll(exclude_hidden_by_default) => {
                 if exclude_hidden_by_default {
@@ -811,6 +823,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.top_bar.sender().emit(BarInput::ToggleRevealed);
+                        self.top_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::ToggleRevealed);
                     }
                     if config_manager()
                         .config()
@@ -820,6 +835,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.bottom_bar.sender().emit(BarInput::ToggleRevealed);
+                        self.bottom_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::ToggleRevealed);
                     }
                     if config_manager()
                         .config()
@@ -829,6 +847,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.left_bar.sender().emit(BarInput::ToggleRevealed);
+                        self.left_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::ToggleRevealed);
                     }
                     if config_manager()
                         .config()
@@ -838,12 +859,27 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.right_bar.sender().emit(BarInput::ToggleRevealed);
+                        self.right_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::ToggleRevealed);
                     }
                 } else {
                     self.top_bar.sender().emit(BarInput::ToggleRevealed);
                     self.bottom_bar.sender().emit(BarInput::ToggleRevealed);
                     self.left_bar.sender().emit(BarInput::ToggleRevealed);
                     self.right_bar.sender().emit(BarInput::ToggleRevealed);
+                    self.top_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::ToggleRevealed);
+                    self.bottom_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::ToggleRevealed);
+                    self.left_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::ToggleRevealed);
+                    self.right_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::ToggleRevealed);
                 }
             }
             FrameInput::BarRevealAll(exclude_hidden_by_default) => {
@@ -856,6 +892,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.top_bar.sender().emit(BarInput::SetRevealed(true));
+                        self.top_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::SetRevealed(true));
                     }
                     if config_manager()
                         .config()
@@ -865,6 +904,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.bottom_bar.sender().emit(BarInput::SetRevealed(true));
+                        self.bottom_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::SetRevealed(true));
                     }
                     if config_manager()
                         .config()
@@ -874,6 +916,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.left_bar.sender().emit(BarInput::SetRevealed(true));
+                        self.left_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::SetRevealed(true));
                     }
                     if config_manager()
                         .config()
@@ -883,12 +928,27 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.right_bar.sender().emit(BarInput::SetRevealed(true));
+                        self.right_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::SetRevealed(true));
                     }
                 } else {
                     self.top_bar.sender().emit(BarInput::SetRevealed(true));
                     self.bottom_bar.sender().emit(BarInput::SetRevealed(true));
                     self.left_bar.sender().emit(BarInput::SetRevealed(true));
                     self.right_bar.sender().emit(BarInput::SetRevealed(true));
+                    self.top_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::SetRevealed(true));
+                    self.bottom_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::SetRevealed(true));
+                    self.left_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::SetRevealed(true));
+                    self.right_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::SetRevealed(true));
                 }
             }
             FrameInput::BarHideAll(exclude_hidden_by_default) => {
@@ -901,6 +961,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.top_bar.sender().emit(BarInput::SetRevealed(false));
+                        self.top_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::SetRevealed(false));
                     }
                     if config_manager()
                         .config()
@@ -910,6 +973,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.bottom_bar.sender().emit(BarInput::SetRevealed(false));
+                        self.bottom_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::SetRevealed(false));
                     }
                     if config_manager()
                         .config()
@@ -919,6 +985,9 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.left_bar.sender().emit(BarInput::SetRevealed(false));
+                        self.left_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::SetRevealed(false));
                     }
                     if config_manager()
                         .config()
@@ -928,12 +997,27 @@ impl Component for Frame {
                         .get_untracked()
                     {
                         self.right_bar.sender().emit(BarInput::SetRevealed(false));
+                        self.right_spacer
+                            .sender()
+                            .emit(FrameSpacerInput::SetRevealed(false));
                     }
                 } else {
                     self.top_bar.sender().emit(BarInput::SetRevealed(false));
                     self.bottom_bar.sender().emit(BarInput::SetRevealed(false));
                     self.left_bar.sender().emit(BarInput::SetRevealed(false));
                     self.right_bar.sender().emit(BarInput::SetRevealed(false));
+                    self.top_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::SetRevealed(false));
+                    self.bottom_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::SetRevealed(false));
+                    self.left_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::SetRevealed(false));
+                    self.right_spacer
+                        .sender()
+                        .emit(FrameSpacerInput::SetRevealed(false));
                 }
             }
         }
