@@ -13,12 +13,28 @@
   <path
      d="m 237.66,178.34 c 3.12839,3.12491 3.12839,8.19509 0,11.32 l -24,24 c -3.12593,3.12593 -8.19407,3.12593 -11.32,0 -3.12593,-3.12593 -3.12593,-8.19407 0,-11.32 L 212.69,192 c -0.93324,-8.1202 -0.6051,-8.09349 0,-16 l -10.35,-10.34 c -3.12593,-3.12593 -3.12593,-8.19407 0,-11.32 3.12593,-3.12593 8.19407,-3.12593 11.32,0 z M 212.69,80 202.34,90.34 c -3.12593,3.125934 -3.12593,8.194066 0,11.32 3.12593,3.12593 8.19407,3.12593 11.32,0 l 24,-24 c 3.12839,-3.124913 3.12839,-8.195087 0,-11.32 l -24,-24 c -3.12593,-3.125934 -8.19407,-3.125929 -11.32,2e-6 -3.12593,3.125932 -3.12593,8.194064 0,11.319998 L 212.69,64 c -3.15942,9.638552 -3.11896,8.093489 0,16 z"
      id="path1" />
-  <path
-     style="fill:#ffffff;stroke:#000000;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
-     d="M 216,72 H 32"
-     id="path2" />
-  <path
-     style="fill:#ffffff;stroke:#000000;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none"
-     d="M 216,184 H 32"
-     id="path3" />
+  <g
+     id="path2"
+     style="opacity:1">
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="M 216,72 H 32"
+       id="path4" />
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="m 32,64 a 8,8 0 0 0 -8,8 8,8 0 0 0 8,8 h 184 a 8,8 0 0 0 8,-8 8,8 0 0 0 -8,-8 z"
+       id="path5" />
+  </g>
+  <g
+     id="path3"
+     style="opacity:1">
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#ffffff;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="M 216,184 H 32"
+       id="path6" />
+    <path
+       style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+       d="m 32,176 a 8,8 0 0 0 -8,8 8,8 0 0 0 8,8 h 184 a 8,8 0 0 0 8,-8 8,8 0 0 0 -8,-8 z"
+       id="path7" />
+  </g>
 </svg>
