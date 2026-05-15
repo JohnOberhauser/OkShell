@@ -9,13 +9,16 @@ use relm4::{Component, ComponentParts, ComponentSender, gtk};
 #[derive(Debug, Clone)]
 pub(crate) struct NotificationSettingsModel {
     position: NotificationPosition,
+    window_margins: i32,
     _effects: EffectScope,
 }
 
 #[derive(Debug)]
 pub(crate) enum NotificationSettingsInput {
     PositionChanged(NotificationPosition),
+    WindowMarginChanged(i32),
     PositionEffect(NotificationPosition),
+    WindowMarginEffect(i32),
 }
 
 #[derive(Debug)]
@@ -94,6 +97,44 @@ impl Component for NotificationSettingsModel {
                         } @handler,
                     },
                 },
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 20,
+
+                    gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+
+                        gtk::Label {
+                            add_css_class: "label-medium-bold",
+                            set_halign: gtk::Align::Start,
+                            set_label: "Popup Window Margins",
+                            set_hexpand: true,
+                        },
+
+                        gtk::Label {
+                            add_css_class: "label-small",
+                            set_halign: gtk::Align::Start,
+                            set_label: "The margin around the popups window.",
+                            set_hexpand: true,
+                            set_xalign: 0.0,
+                            set_wrap: true,
+                            set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                        },
+                    },
+
+                    gtk::SpinButton {
+                        set_valign: gtk::Align::Center,
+                        set_range: (0.0, 1000.0),
+                        set_increments: (1.0, 10.0),
+                        #[watch]
+                        #[block_signal(window_margin_handler)]
+                        set_value: model.window_margins as f64,
+                        connect_value_changed[sender] => move |s| {
+                            sender.input(NotificationSettingsInput::WindowMarginChanged(s.value() as i32));
+                        } @window_margin_handler,
+                    },
+                },
             },
         }
     }
@@ -112,11 +153,26 @@ impl Component for NotificationSettingsModel {
             sender_clone.input(NotificationSettingsInput::PositionEffect(value));
         });
 
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager()
+                .config()
+                .notifications()
+                .popup_window_margins()
+                .get();
+            sender_clone.input(NotificationSettingsInput::WindowMarginEffect(value));
+        });
+
         let model = NotificationSettingsModel {
             position: config_manager()
                 .config()
                 .notifications()
                 .notification_position()
+                .get_untracked(),
+            window_margins: config_manager()
+                .config()
+                .notifications()
+                .popup_window_margins()
                 .get_untracked(),
             _effects: effects,
         };
@@ -140,8 +196,17 @@ impl Component for NotificationSettingsModel {
                     config.notifications.notification_position = position;
                 });
             }
+            NotificationSettingsInput::WindowMarginChanged(margin) => {
+                self.window_margins = margin;
+                config_manager().update_config(|config| {
+                    config.notifications.popup_window_margins = margin;
+                });
+            }
             NotificationSettingsInput::PositionEffect(position) => {
                 self.position = position;
+            }
+            NotificationSettingsInput::WindowMarginEffect(margin) => {
+                self.window_margins = margin;
             }
         }
 

@@ -13,18 +13,22 @@ use okshell_utils::notifications::spawn_notification_popups_watcher;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::gtk::prelude::{GtkWindowExt, OrientableExt, WidgetExt};
 use relm4::gtk::{RevealerTransitionType, gdk};
-use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
+use relm4::{
+    Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmWidgetExt, gtk,
+};
 use std::sync::Arc;
 use wayle_notification::core::notification::Notification;
 
 pub struct PopupNotificationsModel {
     dynamic_box_controller: Controller<DynamicBoxModel<Arc<Notification>, u32>>,
+    window_margins: i32,
     _effects: EffectScope,
 }
 
 #[derive(Debug)]
 pub enum PopupNotificationsInput {
     PositionChanged(NotificationPosition),
+    WindowMarginEffect(i32),
 }
 
 #[derive(Debug)]
@@ -124,8 +128,23 @@ impl Component for PopupNotificationsModel {
             sender_clone.input(PopupNotificationsInput::PositionChanged(position))
         });
 
+        let sender_clone = sender.clone();
+        effects.push(move |_| {
+            let value = config_manager()
+                .config()
+                .notifications()
+                .popup_window_margins()
+                .get();
+            sender_clone.input(PopupNotificationsInput::WindowMarginEffect(value))
+        });
+
         let model = PopupNotificationsModel {
             dynamic_box_controller: notifications_dynamic_box_controller,
+            window_margins: config_manager()
+                .config()
+                .notifications()
+                .popup_window_margins()
+                .get_untracked(),
             _effects: effects,
         };
 
@@ -144,6 +163,12 @@ impl Component for PopupNotificationsModel {
         match message {
             PopupNotificationsInput::PositionChanged(pos) => {
                 set_position(pos, root);
+            }
+            PopupNotificationsInput::WindowMarginEffect(margin) => {
+                self.window_margins = margin;
+                root.set_margin(Edge::Top, margin);
+                root.set_margin(Edge::Left, margin);
+                root.set_margin(Edge::Right, margin);
             }
         }
     }

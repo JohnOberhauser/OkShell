@@ -330,12 +330,14 @@ impl Default for Menus {
 #[serde(default)]
 pub struct Notifications {
     pub notification_position: NotificationPosition,
+    pub popup_window_margins: i32,
 }
 
 impl Default for Notifications {
     fn default() -> Self {
         Self {
             notification_position: NotificationPosition::Right,
+            popup_window_margins: 0,
         }
     }
 }
