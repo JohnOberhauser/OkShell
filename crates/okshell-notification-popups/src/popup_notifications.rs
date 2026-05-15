@@ -13,9 +13,7 @@ use okshell_utils::notifications::spawn_notification_popups_watcher;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::gtk::prelude::{GtkWindowExt, OrientableExt, WidgetExt};
 use relm4::gtk::{RevealerTransitionType, gdk};
-use relm4::{
-    Component, ComponentController, ComponentParts, ComponentSender, Controller, RelmWidgetExt, gtk,
-};
+use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use std::sync::Arc;
 use wayle_notification::core::notification::Notification;
 
