@@ -192,7 +192,10 @@ impl Component for Shell {
                 }
             }
             ShellInput::AddWindowGroup(name, monitor) => {
-                info!("Creating new window group");
+                if self.window_groups.contains_key(&name) {
+                    return;
+                }
+                info!("Creating new window group: {}", name);
                 let wallpaper = Some(
                     WallpaperModel::builder()
                         .launch(WallpaperInit {
@@ -252,6 +255,7 @@ impl Component for Shell {
                 self.window_groups.insert(name, window_group);
             }
             ShellInput::RemoveWindowGroup(name) => {
+                info!("Removing window group: {}", name);
                 if let Some(group) = self.window_groups.remove(&name) {
                     if let Some(frame) = &group.frame {
                         frame.widget().close();
