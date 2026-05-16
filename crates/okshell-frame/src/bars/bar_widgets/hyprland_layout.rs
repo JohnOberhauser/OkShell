@@ -1,20 +1,28 @@
+use futures::StreamExt;
 use okshell_services::hyprland_service;
+use okshell_utils::hyprland::get_active_workspaces;
+use relm4::gtk::gdk::prelude::{DisplayExt, MonitorExt};
 use relm4::gtk::gio::prelude::ActionMapExt;
 use relm4::gtk::glib::clone::Downgrade;
+use relm4::gtk::glib::object::IsA;
 use relm4::gtk::glib::variant::ToVariant;
-use relm4::gtk::prelude::{BoxExt, ButtonExt, PopoverExt, WidgetExt};
+use relm4::gtk::prelude::{BoxExt, ButtonExt, NativeExt, PopoverExt, WidgetExt};
 use relm4::gtk::{Orientation, gio};
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
 use tracing::error;
+use wayle_hyprland::HyprlandEvent;
 
 #[derive(Debug)]
 pub(crate) struct HyprlandLayoutModel {
     orientation: Orientation,
+    icon: String,
 }
 
 #[derive(Debug)]
 pub(crate) enum HyprlandLayoutInput {
     SetLayout(&'static str),
+    RefreshIcon,
+    SetIcon(String),
 }
 
 #[derive(Debug)]
@@ -25,7 +33,9 @@ pub(crate) struct HyprlandLayoutInit {
 }
 
 #[derive(Debug)]
-pub(crate) enum HyprlandLayoutCommandOutput {}
+pub(crate) enum HyprlandLayoutCommandOutput {
+    UpdateIcon,
+}
 
 #[relm4::component(pub)]
 impl Component for HyprlandLayoutModel {
@@ -48,7 +58,8 @@ impl Component for HyprlandLayoutModel {
                 set_css_classes: &["ok-button-surface", "ok-bar-widget"],
                 set_hexpand: false,
                 set_vexpand: false,
-                set_icon_name: "layout-symbolic",
+                #[watch]
+                set_icon_name: model.icon.as_str(),
                 set_always_show_arrow: false,
             }
         }
@@ -59,8 +70,11 @@ impl Component for HyprlandLayoutModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
+        Self::spawn_main_watcher(&sender);
+
         let model = HyprlandLayoutModel {
             orientation: params.orientation,
+            icon: "layout-symbolic".to_string(),
         };
 
         let widgets = view_output!();
@@ -125,18 +139,21 @@ impl Component for HyprlandLayoutModel {
             });
         }
 
+        sender.input(HyprlandLayoutInput::RefreshIcon);
+
         ComponentParts { model, widgets }
     }
 
     fn update_with_view(
         &mut self,
-        _widgets: &mut Self::Widgets,
+        widgets: &mut Self::Widgets,
         message: Self::Input,
-        _sender: ComponentSender<Self>,
-        _root: &Self::Root,
+        sender: ComponentSender<Self>,
+        root: &Self::Root,
     ) {
         match message {
             HyprlandLayoutInput::SetLayout(layout) => {
+                let sender_clone = sender.clone();
                 tokio::spawn(async move {
                     let hyprland = hyprland_service();
                     if let Some(active_workspace) = hyprland.active_workspace().await {
@@ -150,7 +167,59 @@ impl Component for HyprlandLayoutModel {
                             error!(error = %e, workspace = workspace_id, "Failed set workspace layout");
                         }
                     }
+                    sender_clone.input(HyprlandLayoutInput::SetIcon(layout.to_string()));
                 });
+            }
+            HyprlandLayoutInput::RefreshIcon => {
+                let hyprland = hyprland_service();
+                let active_workspaces = get_active_workspaces();
+                let workspaces = hyprland.workspaces.get();
+                let Some(active_connector) = Self::connector_for_widget(root) else {
+                    return;
+                };
+
+                let workspace = workspaces
+                    .iter()
+                    .filter(|w| w.monitor.get() == active_connector)
+                    .find(|w| w.id.get() == active_workspaces.first().unwrap().id);
+
+                if let Some(workspace) = workspace {
+                    let tiled_layout_name = workspace.tiled_layout.get();
+                    sender.input(HyprlandLayoutInput::SetIcon(tiled_layout_name));
+                }
+            }
+            HyprlandLayoutInput::SetIcon(layout) => match layout.as_str() {
+                "dwindle" => {
+                    self.icon = "layout-dwindle-symbolic".to_string();
+                }
+                "master" => {
+                    self.icon = "layout-master-symbolic".to_string();
+                }
+                "scrolling" => {
+                    self.icon = "layout-scrolling-symbolic".to_string();
+                }
+                "monocle" => {
+                    self.icon = "layout-monocle-symbolic".to_string();
+                }
+                _ => {
+                    self.icon = "layout-symbolic".to_string();
+                }
+            },
+        }
+
+        self.update_view(widgets, sender);
+    }
+
+    fn update_cmd_with_view(
+        &mut self,
+        _widgets: &mut Self::Widgets,
+        message: Self::CommandOutput,
+        sender: ComponentSender<Self>,
+        _root: &Self::Root,
+    ) {
+        match message {
+            HyprlandLayoutCommandOutput::UpdateIcon => {
+                sender.input(HyprlandLayoutInput::RefreshIcon);
             }
         }
     }
@@ -192,5 +261,38 @@ impl HyprlandLayoutModel {
             .build();
 
         (custom_id, button)
+    }
+
+    fn spawn_main_watcher(sender: &ComponentSender<Self>) {
+        sender.command(move |out, shutdown| async move {
+            let hyprland = hyprland_service();
+            let mut events = hyprland.events();
+            let shutdown_fut = shutdown.wait();
+            tokio::pin!(shutdown_fut);
+
+            loop {
+                tokio::select! {
+                    () = &mut shutdown_fut => return,
+                    event = events.next() => {
+                        let Some(event) = event else { continue; };
+                        match event {
+                            HyprlandEvent::WorkspaceV2 { .. } => {
+                                let _ = out.send(HyprlandLayoutCommandOutput::UpdateIcon);
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    fn connector_for_widget(widget: &impl IsA<gtk::Widget>) -> Option<String> {
+        let surface = widget.root()?.surface()?;
+        widget
+            .display()
+            .monitor_at_surface(&surface)?
+            .connector()
+            .map(|s| s.to_string())
     }
 }
