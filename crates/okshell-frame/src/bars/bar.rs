@@ -113,10 +113,10 @@ impl Component for BarModel {
             set_height_request: hover_strip_height,
             add_controller = gtk::EventControllerMotion {
                 connect_enter[sender] => move |_, _, _| {
-                    sender.input(BarInput::SetHovered(true));
+                    let _ = sender.input_sender().send(BarInput::SetHovered(true));
                 },
                 connect_leave[sender] => move |_| {
-                    sender.input(BarInput::SetHovered(false));
+                    let _ = sender.input_sender().send(BarInput::SetHovered(false));
                 },
             },
 
