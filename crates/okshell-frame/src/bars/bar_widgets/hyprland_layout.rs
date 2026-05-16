@@ -181,7 +181,7 @@ impl Component for HyprlandLayoutModel {
                 let workspace = workspaces
                     .iter()
                     .filter(|w| w.monitor.get() == active_connector)
-                    .find(|w| w.id.get() == active_workspaces.first().unwrap().id);
+                    .find(|w| active_workspaces.iter().any(|aw| aw.id == w.id.get()));
 
                 if let Some(workspace) = workspace {
                     let tiled_layout_name = workspace.tiled_layout.get();
