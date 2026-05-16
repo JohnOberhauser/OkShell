@@ -401,9 +401,10 @@ impl Component for BarModel {
         let widgets = view_output!();
 
         if reveal_by_default {
-            tokio::spawn(async move {
+            let sender_clone = sender.clone();
+            sender.oneshot_command(async move {
                 sleep(Duration::from_secs(1)).await;
-                sender.input(BarInput::SetRevealed(true));
+                sender_clone.input(BarInput::SetRevealed(true));
             });
         }
 
