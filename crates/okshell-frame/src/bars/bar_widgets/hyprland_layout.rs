@@ -1,21 +1,23 @@
 use futures::StreamExt;
+use okshell_common::WatcherToken;
 use okshell_services::hyprland_service;
-use okshell_utils::hyprland::get_active_workspaces;
-use relm4::gtk::gdk::prelude::{DisplayExt, MonitorExt};
+use okshell_utils::hyprland::{get_active_workspace_for_connector, spawn_workspace_layout_watcher};
+use relm4::gtk::gdk::prelude::MonitorExt;
 use relm4::gtk::gio::prelude::ActionMapExt;
 use relm4::gtk::glib::clone::Downgrade;
-use relm4::gtk::glib::object::IsA;
 use relm4::gtk::glib::variant::ToVariant;
-use relm4::gtk::prelude::{BoxExt, ButtonExt, NativeExt, PopoverExt, WidgetExt};
-use relm4::gtk::{Orientation, gio};
+use relm4::gtk::prelude::{BoxExt, ButtonExt, PopoverExt, WidgetExt};
+use relm4::gtk::{Orientation, gdk, gio};
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
 use tracing::error;
 use wayle_hyprland::HyprlandEvent;
 
 #[derive(Debug)]
 pub(crate) struct HyprlandLayoutModel {
+    connector: String,
     orientation: Orientation,
     icon: String,
+    watcher_token: WatcherToken,
 }
 
 #[derive(Debug)]
@@ -23,6 +25,7 @@ pub(crate) enum HyprlandLayoutInput {
     SetLayout(&'static str),
     RefreshIcon,
     SetIcon(String),
+    SpawnLayoutWatcher,
 }
 
 #[derive(Debug)]
@@ -30,11 +33,13 @@ pub(crate) enum HyprlandLayoutOutput {}
 
 pub(crate) struct HyprlandLayoutInit {
     pub(crate) orientation: Orientation,
+    pub monitor: gdk::Monitor,
 }
 
 #[derive(Debug)]
 pub(crate) enum HyprlandLayoutCommandOutput {
-    UpdateIcon,
+    WorkspaceChanged,
+    LayoutChanged,
 }
 
 #[relm4::component(pub)]
@@ -73,8 +78,10 @@ impl Component for HyprlandLayoutModel {
         Self::spawn_main_watcher(&sender);
 
         let model = HyprlandLayoutModel {
+            connector: params.monitor.connector().unwrap_or_default().to_string(),
             orientation: params.orientation,
             icon: "layout-symbolic".to_string(),
+            watcher_token: WatcherToken::new(),
         };
 
         let widgets = view_output!();
@@ -139,7 +146,7 @@ impl Component for HyprlandLayoutModel {
             });
         }
 
-        sender.input(HyprlandLayoutInput::RefreshIcon);
+        sender.input(HyprlandLayoutInput::SpawnLayoutWatcher);
 
         ComponentParts { model, widgets }
     }
@@ -149,39 +156,34 @@ impl Component for HyprlandLayoutModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        root: &Self::Root,
+        _root: &Self::Root,
     ) {
         match message {
             HyprlandLayoutInput::SetLayout(layout) => {
                 let sender_clone = sender.clone();
+                let connector = self.connector.clone();
                 tokio::spawn(async move {
-                    let hyprland = hyprland_service();
-                    if let Some(active_workspace) = hyprland.active_workspace().await {
+                    let workspace = get_active_workspace_for_connector(&connector);
+
+                    if let Some(active_workspace) = workspace {
                         let workspace_id = active_workspace.id.get();
                         let command = format!(
                             "hl.workspace_rule({{ workspace = \"{}\", layout = \"{}\"}})",
                             workspace_id, layout
                         );
+                        let hyprland = hyprland_service();
                         let result = hyprland.eval(&command).await;
                         if let Err(e) = result {
                             error!(error = %e, workspace = workspace_id, "Failed set workspace layout");
                         }
                     }
+                    // if there are no windows on the workspace, then the `workspace.tiled_layout` property doesn't get updated
+                    // so update the icon here as well
                     sender_clone.input(HyprlandLayoutInput::SetIcon(layout.to_string()));
                 });
             }
             HyprlandLayoutInput::RefreshIcon => {
-                let hyprland = hyprland_service();
-                let active_workspaces = get_active_workspaces();
-                let workspaces = hyprland.workspaces.get();
-                let Some(active_connector) = Self::connector_for_widget(root) else {
-                    return;
-                };
-
-                let workspace = workspaces
-                    .iter()
-                    .filter(|w| w.monitor.get() == active_connector)
-                    .find(|w| active_workspaces.iter().any(|aw| aw.id == w.id.get()));
+                let workspace = get_active_workspace_for_connector(&self.connector);
 
                 if let Some(workspace) = workspace {
                     let tiled_layout_name = workspace.tiled_layout.get();
@@ -205,6 +207,17 @@ impl Component for HyprlandLayoutModel {
                     self.icon = "layout-symbolic".to_string();
                 }
             },
+            HyprlandLayoutInput::SpawnLayoutWatcher => {
+                let workspace = get_active_workspace_for_connector(&self.connector);
+
+                if let Some(workspace) = workspace {
+                    let token = self.watcher_token.reset();
+
+                    spawn_workspace_layout_watcher(&workspace, token, &sender, || {
+                        HyprlandLayoutCommandOutput::LayoutChanged
+                    });
+                }
+            }
         }
 
         self.update_view(widgets, sender);
@@ -218,7 +231,10 @@ impl Component for HyprlandLayoutModel {
         _root: &Self::Root,
     ) {
         match message {
-            HyprlandLayoutCommandOutput::UpdateIcon => {
+            HyprlandLayoutCommandOutput::WorkspaceChanged => {
+                sender.input(HyprlandLayoutInput::SpawnLayoutWatcher);
+            }
+            HyprlandLayoutCommandOutput::LayoutChanged => {
                 sender.input(HyprlandLayoutInput::RefreshIcon);
             }
         }
@@ -277,7 +293,7 @@ impl HyprlandLayoutModel {
                         let Some(event) = event else { continue; };
                         match event {
                             HyprlandEvent::WorkspaceV2 { .. } => {
-                                let _ = out.send(HyprlandLayoutCommandOutput::UpdateIcon);
+                                let _ = out.send(HyprlandLayoutCommandOutput::WorkspaceChanged);
                             }
                             _ => {}
                         }
@@ -285,14 +301,5 @@ impl HyprlandLayoutModel {
                 }
             }
         });
-    }
-
-    fn connector_for_widget(widget: &impl IsA<gtk::Widget>) -> Option<String> {
-        let surface = widget.root()?.surface()?;
-        widget
-            .display()
-            .monitor_at_surface(&surface)?
-            .connector()
-            .map(|s| s.to_string())
     }
 }

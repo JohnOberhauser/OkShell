@@ -40,6 +40,7 @@ use okshell_config::schema::config::{
 };
 use okshell_utils::clear_box::clear_box;
 use reactive_graph::traits::*;
+use relm4::gtk::gdk;
 use relm4::{
     Component, ComponentParts, ComponentSender,
     gtk::{self, Orientation, prelude::*},
@@ -56,6 +57,7 @@ pub(crate) enum BarType {
 }
 
 pub(crate) struct BarModel {
+    monitor: gdk::Monitor,
     h_expand: bool,
     v_expand: bool,
     orientation: Orientation,
@@ -97,6 +99,7 @@ pub(crate) enum BarOutput {
 
 pub(crate) struct BarInit {
     pub(crate) bar_type: BarType,
+    pub monitor: gdk::Monitor,
 }
 
 #[relm4::component(pub)]
@@ -383,6 +386,7 @@ impl Component for BarModel {
         }
 
         let model = BarModel {
+            monitor: params.monitor,
             h_expand,
             v_expand,
             orientation,
@@ -423,8 +427,13 @@ impl Component for BarModel {
                 clear_box(&widgets.start_container);
                 self.start_widgets.clear();
                 for item in bar_widgets {
-                    let controller =
-                        BarModel::build_widget(self.orientation, self.bar_type, &item, &sender);
+                    let controller = BarModel::build_widget(
+                        self.orientation,
+                        self.bar_type,
+                        self.monitor.clone(),
+                        &item,
+                        &sender,
+                    );
                     widgets.start_container.append(&controller.root_widget());
                     self.start_widgets.push(controller);
                 }
@@ -433,8 +442,13 @@ impl Component for BarModel {
                 clear_box(&widgets.end_container);
                 self.end_widgets.clear();
                 for item in bar_widgets {
-                    let controller =
-                        BarModel::build_widget(self.orientation, self.bar_type, &item, &sender);
+                    let controller = BarModel::build_widget(
+                        self.orientation,
+                        self.bar_type,
+                        self.monitor.clone(),
+                        &item,
+                        &sender,
+                    );
                     widgets.end_container.append(&controller.root_widget());
                     self.end_widgets.push(controller);
                 }
@@ -443,8 +457,13 @@ impl Component for BarModel {
                 clear_box(&widgets.center_container);
                 self.center_widgets.clear();
                 for item in bar_widgets {
-                    let controller =
-                        BarModel::build_widget(self.orientation, self.bar_type, &item, &sender);
+                    let controller = BarModel::build_widget(
+                        self.orientation,
+                        self.bar_type,
+                        self.monitor.clone(),
+                        &item,
+                        &sender,
+                    );
                     widgets.center_container.append(&controller.root_widget());
                     self.center_widgets.push(controller);
                 }
@@ -473,6 +492,7 @@ impl BarModel {
     fn build_widget(
         orientation: Orientation,
         bar_type: BarType,
+        monitor: gdk::Monitor,
         widget: &BarWidget,
         sender: &ComponentSender<Self>,
     ) -> Box<dyn GenericWidgetController> {
@@ -517,7 +537,10 @@ impl BarModel {
             ),
             BarWidget::HyprlandLayoutSwitcher => Box::new(
                 HyprlandLayoutModel::builder()
-                    .launch(HyprlandLayoutInit { orientation })
+                    .launch(HyprlandLayoutInit {
+                        orientation,
+                        monitor,
+                    })
                     .detach(),
             ),
             BarWidget::HyprlandWorkspaces => Box::new(

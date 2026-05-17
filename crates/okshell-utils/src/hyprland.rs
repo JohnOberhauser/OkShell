@@ -1,5 +1,8 @@
+use okshell_common::watch_cancellable;
 use okshell_services::hyprland_service;
+use relm4::{Component, ComponentSender};
 use std::sync::Arc;
+use tokio_util::sync::CancellationToken;
 use tracing::error;
 use wayle_hyprland::{Workspace, WorkspaceInfo};
 
@@ -17,6 +20,19 @@ pub fn is_an_active_workspace(workspace: &Arc<Workspace>) -> bool {
         .iter()
         .find(|p| p.id == workspace.id.get())
         .is_some()
+}
+
+pub fn get_active_workspace_for_connector(connector: &String) -> Option<Arc<Workspace>> {
+    let hyprland = hyprland_service();
+    let active_workspaces = get_active_workspaces();
+    let workspaces = hyprland.workspaces.get();
+
+    let workspace = workspaces
+        .iter()
+        .filter(|w| w.monitor.get() == *connector)
+        .find(|w| active_workspaces.iter().any(|aw| aw.id == w.id.get()));
+
+    return workspace.cloned();
 }
 
 pub fn go_up_workspace() {
@@ -40,5 +56,20 @@ pub fn go_down_workspace() {
         {
             error!(error = %e, "Failed to switch workspace");
         }
+    });
+}
+
+pub fn spawn_workspace_layout_watcher<C>(
+    workspace: &Arc<Workspace>,
+    cancellation_token: CancellationToken,
+    sender: &ComponentSender<C>,
+    map_state: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
+) where
+    C: Component,
+    C::CommandOutput: Send + 'static,
+{
+    let layout = workspace.tiled_layout.clone();
+    watch_cancellable!(sender, cancellation_token, [layout.watch()], |out| {
+        let _ = out.send(map_state());
     });
 }

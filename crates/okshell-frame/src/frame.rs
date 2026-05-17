@@ -512,10 +512,14 @@ impl Component for Frame {
         let left_menu_expansion_type = untracked_config.menus.left_menu_expansion_type;
         let right_menu_expansion_type = untracked_config.menus.right_menu_expansion_type;
 
-        let top_bar: Controller<BarModel> = Self::build_bar(&sender, BarType::Top);
-        let bottom_bar: Controller<BarModel> = Self::build_bar(&sender, BarType::Bottom);
-        let left_bar: Controller<BarModel> = Self::build_bar(&sender, BarType::Left);
-        let right_bar: Controller<BarModel> = Self::build_bar(&sender, BarType::Right);
+        let top_bar: Controller<BarModel> =
+            Self::build_bar(&sender, BarType::Top, params.monitor.clone());
+        let bottom_bar: Controller<BarModel> =
+            Self::build_bar(&sender, BarType::Bottom, params.monitor.clone());
+        let left_bar: Controller<BarModel> =
+            Self::build_bar(&sender, BarType::Left, params.monitor.clone());
+        let right_bar: Controller<BarModel> =
+            Self::build_bar(&sender, BarType::Right, params.monitor.clone());
 
         let calendar_menu = Self::build_menu(&sender, MenuType::Clock);
         let clipboard_menu = Self::build_menu(&sender, MenuType::Clipboard);
@@ -1498,9 +1502,13 @@ impl Frame {
         }
     }
 
-    fn build_bar(sender: &ComponentSender<Self>, bar_type: BarType) -> Controller<BarModel> {
+    fn build_bar(
+        sender: &ComponentSender<Self>,
+        bar_type: BarType,
+        monitor: gdk::Monitor,
+    ) -> Controller<BarModel> {
         BarModel::builder()
-            .launch(BarInit { bar_type })
+            .launch(BarInit { bar_type, monitor })
             .forward(sender.input_sender(), |msg| match msg {
                 BarOutput::ClockClicked => FrameInput::ToggleClockMenu,
                 BarOutput::ClipboardClicked => FrameInput::ToggleClipboardMenu,
