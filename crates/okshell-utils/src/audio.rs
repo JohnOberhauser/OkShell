@@ -40,7 +40,7 @@ pub fn get_audio_in_icon(device: &Arc<InputDevice>) -> &'static str {
     }
 }
 
-pub async fn increase_volume() {
+pub async fn increase_output_volume() {
     if let Some(output) = audio_service().default_output.get() {
         let current_volume = output.volume.get();
         let max_volume: f64 = 1.0;
@@ -52,7 +52,7 @@ pub async fn increase_volume() {
     play_audio_volume_change();
 }
 
-pub async fn decrease_volume() {
+pub async fn decrease_output_volume() {
     if let Some(output) = audio_service().default_output.get() {
         let current_volume = output.volume.get();
         let min_volume: f64 = 0.0;
@@ -64,11 +64,39 @@ pub async fn decrease_volume() {
     play_audio_volume_change();
 }
 
-pub async fn toggle_mute() {
+pub async fn toggle_output_mute() {
     if let Some(output) = audio_service().default_output.get() {
         let _ = output.set_mute(!output.muted.get()).await;
     }
     play_audio_volume_change();
+}
+
+pub async fn increase_input_volume() {
+    if let Some(input) = audio_service().default_input.get() {
+        let current_volume = input.volume.get();
+        let max_volume: f64 = 1.0;
+        let new_volume = max_volume.min(current_volume.average() + 0.05);
+        let _ = input
+            .set_volume(Volume::stereo(new_volume, new_volume))
+            .await;
+    }
+}
+
+pub async fn decrease_input_volume() {
+    if let Some(input) = audio_service().default_input.get() {
+        let current_volume = input.volume.get();
+        let min_volume: f64 = 0.0;
+        let new_volume = min_volume.max(current_volume.average() - 0.05);
+        let _ = input
+            .set_volume(Volume::stereo(new_volume, new_volume))
+            .await;
+    }
+}
+
+pub async fn toggle_input_mute() {
+    if let Some(input) = audio_service().default_input.get() {
+        let _ = input.set_mute(!input.muted.get()).await;
+    }
 }
 
 pub fn spawn_default_output_watcher<C>(

@@ -499,7 +499,7 @@ impl BarModel {
         match widget {
             BarWidget::AudioInput => Box::new(
                 AudioInputModel::builder()
-                    .launch(AudioInputInit {})
+                    .launch(AudioInputInit { orientation })
                     .detach(),
             ),
             BarWidget::AudioOutput => Box::new(

@@ -1,8 +1,8 @@
 use okshell_common::WatcherToken;
 use okshell_services::audio_service;
 use okshell_utils::audio::{
-    decrease_volume, get_audio_out_icon, increase_volume, spawn_default_output_watcher,
-    spawn_output_device_volume_mute_watcher, toggle_mute,
+    decrease_output_volume, get_audio_out_icon, increase_output_volume,
+    spawn_default_output_watcher, spawn_output_device_volume_mute_watcher, toggle_output_mute,
 };
 use okshell_utils::hover_scroll::attach_hover_scroll;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
@@ -85,11 +85,11 @@ impl Component for AudioOutputModel {
         let _handles = attach_hover_scroll(&root, move |_dx, dy, _hovered, _| {
             if dy < 0.0 {
                 tokio::spawn(async move {
-                    increase_volume().await;
+                    increase_output_volume().await;
                 });
             } else if dy > 0.0 {
                 tokio::spawn(async move {
-                    decrease_volume().await;
+                    decrease_output_volume().await;
                 });
             }
         });
@@ -112,7 +112,7 @@ impl Component for AudioOutputModel {
             }
             AudioOutputInput::Clicked => {
                 tokio::spawn(async move {
-                    toggle_mute().await;
+                    toggle_output_mute().await;
                 });
             }
         }

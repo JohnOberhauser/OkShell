@@ -1,9 +1,11 @@
 use okshell_common::WatcherToken;
 use okshell_services::audio_service;
 use okshell_utils::audio::{
-    get_audio_in_icon, spawn_default_input_watcher, spawn_input_device_volume_mute_watcher,
+    decrease_input_volume, get_audio_in_icon, increase_input_volume, spawn_default_input_watcher,
+    spawn_input_device_volume_mute_watcher, toggle_input_mute,
 };
-use relm4::gtk::prelude::WidgetExt;
+use okshell_utils::hover_scroll::attach_hover_scroll;
+use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
 use std::sync::Arc;
 use wayle_audio::core::device::input::InputDevice;
@@ -16,12 +18,15 @@ pub(crate) struct AudioInputModel {
 #[derive(Debug)]
 pub(crate) enum AudioInputInput {
     UpdateDevice(Arc<InputDevice>),
+    Clicked,
 }
 
 #[derive(Debug)]
 pub(crate) enum AudioInputOutput {}
 
-pub(crate) struct AudioInputInit {}
+pub(crate) struct AudioInputInit {
+    pub orientation: gtk::Orientation,
+}
 
 #[derive(Debug)]
 pub(crate) enum AudioInputCommandOutput {
@@ -39,22 +44,33 @@ impl Component for AudioInputModel {
     view! {
         #[root]
         gtk::Box {
-            set_css_classes: &["audio-input-bar-widget", "ok-button-surface", "ok-bar-widget"],
-            set_hexpand: false,
-            set_vexpand: false,
+            add_css_class: "audio-input-bar-widget",
+            set_hexpand: params.orientation == gtk::Orientation::Vertical,
+            set_vexpand: params.orientation == gtk::Orientation::Horizontal,
+            set_halign: gtk::Align::Center,
+            set_valign: gtk::Align::Center,
 
-            #[name="image"]
-            gtk::Image {
-                set_hexpand: true,
-                set_vexpand: true,
-                set_halign: gtk::Align::Center,
-                set_valign: gtk::Align::Center,
+            gtk::Button {
+                set_css_classes: &["ok-button-surface", "ok-bar-widget"],
+                set_hexpand: false,
+                set_vexpand: false,
+                connect_clicked[sender] => move |_| {
+                    sender.input(AudioInputInput::Clicked);
+                },
+
+                #[name="image"]
+                gtk::Image {
+                    set_hexpand: true,
+                    set_vexpand: true,
+                    set_halign: gtk::Align::Center,
+                    set_valign: gtk::Align::Center,
+                }
             }
         }
     }
 
     fn init(
-        _params: Self::Init,
+        params: Self::Init,
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
@@ -65,6 +81,18 @@ impl Component for AudioInputModel {
         };
 
         let widgets = view_output!();
+
+        let _handles = attach_hover_scroll(&root, move |_dx, dy, _hovered, _| {
+            if dy < 0.0 {
+                tokio::spawn(async move {
+                    increase_input_volume().await;
+                });
+            } else if dy > 0.0 {
+                tokio::spawn(async move {
+                    decrease_input_volume().await;
+                });
+            }
+        });
 
         ComponentParts { model, widgets }
     }
@@ -81,6 +109,11 @@ impl Component for AudioInputModel {
                 widgets
                     .image
                     .set_icon_name(Some(get_audio_in_icon(&device)));
+            }
+            AudioInputInput::Clicked => {
+                tokio::spawn(async move {
+                    toggle_input_mute().await;
+                });
             }
         }
     }

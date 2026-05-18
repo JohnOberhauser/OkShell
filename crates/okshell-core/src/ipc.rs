@@ -3,7 +3,7 @@ use okshell_cache::wallpaper::set_wallpaper;
 use okshell_services::{brightness_service, hyprland_service};
 use okshell_session::session_lock::session_lock;
 use okshell_settings::{close_settings, open_settings};
-use okshell_utils::audio::{decrease_volume, increase_volume, toggle_mute};
+use okshell_utils::audio::{decrease_output_volume, increase_output_volume, toggle_output_mute};
 use relm4::gtk::glib;
 use relm4::{ComponentSender, gtk};
 use std::path::PathBuf;
@@ -87,13 +87,13 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                 }
                 IPCCommand::CloseAllMenus => app_sender.emit(ShellInput::CloseAllMenus),
                 IPCCommand::VolumeUp => {
-                    increase_volume().await;
+                    increase_output_volume().await;
                 }
                 IPCCommand::VolumeDown => {
-                    decrease_volume().await;
+                    decrease_output_volume().await;
                 }
                 IPCCommand::Mute => {
-                    toggle_mute().await;
+                    toggle_output_mute().await;
                 }
                 IPCCommand::BrightnessUp => {
                     if let Some(brightness_service) = brightness_service()
