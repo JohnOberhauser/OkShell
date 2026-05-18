@@ -99,18 +99,7 @@ impl Component for Shell {
         root.set_anchor(Edge::Left, true);
         root.set_default_size(1, 1);
         root.set_namespace(Some("okshell-invisible-root"));
-        root.connect_realize(|window| {
-            let window = window.clone();
-            relm4::spawn_local(async move {
-                if let Err(e) = okshell_idle::inhibitor::IdleInhibitor::global()
-                    .init(&window)
-                    .await
-                {
-                    tracing::warn!("failed to init idle inhibitor: {e}");
-                }
-            });
-        });
-        root.set_visible(true);
+        root.set_visible(false);
 
         let widgets = view_output!();
 

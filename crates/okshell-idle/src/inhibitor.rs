@@ -1,27 +1,19 @@
-use std::ffi::c_void;
 use std::fmt;
+use std::os::fd::{AsFd, AsRawFd, RawFd};
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::thread;
 
-use gtk::gdk;
-use gtk::glib::translate::ToGlibPtr;
-use gtk::prelude::{NativeExt, ObjectExt};
-use relm4::gtk;
-use tokio::sync::{Mutex, watch};
+use tokio::sync::{Mutex, mpsc, oneshot, watch};
 use tokio_stream::wrappers::WatchStream;
-use tracing::{info, warn};
-use wayland_client::backend::{Backend, ObjectId};
-use wayland_client::protocol::{wl_registry, wl_surface};
-use wayland_client::{Connection, Dispatch, EventQueue, Proxy};
+use tracing::{error, info, warn};
+use wayland_client::protocol::{wl_compositor, wl_registry, wl_surface};
+use wayland_client::{Connection, Dispatch, EventQueue};
 use wayland_protocols::wp::idle_inhibit::zv1::client::{
     zwp_idle_inhibit_manager_v1::ZwpIdleInhibitManagerV1, zwp_idle_inhibitor_v1::ZwpIdleInhibitorV1,
 };
-
-#[link(name = "gtk-4")]
-unsafe extern "C" {
-    fn gdk_wayland_display_get_wl_display(display: *mut c_void) -> *mut c_void;
-    fn gdk_wayland_surface_get_wl_surface(surface: *mut c_void) -> *mut c_void;
-}
 
 static INSTANCE: OnceLock<IdleInhibitor> = OnceLock::new();
 
@@ -68,6 +60,7 @@ fn write_cached_state(enabled: bool) {
 // === === === === === === === === === ===
 
 struct AppData {
+    compositor: Option<wl_compositor::WlCompositor>,
     manager: Option<ZwpIdleInhibitManagerV1>,
 }
 
@@ -86,157 +79,212 @@ impl Dispatch<wl_registry::WlRegistry, ()> for AppData {
             version,
         } = event
         {
-            if interface == "zwp_idle_inhibit_manager_v1" {
-                let v = version.min(1);
-                let manager = proxy.bind::<ZwpIdleInhibitManagerV1, _, _>(name, v, qh, ());
-                state.manager = Some(manager);
-            }
-        }
-    }
-}
-
-impl Dispatch<ZwpIdleInhibitManagerV1, ()> for AppData {
-    fn event(
-        _: &mut Self,
-        _: &ZwpIdleInhibitManagerV1,
-        _: <ZwpIdleInhibitManagerV1 as Proxy>::Event,
-        _: &(),
-        _: &Connection,
-        _: &wayland_client::QueueHandle<Self>,
-    ) {
-    }
-}
-
-impl Dispatch<ZwpIdleInhibitorV1, ()> for AppData {
-    fn event(
-        _: &mut Self,
-        _: &ZwpIdleInhibitorV1,
-        _: <ZwpIdleInhibitorV1 as Proxy>::Event,
-        _: &(),
-        _: &Connection,
-        _: &wayland_client::QueueHandle<Self>,
-    ) {
-    }
-}
-
-impl Dispatch<wl_surface::WlSurface, ()> for AppData {
-    fn event(
-        _: &mut Self,
-        _: &wl_surface::WlSurface,
-        _: <wl_surface::WlSurface as Proxy>::Event,
-        _: &(),
-        _: &Connection,
-        _: &wayland_client::QueueHandle<Self>,
-    ) {
-    }
-}
-
-/// Holds the Wayland connection, manager, and anchor surface. Once constructed,
-/// supports creating/destroying inhibitors on the anchor surface.
-struct WaylandInner {
-    connection: Connection,
-    queue: EventQueue<AppData>,
-    data: AppData,
-    surface: wl_surface::WlSurface,
-    inhibitor: Option<ZwpIdleInhibitorV1>,
-}
-
-impl WaylandInner {
-    fn new(window: &gtk::Window) -> Result<Self, IdleError> {
-        let display = gdk::Display::default().ok_or(IdleError)?;
-        if display.type_().name() != "GdkWaylandDisplay" {
-            return Err(IdleError);
-        }
-
-        // SAFETY: GObject pointer for a verified GdkWaylandDisplay.
-        let wl_display_ptr = unsafe {
-            let gdk_ptr: *mut gdk::ffi::GdkDisplay = display.to_glib_none().0;
-            gdk_wayland_display_get_wl_display(gdk_ptr as *mut c_void)
-        };
-        if wl_display_ptr.is_null() {
-            return Err(IdleError);
-        }
-
-        // SAFETY: GDK owns this wl_display and keeps it alive.
-        let backend = unsafe { Backend::from_foreign_display(wl_display_ptr as *mut _) };
-        let connection = Connection::from_backend(backend);
-
-        let mut queue: EventQueue<AppData> = connection.new_event_queue();
-        let qh = queue.handle();
-        connection.display().get_registry(&qh, ());
-
-        let mut data = AppData { manager: None };
-        queue.roundtrip(&mut data).map_err(|_| IdleError)?;
-
-        if data.manager.is_none() {
-            return Err(IdleError);
-        }
-
-        let gdk_surface = window.surface().ok_or(IdleError)?;
-        if !gdk_surface.type_().name().starts_with("GdkWayland") {
-            return Err(IdleError);
-        }
-
-        // SAFETY: GObject pointer for a verified GdkWaylandSurface.
-        let wl_surface_ptr = unsafe {
-            let gdk_ptr: *mut gdk::ffi::GdkSurface = gdk_surface.to_glib_none().0;
-            gdk_wayland_surface_get_wl_surface(gdk_ptr as *mut c_void)
-        };
-        if wl_surface_ptr.is_null() {
-            return Err(IdleError);
-        }
-
-        // SAFETY: Valid wl_proxy for wl_surface, owned by GDK.
-        let surface_id = unsafe {
-            ObjectId::from_ptr(wl_surface::WlSurface::interface(), wl_surface_ptr as *mut _)
-                .map_err(|_| IdleError)?
-        };
-        let surface =
-            wl_surface::WlSurface::from_id(&connection, surface_id).map_err(|_| IdleError)?;
-
-        Ok(Self {
-            connection,
-            queue,
-            data,
-            surface,
-            inhibitor: None,
-        })
-    }
-
-    fn set_inhibit(&mut self, on: bool) {
-        match (on, self.inhibitor.is_some()) {
-            (true, false) => {
-                if let Some(manager) = &self.data.manager {
-                    let inhibitor =
-                        manager.create_inhibitor(&self.surface, &self.queue.handle(), ());
-                    self.inhibitor = Some(inhibitor);
+            match interface.as_str() {
+                "wl_compositor" => {
+                    let v = version.min(4);
+                    state.compositor =
+                        Some(proxy.bind::<wl_compositor::WlCompositor, _, _>(name, v, qh, ()));
                 }
-            }
-            (false, true) => {
-                if let Some(inhibitor) = self.inhibitor.take() {
-                    inhibitor.destroy();
+                "zwp_idle_inhibit_manager_v1" => {
+                    let v = version.min(1);
+                    state.manager =
+                        Some(proxy.bind::<ZwpIdleInhibitManagerV1, _, _>(name, v, qh, ()));
                 }
+                _ => {}
             }
-            _ => {}
         }
-        let _ = self.connection.flush();
     }
 }
 
-impl Drop for WaylandInner {
+wayland_client::delegate_noop!(AppData: ignore wl_compositor::WlCompositor);
+wayland_client::delegate_noop!(AppData: ignore wl_surface::WlSurface);
+wayland_client::delegate_noop!(AppData: ignore ZwpIdleInhibitManagerV1);
+wayland_client::delegate_noop!(AppData: ignore ZwpIdleInhibitorV1);
+
+/// Commands sent from the async API to the dedicated Wayland thread.
+enum Command {
+    SetInhibit { on: bool, ack: oneshot::Sender<()> },
+}
+
+/// Eventfd-based waker — writing to it makes poll() wake on this fd.
+struct Waker {
+    fd: RawFd,
+}
+
+impl Waker {
+    fn new() -> std::io::Result<Self> {
+        // SAFETY: eventfd syscall — no caller-side invariants.
+        let fd = unsafe { libc::eventfd(0, libc::EFD_CLOEXEC | libc::EFD_NONBLOCK) };
+        if fd < 0 {
+            return Err(std::io::Error::last_os_error());
+        }
+        Ok(Self { fd })
+    }
+
+    fn wake(&self) {
+        let val: u64 = 1;
+        // SAFETY: 8-byte write to a valid eventfd.
+        unsafe {
+            libc::write(self.fd, &val as *const u64 as *const _, 8);
+        }
+    }
+
+    fn drain(&self) {
+        let mut buf = [0u8; 8];
+        // SAFETY: 8-byte read from a valid eventfd; nonblocking, may EAGAIN.
+        unsafe {
+            libc::read(self.fd, buf.as_mut_ptr() as *mut _, 8);
+        }
+    }
+}
+
+impl Drop for Waker {
     fn drop(&mut self) {
-        if let Some(inhibitor) = self.inhibitor.take() {
-            inhibitor.destroy();
-            let _ = self.connection.flush();
-        }
+        // SAFETY: fd is owned.
+        unsafe { libc::close(self.fd) };
     }
 }
 
-// SAFETY: WaylandInner is only accessed through Mutex in IdleInhibitor.
-// The wayland-client Connection is Send + Sync; the proxy objects are too.
-// gdk::Surface pointer wrapping happens at construction and we don't retain
-// any non-Send GDK references.
-unsafe impl Send for WaylandInner {}
+unsafe impl Send for Waker {}
+unsafe impl Sync for Waker {}
+
+/// Dedicated Wayland thread: owns the connection, queue, dummy surface, manager,
+/// and the live inhibitor. Wakes on either compositor events or commands.
+fn wayland_thread(
+    mut rx: mpsc::UnboundedReceiver<Command>,
+    waker: Arc<Waker>,
+    ready_tx: oneshot::Sender<Result<(), IdleError>>,
+) {
+    let connection = match Connection::connect_to_env() {
+        Ok(c) => c,
+        Err(e) => {
+            warn!("idle inhibitor: failed to connect to wayland: {}", e);
+            let _ = ready_tx.send(Err(IdleError));
+            return;
+        }
+    };
+
+    let mut queue: EventQueue<AppData> = connection.new_event_queue();
+    let qh = queue.handle();
+    connection.display().get_registry(&qh, ());
+
+    let mut data = AppData {
+        compositor: None,
+        manager: None,
+    };
+
+    if queue.roundtrip(&mut data).is_err() {
+        let _ = ready_tx.send(Err(IdleError));
+        return;
+    }
+
+    let Some(compositor) = data.compositor.clone() else {
+        warn!("idle inhibitor: compositor missing wl_compositor");
+        let _ = ready_tx.send(Err(IdleError));
+        return;
+    };
+    let Some(manager) = data.manager.clone() else {
+        warn!("idle inhibitor: compositor missing zwp_idle_inhibit_manager_v1");
+        let _ = ready_tx.send(Err(IdleError));
+        return;
+    };
+
+    // Dummy surface — never attached, never committed, never mapped.
+    let surface = compositor.create_surface(&qh, ());
+    let _ = connection.flush();
+
+    let wl_fd = connection.as_fd().as_raw_fd();
+    let waker_fd = waker.fd;
+
+    let _ = ready_tx.send(Ok(()));
+
+    let mut inhibitor: Option<ZwpIdleInhibitorV1> = None;
+
+    'outer: loop {
+        // 1. Drain any queued commands.
+        loop {
+            match rx.try_recv() {
+                Ok(Command::SetInhibit { on, ack }) => {
+                    match (on, inhibitor.is_some()) {
+                        (true, false) => {
+                            inhibitor = Some(manager.create_inhibitor(&surface, &qh, ()));
+                        }
+                        (false, true) => {
+                            if let Some(i) = inhibitor.take() {
+                                i.destroy();
+                            }
+                        }
+                        _ => {}
+                    }
+                    let _ = connection.flush();
+                    let _ = ack.send(());
+                }
+                Err(mpsc::error::TryRecvError::Empty) => break,
+                Err(mpsc::error::TryRecvError::Disconnected) => break 'outer,
+            }
+        }
+
+        // 2. Flush any pending requests and dispatch already-buffered events.
+        let _ = connection.flush();
+        if queue.dispatch_pending(&mut data).is_err() {
+            error!("idle inhibitor: dispatch_pending failed");
+            break;
+        }
+
+        // 3. Prepare to read from the wayland fd.
+        // Returns None if events arrived between dispatch_pending and now —
+        // in which case loop back and dispatch them.
+        let read_guard = match connection.prepare_read() {
+            Some(g) => g,
+            None => continue,
+        };
+
+        // 4. Poll both fds, indefinite timeout.
+        let mut fds = [
+            libc::pollfd {
+                fd: wl_fd,
+                events: libc::POLLIN,
+                revents: 0,
+            },
+            libc::pollfd {
+                fd: waker_fd,
+                events: libc::POLLIN,
+                revents: 0,
+            },
+        ];
+        // SAFETY: valid fds, valid array, indefinite timeout.
+        let n = unsafe { libc::poll(fds.as_mut_ptr(), 2, -1) };
+        if n < 0 {
+            let err = std::io::Error::last_os_error();
+            if err.kind() == std::io::ErrorKind::Interrupted {
+                drop(read_guard);
+                continue;
+            }
+            error!("idle inhibitor: poll failed: {}", err);
+            break;
+        }
+
+        // 5. Handle whichever fd(s) woke us.
+        if fds[0].revents & libc::POLLIN != 0 {
+            if read_guard.read().is_err() {
+                error!("idle inhibitor: read_events failed");
+                break;
+            }
+        } else {
+            drop(read_guard);
+        }
+
+        if fds[1].revents & libc::POLLIN != 0 {
+            waker.drain();
+        }
+    }
+
+    if let Some(i) = inhibitor.take() {
+        i.destroy();
+    }
+    surface.destroy();
+    let _ = connection.flush();
+}
 
 // === === === === === === === === === ===
 // ===          Public API             ===
@@ -244,15 +292,17 @@ unsafe impl Send for WaylandInner {}
 
 /// Global singleton idle inhibitor.
 ///
-/// Backed by the Wayland `zwp_idle_inhibit_manager_v1` protocol. Call
-/// [`init`] once at startup, after the anchor window is realized, to set
-/// up the Wayland connection and apply the cached state.
-///
-/// State is cached to `$XDG_CACHE_HOME/okshell/idle_inhibitor`.
+/// Owns a dedicated Wayland connection (independent of GTK/GDK) and a
+/// background thread that drains its event queue via poll(2) on the
+/// wayland fd plus an eventfd waker for commands. Backed by
+/// `zwp_idle_inhibit_manager_v1` on a dummy surface — compositor-wide
+/// in effect on Hyprland.
 pub struct IdleInhibitor {
-    inner: Mutex<Option<WaylandInner>>,
+    cmd_tx: Mutex<Option<mpsc::UnboundedSender<Command>>>,
+    waker: Mutex<Option<Arc<Waker>>>,
     state_tx: watch::Sender<bool>,
     state_rx: watch::Receiver<bool>,
+    initialized: AtomicBool,
 }
 
 impl IdleInhibitor {
@@ -260,24 +310,38 @@ impl IdleInhibitor {
         INSTANCE.get_or_init(|| {
             let (state_tx, state_rx) = watch::channel(false);
             Self {
-                inner: Mutex::new(None),
+                cmd_tx: Mutex::new(None),
+                waker: Mutex::new(None),
                 state_tx,
                 state_rx,
+                initialized: AtomicBool::new(false),
             }
         })
     }
 
-    /// Set up the Wayland connection anchored to `window` and apply cached state.
-    /// Call once at startup, after the window is realized. Safe to call again;
-    /// subsequent calls are no-ops.
-    pub async fn init(&self, window: &gtk::Window) -> Result<(), IdleError> {
-        let mut guard = self.inner.lock().await;
-        if guard.is_some() {
+    pub async fn init(&self) -> Result<(), IdleError> {
+        let mut cmd_guard = self.cmd_tx.lock().await;
+        if cmd_guard.is_some() {
             return Ok(());
         }
-        let inner = WaylandInner::new(window)?;
-        *guard = Some(inner);
-        drop(guard);
+
+        let waker = Arc::new(Waker::new().map_err(|_| IdleError)?);
+        let (cmd_tx, cmd_rx) = mpsc::unbounded_channel();
+        let (ready_tx, ready_rx) = oneshot::channel();
+
+        let waker_thread = Arc::clone(&waker);
+        thread::Builder::new()
+            .name("okshell-idle-inhibit".into())
+            .spawn(move || wayland_thread(cmd_rx, waker_thread, ready_tx))
+            .map_err(|_| IdleError)?;
+
+        ready_rx.await.map_err(|_| IdleError)??;
+
+        *cmd_guard = Some(cmd_tx);
+        *self.waker.lock().await = Some(waker);
+        drop(cmd_guard);
+
+        self.initialized.store(true, Ordering::Release);
 
         if read_cached_state() {
             self.enable().await?;
@@ -294,10 +358,23 @@ impl IdleInhibitor {
         WatchStream::new(self.state_rx.clone())
     }
 
+    async fn send(&self, on: bool) -> Result<(), IdleError> {
+        let cmd_guard = self.cmd_tx.lock().await;
+        let tx = cmd_guard.as_ref().ok_or(IdleError)?;
+        let (ack_tx, ack_rx) = oneshot::channel();
+        tx.send(Command::SetInhibit { on, ack: ack_tx })
+            .map_err(|_| IdleError)?;
+
+        // Wake the wayland thread out of poll so it picks up the command.
+        if let Some(w) = self.waker.lock().await.as_ref() {
+            w.wake();
+        }
+
+        ack_rx.await.map_err(|_| IdleError)
+    }
+
     pub async fn enable(&self) -> Result<(), IdleError> {
-        let mut guard = self.inner.lock().await;
-        let inner = guard.as_mut().ok_or(IdleError)?;
-        inner.set_inhibit(true);
+        self.send(true).await?;
         let _ = self.state_tx.send(true);
         write_cached_state(true);
         info!("Idle inhibitor enabled");
@@ -305,10 +382,7 @@ impl IdleInhibitor {
     }
 
     pub async fn disable(&self) {
-        let mut guard = self.inner.lock().await;
-        if let Some(inner) = guard.as_mut() {
-            inner.set_inhibit(false);
-        }
+        let _ = self.send(false).await;
         let _ = self.state_tx.send(false);
         write_cached_state(false);
         info!("Idle inhibitor disabled");
