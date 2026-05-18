@@ -504,7 +504,7 @@ impl BarModel {
             ),
             BarWidget::AudioOutput => Box::new(
                 AudioOutputModel::builder()
-                    .launch(AudioOutputInit {})
+                    .launch(AudioOutputInit { orientation })
                     .detach(),
             ),
             BarWidget::Battery => Box::new(BatteryModel::builder().launch(BatteryInit {}).detach()),

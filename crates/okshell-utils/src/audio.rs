@@ -1,10 +1,12 @@
 use okshell_common::{watch, watch_cancellable};
 use okshell_services::audio_service;
+use okshell_sounds::play_audio_volume_change;
 use relm4::{Component, ComponentSender};
 use std::sync::Arc;
 use tokio_util::sync::CancellationToken;
 use wayle_audio::core::device::input::InputDevice;
 use wayle_audio::core::device::output::OutputDevice;
+use wayle_audio::volume::types::Volume;
 
 pub fn get_audio_out_icon(device: &Arc<OutputDevice>) -> &'static str {
     if device.muted.get() {
@@ -36,6 +38,37 @@ pub fn get_audio_in_icon(device: &Arc<InputDevice>) -> &'static str {
     } else {
         "microphone-sensitivity-muted-symbolic"
     }
+}
+
+pub async fn increase_volume() {
+    if let Some(output) = audio_service().default_output.get() {
+        let current_volume = output.volume.get();
+        let max_volume: f64 = 1.0;
+        let new_volume = max_volume.min(current_volume.average() + 0.05);
+        let _ = output
+            .set_volume(Volume::stereo(new_volume, new_volume))
+            .await;
+    }
+    play_audio_volume_change();
+}
+
+pub async fn decrease_volume() {
+    if let Some(output) = audio_service().default_output.get() {
+        let current_volume = output.volume.get();
+        let min_volume: f64 = 0.0;
+        let new_volume = min_volume.max(current_volume.average() - 0.05);
+        let _ = output
+            .set_volume(Volume::stereo(new_volume, new_volume))
+            .await;
+    }
+    play_audio_volume_change();
+}
+
+pub async fn toggle_mute() {
+    if let Some(output) = audio_service().default_output.get() {
+        let _ = output.set_mute(!output.muted.get()).await;
+    }
+    play_audio_volume_change();
 }
 
 pub fn spawn_default_output_watcher<C>(

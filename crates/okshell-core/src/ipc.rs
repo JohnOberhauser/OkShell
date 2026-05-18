@@ -1,14 +1,13 @@
 use crate::relm_app::{Shell, ShellInput};
 use okshell_cache::wallpaper::set_wallpaper;
-use okshell_services::{audio_service, brightness_service, hyprland_service};
+use okshell_services::{brightness_service, hyprland_service};
 use okshell_session::session_lock::session_lock;
 use okshell_settings::{close_settings, open_settings};
-use okshell_sounds::play_audio_volume_change;
+use okshell_utils::audio::{decrease_volume, increase_volume, toggle_mute};
 use relm4::gtk::glib;
 use relm4::{ComponentSender, gtk};
 use std::path::PathBuf;
 use tokio::sync::mpsc;
-use wayle_audio::volume::types::Volume;
 use wayle_brightness::Percentage;
 use zbus::connection;
 use zbus::interface;
@@ -88,32 +87,13 @@ pub fn init_ipc_shell_service(sender: &ComponentSender<Shell>) {
                 }
                 IPCCommand::CloseAllMenus => app_sender.emit(ShellInput::CloseAllMenus),
                 IPCCommand::VolumeUp => {
-                    if let Some(output) = audio_service().default_output.get() {
-                        let current_volume = output.volume.get();
-                        let max_volume: f64 = 1.0;
-                        let new_volume = max_volume.min(current_volume.average() + 0.05);
-                        let _ = output
-                            .set_volume(Volume::stereo(new_volume, new_volume))
-                            .await;
-                    }
-                    play_audio_volume_change();
+                    increase_volume().await;
                 }
                 IPCCommand::VolumeDown => {
-                    if let Some(output) = audio_service().default_output.get() {
-                        let current_volume = output.volume.get();
-                        let min_volume: f64 = 0.0;
-                        let new_volume = min_volume.max(current_volume.average() - 0.05);
-                        let _ = output
-                            .set_volume(Volume::stereo(new_volume, new_volume))
-                            .await;
-                    }
-                    play_audio_volume_change();
+                    decrease_volume().await;
                 }
                 IPCCommand::Mute => {
-                    if let Some(output) = audio_service().default_output.get() {
-                        let _ = output.set_mute(!output.muted.get()).await;
-                    }
-                    play_audio_volume_change();
+                    toggle_mute().await;
                 }
                 IPCCommand::BrightnessUp => {
                     if let Some(brightness_service) = brightness_service()

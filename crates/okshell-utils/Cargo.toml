@@ -16,6 +16,7 @@ okshell-config.workspace = true
 okshell-idle.workspace = true
 okshell-image.workspace = true
 okshell-services.workspace = true
+okshell-sounds.workspace = true
 notify-rust.workspace = true
 regex.workspace = true
 relm4.workspace = true

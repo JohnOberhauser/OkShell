@@ -3546,6 +3546,7 @@ dependencies = [
  "okshell-idle",
  "okshell-image",
  "okshell-services",
+ "okshell-sounds",
  "regex",
  "relm4",
  "tokio",
