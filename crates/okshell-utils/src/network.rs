@@ -86,30 +86,64 @@ pub fn get_wifi_icon_for_strength(strength: u8) -> &'static str {
     }
 }
 
+pub fn is_wireguard_connected() -> bool {
+    let network = network_service();
+    let wireguard = network.wireguard.get();
+
+    let wg_active = wireguard
+        .as_ref()
+        .is_some_and(|wg| wg.tunnels.get().iter().any(|t| t.active.get()));
+
+    return wg_active;
+}
+
 pub fn set_network_label(label: &gtk::Label) {
     let network = network_service();
     let primary = network.primary.get();
+    let wireguard = network.wireguard.get();
+
+    let wg_active = wireguard
+        .as_ref()
+        .is_some_and(|wg| wg.tunnels.get().iter().any(|t| t.active.get()));
 
     match primary {
         ConnectionType::Wired => {
-            if let Some(wired_label) = get_wired_label(&network) {
-                label.set_label(wired_label);
-            } else {
+            let Some(wired_label) = get_wired_label(&network) else {
                 label.set_label("Not Connected");
+                return;
+            };
+
+            if wg_active {
+                label.set_label(&format!("{wired_label} (+WG)"));
+            } else {
+                label.set_label(wired_label);
             }
         }
         ConnectionType::Wifi => {
-            if let Some(wifi_label) = get_wifi_label(&network) {
-                label.set_label(wifi_label.as_str());
-            } else {
+            let Some(wifi_label) = get_wifi_label(&network) else {
                 label.set_label("Not Connected");
+                return;
+            };
+
+            if wg_active {
+                label.set_label(&format!("{wifi_label} (+WG)"));
+            } else {
+                label.set_label(wifi_label.as_str());
             }
         }
         _ => {
             if let Some(wifi_label) = get_wifi_label(&network) {
-                label.set_label(wifi_label.as_str());
+                if wg_active {
+                    label.set_label(&format!("{wifi_label} (+WG)"));
+                } else {
+                    label.set_label(wifi_label.as_str());
+                }
             } else if let Some(wired_label) = get_wired_label(&network) {
-                label.set_label(wired_label);
+                if wg_active {
+                    label.set_label(&format!("{wired_label} (+WG)"));
+                } else {
+                    label.set_label(wired_label);
+                }
             } else {
                 label.set_label("Not Connected");
             }
@@ -182,6 +216,38 @@ pub fn spawn_network_watcher<C>(
     });
     watch!(sender, [wired.watch()], |out| {
         let _ = out.send(map_wired());
+    });
+}
+
+pub fn spawn_wireguard_watcher<C>(
+    sender: &ComponentSender<C>,
+    map_wireguard: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
+) where
+    C: Component,
+    C::CommandOutput: Send + 'static,
+{
+    let network = network_service();
+    let wireguard = network.wireguard.clone();
+    watch!(sender, [wireguard.watch()], |out| {
+        let _ = out.send(map_wireguard());
+    });
+}
+
+pub fn spawn_wireguard_tunnels_watcher<C>(
+    sender: &ComponentSender<C>,
+    cancellation_token: CancellationToken,
+    map_wireguard: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
+) where
+    C: Component,
+    C::CommandOutput: Send + 'static,
+{
+    let network = network_service();
+    let Some(wireguard) = network.wireguard.get() else {
+        return;
+    };
+    let tunnels = wireguard.tunnels.clone();
+    watch_cancellable!(sender, cancellation_token, [tunnels.watch()], |out| {
+        let _ = out.send(map_wireguard());
     });
 }
 

@@ -5780,8 +5780,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zbus",
 ]
 
@@ -5800,8 +5800,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zbus",
 ]
 
@@ -5819,8 +5819,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zbus",
 ]
 
@@ -5838,8 +5838,8 @@ dependencies = [
  "tokio-util",
  "tracing",
  "udev",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zbus",
 ]
 
@@ -5848,6 +5848,20 @@ name = "wayle-core"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "867109345d4043305fbee2df1847e8cd9ca33bac34550b541323fc17ae81e513"
+dependencies = [
+ "futures",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+ "zbus",
+]
+
+[[package]]
+name = "wayle-core"
+version = "0.1.2"
+source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network#fca6e64fa9a132715015b6f89c3fdb916e4212a3"
 dependencies = [
  "futures",
  "serde",
@@ -5874,8 +5888,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -5896,8 +5910,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wildcard",
  "zbus",
 ]
@@ -5905,8 +5919,7 @@ dependencies = [
 [[package]]
 name = "wayle-network"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f94efa40c4e13aec2a8b8e5e4aaf3432c58eb99d4232e2be86402df29dc0d952"
+source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network#fca6e64fa9a132715015b6f89c3fdb916e4212a3"
 dependencies = [
  "async-trait",
  "bitflags 2.11.1",
@@ -5918,8 +5931,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network)",
+ "wayle-traits 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network)",
  "zbus",
 ]
 
@@ -5942,8 +5955,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wildcard",
  "zbus",
 ]
@@ -5963,8 +5976,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zbus",
 ]
 
@@ -5981,7 +5994,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
- "wayle-core",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -6003,8 +6016,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "zbus",
 ]
 
@@ -6013,6 +6026,11 @@ name = "wayle-traits"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0833629ad4481a1302cb6df07da2b438bdb1c99dc5e5844e3198d53945728a6d"
+
+[[package]]
+name = "wayle-traits"
+version = "0.1.2"
+source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network#fca6e64fa9a132715015b6f89c3fdb916e4212a3"
 
 [[package]]
 name = "wayle-weather"
@@ -6030,8 +6048,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core",
- "wayle-traits",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

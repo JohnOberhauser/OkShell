@@ -11,7 +11,7 @@ use okshell_common::WatcherToken;
 use okshell_services::network_service;
 use okshell_utils::network::{
     set_network_icon, set_network_label, spawn_network_watcher, spawn_wifi_watcher,
-    spawn_wired_watcher,
+    spawn_wired_watcher, spawn_wireguard_tunnels_watcher, spawn_wireguard_watcher,
 };
 use relm4::gtk::glib;
 use relm4::gtk::prelude::WidgetExt;
@@ -23,6 +23,7 @@ pub(crate) struct NetworkMenuWidgetModel {
     revealer_row: Controller<RevealerRowModel<RevealerRowLabelModel, NetworkRevealedContentModel>>,
     wifi_watcher_token: WatcherToken,
     wired_watcher_token: WatcherToken,
+    wireguard_watcher_token: WatcherToken,
     scan_token: WatcherToken,
 }
 
@@ -46,6 +47,7 @@ pub(crate) enum NetworkMenuWidgetCommandOutput {
     StateChanged,
     WifiChanged,
     WiredChanged,
+    WireguardChanged,
 }
 
 #[relm4::component(pub)]
@@ -75,6 +77,8 @@ impl Component for NetworkMenuWidgetModel {
             || NetworkMenuWidgetCommandOutput::WifiChanged,
             || NetworkMenuWidgetCommandOutput::WiredChanged,
         );
+
+        spawn_wireguard_watcher(&sender, || NetworkMenuWidgetCommandOutput::WireguardChanged);
 
         let row_content = RevealerRowLabelModel::builder()
             .launch(RevealerRowLabelInit {
@@ -106,6 +110,7 @@ impl Component for NetworkMenuWidgetModel {
             revealer_row,
             wifi_watcher_token: WatcherToken::new(),
             wired_watcher_token: WatcherToken::new(),
+            wireguard_watcher_token: WatcherToken::new(),
             scan_token: WatcherToken::new(),
         };
 
@@ -196,6 +201,12 @@ impl Component for NetworkMenuWidgetModel {
             NetworkMenuWidgetCommandOutput::WiredChanged => {
                 let token = self.wired_watcher_token.reset();
                 spawn_wired_watcher(&sender, token, || {
+                    NetworkMenuWidgetCommandOutput::StateChanged
+                });
+            }
+            NetworkMenuWidgetCommandOutput::WireguardChanged => {
+                let token = self.wireguard_watcher_token.reset();
+                spawn_wireguard_tunnels_watcher(&sender, token, || {
                     NetworkMenuWidgetCommandOutput::StateChanged
                 });
             }
