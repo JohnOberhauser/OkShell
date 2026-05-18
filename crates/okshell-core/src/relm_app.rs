@@ -10,6 +10,7 @@ use okshell_notification_popups::popup_notifications::{
 };
 use okshell_osd::brightness_osd::{BrightnessOsdInit, BrightnessOsdModel};
 use okshell_osd::sound_alerts::SoundAlertsModel;
+use okshell_osd::volume_input_osd::{VolumeInputOsdInit, VolumeInputOsdModel};
 use okshell_osd::volume_osd::{VolumeOsdInit, VolumeOsdModel};
 use okshell_polkit::PolkitPromptModel;
 use okshell_style::style_manager::{StyleManagerModel, StyleManagerOutput};
@@ -25,10 +26,11 @@ use tracing::info;
 pub(crate) struct WindowGroup {
     pub monitor: Monitor,
     pub frame: Option<Controller<Frame>>,
-    pub _wallpaper: Option<Controller<WallpaperModel>>,
-    pub _popup_notifications: Option<Controller<PopupNotificationsModel>>,
-    pub _volume_osd: Option<Controller<VolumeOsdModel>>,
-    pub _brightness_osd: Option<Controller<BrightnessOsdModel>>,
+    pub wallpaper: Option<Controller<WallpaperModel>>,
+    pub popup_notifications: Option<Controller<PopupNotificationsModel>>,
+    pub volume_osd: Option<Controller<VolumeOsdModel>>,
+    pub brightness_osd: Option<Controller<BrightnessOsdModel>>,
+    pub volume_input_osd: Option<Controller<VolumeInputOsdModel>>,
 }
 
 pub(crate) struct Shell {
@@ -232,13 +234,22 @@ impl Component for Shell {
                         .detach(),
                 );
 
+                let volume_input_osd = Some(
+                    VolumeInputOsdModel::builder()
+                        .launch(VolumeInputOsdInit {
+                            monitor: monitor.clone(),
+                        })
+                        .detach(),
+                );
+
                 let window_group = WindowGroup {
                     monitor: monitor.clone(),
                     frame,
-                    _wallpaper: wallpaper,
-                    _popup_notifications: popup_notifications,
-                    _volume_osd: volume_osd,
-                    _brightness_osd: brightness_osd,
+                    wallpaper,
+                    popup_notifications,
+                    volume_osd,
+                    brightness_osd,
+                    volume_input_osd,
                 };
 
                 self.window_groups.insert(name, window_group);
@@ -249,17 +260,20 @@ impl Component for Shell {
                     if let Some(frame) = &group.frame {
                         frame.widget().close();
                     }
-                    if let Some(wallpaper) = &group._wallpaper {
+                    if let Some(wallpaper) = &group.wallpaper {
                         wallpaper.widget().close();
                     }
-                    if let Some(popup) = &group._popup_notifications {
+                    if let Some(popup) = &group.popup_notifications {
                         popup.widget().close();
                     }
-                    if let Some(vol) = &group._volume_osd {
+                    if let Some(vol) = &group.volume_osd {
                         vol.widget().close();
                     }
-                    if let Some(bright) = &group._brightness_osd {
+                    if let Some(bright) = &group.brightness_osd {
                         bright.widget().close();
+                    }
+                    if let Some(vol) = &group.volume_input_osd {
+                        vol.widget().close();
                     }
                 }
             }
