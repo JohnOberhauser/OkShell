@@ -4,7 +4,6 @@ use okshell_utils::network::{
 };
 use relm4::gtk::prelude::WidgetExt;
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
-use tracing::info;
 
 #[derive(Debug)]
 pub(crate) struct VpnIndicatorModel {
@@ -89,11 +88,9 @@ impl Component for VpnIndicatorModel {
     ) {
         match message {
             VpnIndicatorCommandOutput::StateChanged => {
-                info!("state changed");
                 self.visible = is_wireguard_connected();
             }
             VpnIndicatorCommandOutput::WireguardChanged => {
-                info!("wireguard changed");
                 let token = self.wireguard_watcher_token.reset();
                 spawn_wireguard_tunnels_watcher(&sender, token, || {
                     VpnIndicatorCommandOutput::StateChanged

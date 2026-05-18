@@ -6,6 +6,7 @@ use tokio_util::sync::CancellationToken;
 use wayle_network::NetworkService;
 use wayle_network::types::connectivity::ConnectionType;
 use wayle_network::types::states::NetworkStatus;
+use wayle_network::wireguard::WireGuardTunnel;
 
 pub fn set_network_icon(image: &gtk::Image) {
     let network = network_service();
@@ -248,6 +249,21 @@ pub fn spawn_wireguard_tunnels_watcher<C>(
     let tunnels = wireguard.tunnels.clone();
     watch_cancellable!(sender, cancellation_token, [tunnels.watch()], |out| {
         let _ = out.send(map_wireguard());
+    });
+}
+
+pub fn spawn_wireguard_connectivity_watcher<C>(
+    sender: &ComponentSender<C>,
+    tunnel: &WireGuardTunnel,
+    cancellation_token: CancellationToken,
+    map_connectivity: impl Fn() -> C::CommandOutput + Send + Sync + 'static,
+) where
+    C: Component,
+    C::CommandOutput: Send + 'static,
+{
+    let connectivity = tunnel.connectivity.clone();
+    watch_cancellable!(sender, cancellation_token, [connectivity.watch()], |out| {
+        let _ = out.send(map_connectivity());
     });
 }
 

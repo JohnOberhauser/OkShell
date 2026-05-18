@@ -2,13 +2,16 @@ use crate::common_widgets::revealer_button::revealer_button::{
     RevealerButtonInit, RevealerButtonInput, RevealerButtonModel,
 };
 use crate::common_widgets::revealer_button::revealer_button_icon_label::{
-    RevealerButtonIconLabelInit, RevealerButtonIconLabelModel,
+    RevealerButtonIconLabelInit, RevealerButtonIconLabelInput, RevealerButtonIconLabelModel,
 };
 use crate::menus::menu_widgets::network::available_network_revealed_content::{
     AvailableNetworkRevealedContentInit, AvailableNetworkRevealedContentInput,
     AvailableNetworkRevealedContentModel,
 };
 use crate::menus::menu_widgets::network::disconnect_button::DisconnectButtonModel;
+use crate::menus::menu_widgets::network::wireguard_revealed_content::{
+    WireguardRevealedContentInit, WireguardRevealedContentModel,
+};
 use okshell_common::WatcherToken;
 use okshell_common::dynamic_box::dynamic_box::{
     DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
@@ -20,21 +23,25 @@ use okshell_services::network_service;
 use okshell_utils::network::{
     get_wifi_icon_for_strength, set_network_icon, set_network_label,
     spawn_available_wifi_networks_watcher, spawn_network_watcher, spawn_wifi_watcher,
-    spawn_wired_watcher,
+    spawn_wired_watcher, spawn_wireguard_tunnels_watcher, spawn_wireguard_watcher,
 };
 use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
 use relm4::gtk::{Justification, RevealerTransitionType};
 use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use std::sync::Arc;
 use wayle_network::core::access_point::{AccessPoint, Ssid};
+use wayle_network::wireguard::WireGuardTunnel;
 
 pub(crate) struct NetworkRevealedContentModel {
     active_network_button:
         Controller<RevealerButtonModel<RevealerButtonIconLabelModel, DisconnectButtonModel>>,
     available_networks_dynamic_box_controller: Controller<DynamicBoxModel<Arc<AccessPoint>, Ssid>>,
+    wireguard_dynamic_box_controller: Controller<DynamicBoxModel<Arc<WireGuardTunnel>, String>>,
     wifi_watcher_token: WatcherToken,
     wired_watcher_token: WatcherToken,
+    wireguard_watcher_token: WatcherToken,
     available_network_count: i16,
+    available_wg_count: i16,
     scanning: bool,
 }
 
@@ -57,6 +64,8 @@ pub(crate) enum NetworkRevealedContentCommandOutput {
     WifiChanged,
     WiredChanged,
     AvailableNetworksChanged,
+    WireguardChanged,
+    WireguardTunnelsChanged,
 }
 
 #[relm4::component(pub)]
@@ -85,6 +94,29 @@ impl Component for NetworkRevealedContentModel {
                 },
 
                 model.active_network_button.widget().clone() {}
+            },
+
+            gtk::Box {
+                set_orientation: gtk::Orientation::Vertical,
+                set_spacing: 10,
+
+                gtk::Label {
+                    add_css_class: "label-large-bold-variant",
+                    set_label: "Wireguard Connections",
+                    set_hexpand: true,
+                    set_justify: Justification::Center,
+                },
+
+                gtk::Label {
+                    add_css_class: "label-medium",
+                    set_label: "No Available WG Connections",
+                    set_hexpand: true,
+                    set_justify: Justification::Center,
+                    #[watch]
+                    set_visible: model.available_wg_count == 0,
+                },
+
+                model.wireguard_dynamic_box_controller.widget().clone() {},
             },
 
             #[name = "available_networks_container"]
@@ -133,6 +165,10 @@ impl Component for NetworkRevealedContentModel {
             || NetworkRevealedContentCommandOutput::WifiChanged,
             || NetworkRevealedContentCommandOutput::WiredChanged,
         );
+
+        spawn_wireguard_watcher(&sender, || {
+            NetworkRevealedContentCommandOutput::WireguardChanged
+        });
 
         let active_network_content = RevealerButtonIconLabelModel::builder()
             .launch(RevealerButtonIconLabelInit {
@@ -195,12 +231,64 @@ impl Component for NetworkRevealedContentModel {
             })
             .detach();
 
+        let wireguard_dynamic_box_factory = DynamicBoxFactory::<Arc<WireGuardTunnel>, String> {
+            id: Box::new(|item| item.profile.uuid.get()),
+            create: Box::new(move |item| {
+                let icon_name;
+                if item.active.get() {
+                    icon_name = "shield-check-symbolic";
+                } else {
+                    icon_name = "";
+                }
+                let content = RevealerButtonIconLabelModel::builder()
+                    .launch(RevealerButtonIconLabelInit {
+                        label: item.profile.id.get().to_string(),
+                        icon_name: icon_name.to_string(),
+                        secondary_icon_name: "".to_string(),
+                    })
+                    .detach();
+
+                let wg = item.clone();
+                let revealed_content = WireguardRevealedContentModel::builder()
+                    .launch(WireguardRevealedContentInit { wg })
+                    .detach();
+
+                let button = RevealerButtonModel::builder()
+                    .launch(RevealerButtonInit {
+                        content: content,
+                        revealed_content: revealed_content,
+                    })
+                    .detach();
+
+                Box::new(button) as Box<dyn GenericWidgetController>
+            }),
+            update: None,
+        };
+
+        let wireguard_dynamic_box_controller: Controller<
+            DynamicBoxModel<Arc<WireGuardTunnel>, String>,
+        > = DynamicBoxModel::builder()
+            .launch(DynamicBoxInit {
+                factory: wireguard_dynamic_box_factory,
+                orientation: gtk::Orientation::Vertical,
+                spacing: 0,
+                transition_type: RevealerTransitionType::SlideDown,
+                transition_duration_ms: 200,
+                reverse: false,
+                retain_entries: false,
+                allow_drag_and_drop: false,
+            })
+            .detach();
+
         let model = NetworkRevealedContentModel {
             active_network_button,
             available_networks_dynamic_box_controller,
+            wireguard_dynamic_box_controller,
             wifi_watcher_token: WatcherToken::new(),
             wired_watcher_token: WatcherToken::new(),
+            wireguard_watcher_token: WatcherToken::new(),
             available_network_count: 0,
+            available_wg_count: 0,
             scanning: false,
         };
 
@@ -279,8 +367,9 @@ impl Component for NetworkRevealedContentModel {
         self.update_view(widgets, sender);
     }
 
-    fn update_cmd(
+    fn update_cmd_with_view(
         &mut self,
+        widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
         _root: &Self::Root,
@@ -310,6 +399,58 @@ impl Component for NetworkRevealedContentModel {
                     NetworkRevealedContentCommandOutput::StateChanged
                 });
             }
+            NetworkRevealedContentCommandOutput::WireguardChanged => {
+                let token = self.wireguard_watcher_token.reset();
+                spawn_wireguard_tunnels_watcher(&sender, token, || {
+                    NetworkRevealedContentCommandOutput::WireguardTunnelsChanged
+                });
+            }
+            NetworkRevealedContentCommandOutput::WireguardTunnelsChanged => {
+                let Some(wg) = network_service().wireguard.get() else {
+                    self.available_wg_count = 0;
+                    return;
+                };
+
+                let tunnels = wg.tunnels.get();
+
+                self.available_wg_count = tunnels.len() as i16;
+                self.wireguard_dynamic_box_controller
+                    .emit(DynamicBoxInput::SetItems(tunnels));
+
+                self.wireguard_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|id, entry| {
+                        if let Some(ctrl) = entry.controller.as_ref().downcast_ref::<Controller<
+                            RevealerButtonModel<
+                                RevealerButtonIconLabelModel,
+                                WireguardRevealedContentModel,
+                            >,
+                        >>() {
+                            let tunnels = wg.tunnels.get();
+                            let wg = tunnels.iter().find(|tun| tun.profile.uuid.get() == *id);
+
+                            let Some(wg) = wg else {
+                                return;
+                            };
+
+                            if wg.active.get() {
+                                ctrl.model().content.emit(
+                                    RevealerButtonIconLabelInput::SetPrimaryIconName(
+                                        "shield-check-symbolic".to_string(),
+                                    ),
+                                );
+                            } else {
+                                ctrl.model().content.emit(
+                                    RevealerButtonIconLabelInput::SetPrimaryIconName(
+                                        "".to_string(),
+                                    ),
+                                );
+                            }
+                        }
+                    })
+            }
         }
+
+        self.update_view(widgets, sender);
     }
 }
