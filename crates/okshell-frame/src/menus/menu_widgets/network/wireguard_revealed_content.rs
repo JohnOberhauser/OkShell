@@ -2,23 +2,31 @@ use okshell_common::WatcherToken;
 use okshell_services::network_service;
 use okshell_utils::network::spawn_wireguard_tunnels_watcher;
 use okshell_utils::network::spawn_wireguard_watcher;
+use relm4::Controller;
 use relm4::gtk::Justification;
 use relm4::gtk::prelude::*;
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
 use std::sync::Arc;
 use wayle_network::wireguard::WireGuardTunnel;
 
-#[derive(Debug)]
+use crate::common_widgets::confirmation_dialog::ConfirmationDialogInit;
+use crate::common_widgets::confirmation_dialog::ConfirmationDialogModel;
+use crate::common_widgets::confirmation_dialog::ConfirmationDialogOutput;
+
 pub(crate) struct WireguardRevealedContentModel {
     uuid: String,
     active: bool,
     wireguard_watcher_token: WatcherToken,
+    dialog: Option<Controller<ConfirmationDialogModel>>,
 }
 
 #[derive(Debug)]
 pub(crate) enum WireguardRevealedContentInput {
     Connect,
     Disconnect,
+    Delete,
+    ConfirmClicked,
+    CancelClicked,
 }
 
 #[derive(Debug)]
@@ -80,6 +88,21 @@ impl Component for WireguardRevealedContentModel {
                     set_justify: Justification::Center,
                 }
             },
+
+            gtk::Button {
+                add_css_class: "ok-button-primary",
+                set_hexpand: true,
+                connect_clicked[sender] => move |_| {
+                    sender.input(WireguardRevealedContentInput::Delete);
+                },
+
+                gtk::Label {
+                    add_css_class: "label-medium-bold-primary",
+                    set_label: "Delete",
+                    set_hexpand: true,
+                    set_justify: Justification::Center,
+                }
+            },
         }
     }
 
@@ -96,6 +119,7 @@ impl Component for WireguardRevealedContentModel {
             uuid: params.wg.profile.uuid.get(),
             active: params.wg.active.get(),
             wireguard_watcher_token: WatcherToken::new(),
+            dialog: None,
         };
 
         let widgets = view_output!();
@@ -145,6 +169,73 @@ impl Component for WireguardRevealedContentModel {
                     };
 
                     let _ = wg.deactivate(&connection).await;
+                });
+            }
+            WireguardRevealedContentInput::Delete => {
+                let Some(wg) = network_service().wireguard.get() else {
+                    return;
+                };
+
+                let tunnels = wg.tunnels.get();
+
+                let Some(connection) = tunnels
+                    .iter()
+                    .find(|tun| tun.profile.uuid.get() == self.uuid)
+                else {
+                    return;
+                };
+
+                let dialog = ConfirmationDialogModel::builder()
+                    .launch(ConfirmationDialogInit {
+                        message: format!(
+                            "Are you sure you want to delete {}?",
+                            connection.profile.id.get()
+                        ),
+                        negative_label: "Cancel".to_string(),
+                        positive_label: "Delete".to_string(),
+                    })
+                    .forward(sender.input_sender(), |msg| match msg {
+                        ConfirmationDialogOutput::PositiveClicked => {
+                            WireguardRevealedContentInput::ConfirmClicked
+                        }
+                        ConfirmationDialogOutput::NegativeClicked => {
+                            WireguardRevealedContentInput::CancelClicked
+                        }
+                    });
+
+                self.dialog = Some(dialog);
+            }
+            WireguardRevealedContentInput::CancelClicked => {
+                self.dialog = None;
+            }
+            WireguardRevealedContentInput::ConfirmClicked => {
+                self.dialog = None;
+                let uuid = self.uuid.clone();
+                tokio::spawn(async move {
+                    let Some(wg) = network_service().wireguard.get() else {
+                        return;
+                    };
+
+                    let tunnels = wg.tunnels.get();
+
+                    let Some(connection) =
+                        tunnels.iter().find(|tun| tun.profile.uuid.get() == uuid)
+                    else {
+                        return;
+                    };
+
+                    let _ = wg.delete(&connection).await;
+
+                    // delete doesn't remove the connection from the tunnels list.
+                    // Can delete this if/when wayle-services is fixed.
+                    wg.tunnels.replace(
+                        wg.tunnels
+                            .get()
+                            .iter()
+                            .filter(|tun| tun.profile.object_path != connection.profile.object_path)
+                            .cloned()
+                            .collect(),
+                    );
                 });
             }
         }

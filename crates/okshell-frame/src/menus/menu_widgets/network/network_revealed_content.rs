@@ -30,7 +30,6 @@ use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
 use relm4::gtk::{Justification, RevealerTransitionType};
 use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use std::sync::Arc;
-use tracing::info;
 use wayle_network::core::access_point::{AccessPoint, Ssid};
 use wayle_network::wireguard::WireGuardTunnel;
 
@@ -332,7 +331,7 @@ impl Component for NetworkRevealedContentModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        root: &Self::Root,
+        _root: &Self::Root,
     ) {
         match message {
             NetworkRevealedContentInput::UpdateState => {
