@@ -25,10 +25,12 @@ use okshell_utils::network::{
     spawn_available_wifi_networks_watcher, spawn_network_watcher, spawn_wifi_watcher,
     spawn_wired_watcher, spawn_wireguard_tunnels_watcher, spawn_wireguard_watcher,
 };
-use relm4::gtk::prelude::{BoxExt, OrientableExt, WidgetExt};
+use relm4::gtk::gio::prelude::FileExt;
+use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
 use relm4::gtk::{Justification, RevealerTransitionType};
 use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use std::sync::Arc;
+use tracing::info;
 use wayle_network::core::access_point::{AccessPoint, Ssid};
 use wayle_network::wireguard::WireGuardTunnel;
 
@@ -51,6 +53,7 @@ pub(crate) enum NetworkRevealedContentInput {
     UpdateAvailableNetworks,
     SetScanning(bool),
     Reset,
+    ImportClicked,
 }
 
 #[derive(Debug)]
@@ -100,11 +103,38 @@ impl Component for NetworkRevealedContentModel {
                 set_orientation: gtk::Orientation::Vertical,
                 set_spacing: 10,
 
-                gtk::Label {
-                    add_css_class: "label-large-bold-variant",
-                    set_label: "Wireguard Connections",
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Horizontal,
+                    set_spacing: 10,
                     set_hexpand: true,
-                    set_justify: Justification::Center,
+                    set_halign: gtk::Align::Center,
+
+                    gtk::Box {
+                        set_width_request: 30,
+                    },
+
+                    gtk::Label {
+                        add_css_class: "label-large-bold-variant",
+                        set_label: "Wireguard Connections",
+                        set_justify: Justification::Center,
+                    },
+
+                    gtk::Button {
+                        add_css_class: "ok-button-surface",
+                        set_tooltip_text: Some("Import from file"),
+                        connect_clicked[sender] => move |_| {
+                            sender.input(NetworkRevealedContentInput::ImportClicked);
+                        },
+
+                        #[name="image"]
+                        gtk::Image {
+                            set_hexpand: true,
+                            set_vexpand: true,
+                            set_halign: gtk::Align::Center,
+                            set_valign: gtk::Align::Center,
+                            set_icon_name: Some("plus-symbolic"),
+                        }
+                    },
                 },
 
                 gtk::Label {
@@ -302,7 +332,7 @@ impl Component for NetworkRevealedContentModel {
         widgets: &mut Self::Widgets,
         message: Self::Input,
         sender: ComponentSender<Self>,
-        _root: &Self::Root,
+        root: &Self::Root,
     ) {
         match message {
             NetworkRevealedContentInput::UpdateState => {
@@ -373,6 +403,71 @@ impl Component for NetworkRevealedContentModel {
                             ctrl.emit(RevealerButtonInput::SetRevealed(false));
                         }
                     })
+            }
+            NetworkRevealedContentInput::ImportClicked => {
+                let filter = gtk::FileFilter::new();
+                filter.set_name(Some("WireGuard Config (*.conf)"));
+                filter.add_pattern("*.conf");
+
+                let filters = gtk::gio::ListStore::new::<gtk::FileFilter>();
+                filters.append(&filter);
+
+                let dialog = gtk::FileDialog::builder()
+                    .title("Select WireGuard Config")
+                    .accept_label("Open")
+                    .filters(&filters)
+                    .default_filter(&filter)
+                    .modal(true)
+                    .build();
+
+                dialog.open(
+                    None::<&gtk::Window>,
+                    None::<&gtk::gio::Cancellable>,
+                    move |result| {
+                        if let Ok(file) = result {
+                            if let Some(path) = file.path() {
+                                tokio::spawn(async move {
+                                    // The commit for wireguard in wayle-services doesn't work
+                                    // for importing yet.  When it does, switch to using that instead
+                                    // of nmcli.  Or maybe just keep this since we know it works?
+                                    let _ = tokio::process::Command::new("nmcli")
+                                        .args([
+                                            "connection",
+                                            "import",
+                                            "type",
+                                            "wireguard",
+                                            "file",
+                                            &path.to_string_lossy(),
+                                        ])
+                                        .output()
+                                        .await;
+
+                                    // let Some(wg) = network_service().wireguard.get() else {
+                                    //     return;
+                                    // };
+
+                                    // let name = path
+                                    //     .file_stem()
+                                    //     .and_then(|s| s.to_str())
+                                    //     .unwrap_or("wireguard");
+
+                                    // let content = match tokio::fs::read_to_string(&path).await {
+                                    //     Ok(c) => c,
+                                    //     Err(e) => {
+                                    //         tracing::error!(
+                                    //             "Failed to read {}: {e}",
+                                    //             path.display()
+                                    //         );
+                                    //         return;
+                                    //     }
+                                    // };
+
+                                    // let result = wg.import(name, content.as_str()).await;
+                                });
+                            }
+                        }
+                    },
+                );
             }
         }
 

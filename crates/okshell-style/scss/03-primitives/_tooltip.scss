@@ -1,0 +1,12 @@
+tooltip {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    border-radius: var(--radius-window);
+    border: var(--border-width) solid var(--outline);
+    padding: 6px 10px;
+}
+
+tooltip label {
+    color: var(--on-surface);
+    font-size: var(--font-sm);
+}
