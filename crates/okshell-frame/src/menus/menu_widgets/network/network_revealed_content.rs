@@ -360,6 +360,18 @@ impl Component for NetworkRevealedContentModel {
                                 .revealed_content
                                 .emit(AvailableNetworkRevealedContentInput::Reset);
                         }
+                    });
+                self.wireguard_dynamic_box_controller
+                    .model()
+                    .for_each_entry(|_, entry| {
+                        if let Some(ctrl) = entry.controller.as_ref().downcast_ref::<Controller<
+                            RevealerButtonModel<
+                                RevealerButtonIconLabelModel,
+                                WireguardRevealedContentModel,
+                            >,
+                        >>() {
+                            ctrl.emit(RevealerButtonInput::SetRevealed(false));
+                        }
                     })
             }
         }
