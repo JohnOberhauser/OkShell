@@ -13,22 +13,23 @@ use relm4::gtk::gdk;
 use relm4::gtk::prelude::*;
 use relm4::{Component, ComponentParts, ComponentSender, gtk, once_cell};
 use time::OffsetDateTime;
-use time::format_description::parse;
+use time::format_description::parse_borrowed;
 use tracing::info;
 
 static TIME_FORMAT_24: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
-        parse("[hour repr:24 padding:zero]:[minute padding:zero]").unwrap()
+        parse_borrowed::<2>("[hour repr:24 padding:zero]:[minute padding:zero]").unwrap()
     });
 
 static TIME_FORMAT_12: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
-        parse("[hour repr:12 padding:zero]:[minute padding:zero] [period case:lower]").unwrap()
+        parse_borrowed::<2>("[hour repr:12 padding:zero]:[minute padding:zero] [period case:lower]")
+            .unwrap()
     });
 
 static DAY_FORMAT: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
-        parse("[weekday repr:long], [month repr:long] [day padding:none]").unwrap()
+        parse_borrowed::<2>("[weekday repr:long], [month repr:long] [day padding:none]").unwrap()
     });
 
 pub static LOCK_SCREEN_REVEALER_TRANSITION_DURATION: u32 = 300;

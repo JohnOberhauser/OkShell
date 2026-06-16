@@ -10,29 +10,28 @@ use relm4::{
     },
     once_cell,
 };
-use time::OffsetDateTime;
-use time::format_description::parse;
+use time::{OffsetDateTime, format_description::parse_borrowed};
 
 static TIME_FORMAT_24: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
-        parse("[hour repr:24 padding:zero]:[minute padding:zero]").unwrap()
+        parse_borrowed::<2>("[hour repr:24 padding:zero]:[minute padding:zero]").unwrap()
     });
 
 static TIME_FORMAT_24_VERTICAL: once_cell::sync::Lazy<
     Vec<time::format_description::FormatItem<'static>>,
 > = once_cell::sync::Lazy::new(|| {
-    parse("[hour repr:24 padding:zero]\n[minute padding:zero]").unwrap()
+    parse_borrowed::<2>("[hour repr:24 padding:zero]\n[minute padding:zero]").unwrap()
 });
 
 static TIME_FORMAT_12: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
-        parse("[hour repr:12 padding:zero]:[minute padding:zero]").unwrap()
+        parse_borrowed::<2>("[hour repr:12 padding:zero]:[minute padding:zero]").unwrap()
     });
 
 static TIME_FORMAT_12_VERTICAL: once_cell::sync::Lazy<
     Vec<time::format_description::FormatItem<'static>>,
 > = once_cell::sync::Lazy::new(|| {
-    parse("[hour repr:12 padding:zero]\n[minute padding:zero]").unwrap()
+    parse_borrowed::<2>("[hour repr:12 padding:zero]\n[minute padding:zero]").unwrap()
 });
 
 #[derive(Debug)]

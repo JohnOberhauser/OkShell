@@ -7,12 +7,12 @@ use relm4::{
     },
     once_cell,
 };
-use time::format_description::parse;
-use time::{Date, OffsetDateTime};
+use time::{Date, OffsetDateTime, format_description::parse_borrowed};
 
 static DATE_FORMAT: once_cell::sync::Lazy<Vec<time::format_description::FormatItem<'static>>> =
     once_cell::sync::Lazy::new(|| {
-        parse("[weekday repr:long]\n[month repr:long] [day padding:none], [year]").unwrap()
+        parse_borrowed::<2>("[weekday repr:long]\n[month repr:long] [day padding:none], [year]")
+            .unwrap()
     });
 
 #[derive(Debug)]

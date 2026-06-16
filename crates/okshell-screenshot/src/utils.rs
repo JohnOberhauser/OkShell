@@ -28,8 +28,10 @@ pub(crate) fn default_screenshot_path() -> PathBuf {
     let now = time::OffsetDateTime::now_utc();
     let timestamp = now
         .format(
-            &time::format_description::parse("[year]_[month]_[day]_[hour]_[minute]_[second]")
-                .unwrap(),
+            &time::format_description::parse_borrowed::<2>(
+                "[year]_[month]_[day]_[hour]_[minute]_[second]",
+            )
+            .unwrap(),
         )
         .unwrap_or_else(|_| "screenshot".into());
 
@@ -44,8 +46,10 @@ pub(crate) fn default_recording_path() -> PathBuf {
     let now = time::OffsetDateTime::now_utc();
     let timestamp = now
         .format(
-            &time::format_description::parse("[year]_[month]_[day]_[hour]_[minute]_[second]")
-                .unwrap(),
+            &time::format_description::parse_borrowed::<2>(
+                "[year]_[month]_[day]_[hour]_[minute]_[second]",
+            )
+            .unwrap(),
         )
         .unwrap_or_else(|_| "record".into());
 
