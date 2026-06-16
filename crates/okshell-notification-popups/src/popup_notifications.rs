@@ -1,3 +1,4 @@
+use gtk4::glib::timeout_add_local_once;
 use gtk4_layer_shell::{Edge, Layer, LayerShell};
 use okshell_common::dynamic_box::dynamic_box::{
     DynamicBoxFactory, DynamicBoxInit, DynamicBoxInput, DynamicBoxModel,
@@ -15,6 +16,7 @@ use relm4::gtk::prelude::{GtkWindowExt, OrientableExt, WidgetExt};
 use relm4::gtk::{RevealerTransitionType, gdk};
 use relm4::{Component, ComponentController, ComponentParts, ComponentSender, Controller, gtk};
 use std::sync::Arc;
+use std::time::Duration;
 use wayle_notification::core::notification::Notification;
 
 pub struct PopupNotificationsModel {
@@ -176,13 +178,28 @@ impl Component for PopupNotificationsModel {
         widgets: &mut Self::Widgets,
         message: Self::CommandOutput,
         sender: ComponentSender<Self>,
-        _root: &Self::Root,
+        root: &Self::Root,
     ) {
         match message {
             PopupNotificationsCommandOutput::NotificationsChanged => {
                 let notifications = notification_service().popups.get();
+                let empty = notifications.is_empty();
                 self.dynamic_box_controller
                     .emit(DynamicBoxInput::SetItems(notifications));
+
+                if empty {
+                    let root_clone = root.clone();
+                    // wait out the 200ms slide-out, then unmap so the compositor
+                    // drops the surface entirely instead of showing a stale buffer
+                    timeout_add_local_once(Duration::from_millis(260), move || {
+                        // a notification may have arrived during the wait — re-check
+                        if notification_service().popups.get().is_empty() {
+                            root_clone.set_visible(false);
+                        }
+                    });
+                } else {
+                    root.set_visible(true);
+                }
             }
         }
 
