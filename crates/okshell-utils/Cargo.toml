@@ -10,6 +10,7 @@ license.workspace = true
 [dependencies]
 anyhow.workspace = true
 futures.workspace = true
+gio-unix.workspace = true
 gtk4-layer-shell.workspace = true
 okshell-common.workspace = true
 okshell-config.workspace = true

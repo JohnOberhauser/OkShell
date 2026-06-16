@@ -1,6 +1,7 @@
 use crate::menus::menu_widgets::app_launcher::app_launcher_item::{
     AppLauncherItemInit, AppLauncherItemInput, AppLauncherItemModel, AppLauncherItemOutput,
 };
+use gio_unix::DesktopAppInfo;
 use gtk4_layer_shell::{KeyboardMode, LayerShell};
 use okshell_cache::hidden_apps::{
     HiddenAppsStateStoreFields, hidden_apps_store, hide_app, is_hidden, unhide_app,
@@ -16,7 +17,6 @@ use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
 use okshell_utils::launch::launch_detached;
 use reactive_graph::traits::*;
-use relm4::gtk::gio::DesktopAppInfo;
 use relm4::gtk::glib;
 use relm4::gtk::prelude::*;
 use relm4::gtk::{RevealerTransitionType, ScrolledWindow, gdk, gio};

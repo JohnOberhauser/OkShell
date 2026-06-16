@@ -1,5 +1,5 @@
+use gio_unix::DesktopAppInfo;
 use relm4::gtk::gio;
-use relm4::gtk::gio::DesktopAppInfo;
 use relm4::gtk::prelude::{AppInfoExt, Cast};
 
 /// Attempts to find a DesktopAppInfo matching a Hyprland client class name.

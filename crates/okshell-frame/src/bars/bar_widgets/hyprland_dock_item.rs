@@ -1,4 +1,5 @@
 use crate::bars::bar::BarType;
+use gio_unix::DesktopAppInfo;
 use okshell_cache::pinned_apps::{PinnedApp, pin_app, unpin_app};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
@@ -9,7 +10,6 @@ use okshell_utils::app_info::find_app_info;
 use okshell_utils::launch::launch_detached;
 use okshell_utils::strings::truncate_string;
 use reactive_graph::traits::GetUntracked;
-use relm4::gtk::gio::DesktopAppInfo;
 use relm4::gtk::glib::{self, variant::ToVariant};
 use relm4::gtk::prelude::{
     ActionMapExt, AppInfoExt, ButtonExt, OrientableExt, PopoverExt, WidgetExt,

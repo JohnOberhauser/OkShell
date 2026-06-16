@@ -1,4 +1,5 @@
 use crate::menus::menu_widgets::app_launcher::app_launcher_item::AppLauncherItemOutput::CloseMenu;
+use gio_unix::DesktopAppInfo;
 use gtk4_layer_shell::{KeyboardMode, LayerShell};
 use okshell_config::config_manager::config_manager;
 use okshell_config::schema::config::{ConfigStoreFields, IconsStoreFields, ThemeStoreFields};
@@ -6,7 +7,6 @@ use okshell_config::schema::themes::Themes;
 use okshell_utils::app_icon::app_icon::set_icon;
 use okshell_utils::launch::launch_detached;
 use reactive_graph::traits::GetUntracked;
-use relm4::gtk::gio::DesktopAppInfo;
 use relm4::gtk::glib::GString;
 use relm4::gtk::prelude::{
     ActionMapExt, AppInfoExt, ButtonExt, OrientableExt, PopoverExt, WidgetExt,

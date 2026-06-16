@@ -1108,7 +1108,7 @@ mod imp {
                 bottom_right_revealer_height + border_width_f,
             );
 
-            surface.set_input_region(&region);
+            surface.set_input_region(Some(&region));
         }
     }
 

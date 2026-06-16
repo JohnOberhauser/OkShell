@@ -10,6 +10,7 @@ license.workspace = true
 [dependencies]
 cairo-rs.workspace = true
 futures.workspace = true
+gio-unix.workspace = true
 gtk4-layer-shell.workspace = true
 notify-rust.workspace = true
 okshell-cache.workspace = true

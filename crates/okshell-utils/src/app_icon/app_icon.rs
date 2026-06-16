@@ -1,8 +1,8 @@
 use crate::app_icon::icon_index::IconIndex;
+use gio_unix::DesktopAppInfo;
 use okshell_config::schema::themes::Themes;
 use okshell_image::lut::{apply_theme_filter, embedded_clut, rgba_to_texture};
 use relm4::gtk;
-use relm4::gtk::gio::DesktopAppInfo;
 use relm4::gtk::prelude::{AppInfoExt, Cast, FileExt};
 use relm4::gtk::{gio, glib};
 use std::sync::atomic::AtomicBool;
