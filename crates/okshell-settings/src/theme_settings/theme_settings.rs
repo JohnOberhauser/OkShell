@@ -1546,12 +1546,16 @@ fn available_fonts() -> Vec<String> {
         return vec![];
     };
 
-    let pattern = fontconfig::Pattern::new(&fc);
-    let font_set = fontconfig::list_fonts(&pattern, None);
+    let Ok(pattern) = fontconfig::Pattern::new(&fc) else {
+        return vec![];
+    };
+    let Ok(font_set) = fontconfig::list_fonts(&pattern, None) else {
+        return vec![];
+    };
 
     let mut families = std::collections::HashSet::new();
-    for pattern in font_set.iter() {
-        if let Some(family) = pattern.get_string(fontconfig::FC_FAMILY) {
+    for font_pattern in font_set.iter() {
+        if let Ok(family) = font_pattern.get_string(fontconfig::FC_FAMILY) {
             families.insert(family.to_string());
         }
     }
