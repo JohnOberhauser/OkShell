@@ -18,7 +18,7 @@ pub fn get_active_workspaces() -> Vec<WorkspaceInfo> {
 pub fn is_an_active_workspace(workspace: &Arc<Workspace>) -> bool {
     get_active_workspaces()
         .iter()
-        .find(|p| p.id == workspace.id.get())
+        .find(|p| p.address == workspace.address.get())
         .is_some()
 }
 
@@ -30,7 +30,11 @@ pub fn get_active_workspace_for_connector(connector: &String) -> Option<Arc<Work
     let workspace = workspaces
         .iter()
         .filter(|w| w.monitor.get() == *connector)
-        .find(|w| active_workspaces.iter().any(|aw| aw.id == w.id.get()));
+        .find(|w| {
+            active_workspaces
+                .iter()
+                .any(|aw| aw.address == w.address.get())
+        });
 
     return workspace.cloned();
 }

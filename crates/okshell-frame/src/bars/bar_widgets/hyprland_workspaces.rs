@@ -18,7 +18,7 @@ use relm4::{
     gtk::prelude::*,
 };
 use std::sync::Arc;
-use wayle_hyprland::{HyprlandEvent, MonitorId, Workspace, WorkspaceId};
+use wayle_hyprland::{HyprlandEvent, MonitorId, Workspace};
 
 #[derive(Clone, Debug)]
 pub enum WsRow {
@@ -29,7 +29,7 @@ pub enum WsRow {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum WsRowKey {
     Divider(MonitorId),
-    Workspace(WorkspaceId),
+    Workspace(String),
 }
 
 pub(crate) struct HyprlandWorkspacesModel {
@@ -88,7 +88,7 @@ impl Component for HyprlandWorkspacesModel {
         let factory = DynamicBoxFactory::<WsRow, WsRowKey> {
             id: Box::new(|item| match item {
                 WsRow::Divider(monitor_id) => WsRowKey::Divider(*monitor_id),
-                WsRow::Workspace(workspace) => WsRowKey::Workspace(workspace.id.get()),
+                WsRow::Workspace(workspace) => WsRowKey::Workspace(workspace.address.get()),
             }),
             create: Box::new(move |item| match item {
                 WsRow::Workspace(workspace) => {
@@ -233,7 +233,7 @@ impl HyprlandWorkspacesModel {
 
     fn workspaces_with_dividers(mut workspaces: Vec<Arc<Workspace>>) -> Vec<WsRow> {
         // Sort by monitor then id
-        workspaces.sort_by_key(|w| (w.monitor.get(), w.id.get()));
+        workspaces.sort_by_key(|w| (w.monitor.get(), w.address.get()));
 
         let mut out = Vec::with_capacity(workspaces.len() + 4);
         let mut last_monitor: Option<MonitorId> = None;

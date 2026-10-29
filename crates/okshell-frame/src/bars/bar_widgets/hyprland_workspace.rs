@@ -88,7 +88,7 @@ impl Component for HyprlandWorkspaceModel {
             HyprlandWorkspaceInput::ActiveUpdate(workspace_infos) => {
                 self.is_active = workspace_infos
                     .iter()
-                    .find(|p| p.id == self.workspace.id.get())
+                    .find(|p| p.address == self.workspace.address.get())
                     .is_some();
                 if self.is_active {
                     widgets
@@ -100,11 +100,12 @@ impl Component for HyprlandWorkspaceModel {
             }
             HyprlandWorkspaceInput::WorkspaceClicked => {
                 let hyprland = hyprland_service();
-                let workspace_id = self.workspace.id.get();
+                let workspace_address = self.workspace.address.get();
                 tokio::spawn(async move {
-                    let command = format!("hl.dsp.focus({{ workspace = \"{}\" }})", workspace_id);
+                    let command =
+                        format!("hl.dsp.focus({{ workspace = \"{}\" }})", workspace_address);
                     if let Err(e) = hyprland.dispatch(&command).await {
-                        error!(error = %e, workspace = workspace_id, "Failed to switch workspace");
+                        error!(error = %e, workspace = workspace_address, "Failed to switch workspace");
                     }
                 });
             }

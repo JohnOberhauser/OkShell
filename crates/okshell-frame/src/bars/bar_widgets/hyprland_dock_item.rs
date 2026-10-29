@@ -342,11 +342,12 @@ impl Component for HyprlandDockItemModel {
                 let matching: Vec<_> = matching.into_iter().cloned().collect();
                 tokio::spawn(async move {
                     let active_workspace = hyprland.active_workspace().await;
-                    let active_workspace_id = active_workspace.as_ref().map(|ws| ws.id.get());
+                    let active_workspace_address =
+                        active_workspace.as_ref().map(|ws| ws.address.get());
 
                     let clients_on_workspace: Vec<_> = matching
                         .iter()
-                        .filter(|c| Some(c.workspace.get().id) == active_workspace_id)
+                        .filter(|c| Some(c.workspace.get().address) == active_workspace_address)
                         .collect();
 
                     let client_to_focus = if clients_on_workspace.is_empty() {
@@ -609,21 +610,23 @@ fn add_move_focused_client_to_menu(
         return;
     }
 
-    let action = gio::SimpleAction::new("move-focused", Some(glib::VariantTy::INT32));
+    let action = gio::SimpleAction::new("move-focused", Some(glib::VariantTy::STRING));
     let hyprland_clone = hyprland.clone();
     action.connect_activate(move |_, param| {
         if let Some(param) = param {
-            let target_workspace_id = param.get::<i32>().unwrap() as i64;
+            let target_workspace_address = param.get::<String>().unwrap();
             let workspaces = hyprland_clone.workspaces.get();
             if let Some(workspace) = workspaces
                 .iter()
-                .find(|ws| ws.id.get() == target_workspace_id)
+                .find(|ws| ws.address.get() == target_workspace_address)
             {
-                let workspace_id = workspace.id.get();
+                let workspace_address = workspace.address.get();
                 let hyprland_clone = hyprland.clone();
                 tokio::spawn(async move {
-                    let command =
-                        format!("hl.dsp.window.move({{ workspace = \"{}\" }})", workspace_id);
+                    let command = format!(
+                        "hl.dsp.window.move({{ workspace = \"{}\" }})",
+                        workspace_address
+                    );
                     if let Err(e) = hyprland_clone.dispatch(&command).await {
                         error!(error = %e, "Failed to switch workspace");
                     }
@@ -633,20 +636,17 @@ fn add_move_focused_client_to_menu(
     });
     action_group.add_action(&action);
 
-    let current_ws_id = focused_client.workspace.get().id;
-    let mut workspace_ids: Vec<_> = workspaces.iter().map(|ws| ws.id.get()).collect();
-    workspace_ids.sort();
+    let current_ws_address = focused_client.workspace.get().address;
+    let mut workspace_addresses: Vec<_> = workspaces.iter().map(|ws| ws.address.get()).collect();
+    workspace_addresses.sort();
 
     let submenu = gio::Menu::new();
-    for id in workspace_ids {
-        if id == current_ws_id {
+    for address in workspace_addresses {
+        if address == current_ws_address {
             continue;
         }
-        let item = gio::MenuItem::new(Some(&format!("Workspace {}", id)), None);
-        item.set_action_and_target_value(
-            Some("main.move-focused"),
-            Some(&(id as i32).to_variant()),
-        );
+        let item = gio::MenuItem::new(Some(&format!("Workspace address: {}", address)), None);
+        item.set_action_and_target_value(Some("main.move-focused"), Some(&(address).to_variant()));
         submenu.append_item(&item);
     }
 

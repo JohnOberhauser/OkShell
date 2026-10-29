@@ -135,10 +135,10 @@ fn build_window_rects() -> Vec<WindowRect> {
     let clients = hyprland.clients.get();
     let monitors = hyprland.monitors.get();
 
-    // Build a set of active workspace IDs (one per monitor).
-    let active_workspace_ids: Vec<_> = monitors
+    // Build a set of active workspace addresses (one per monitor).
+    let active_workspace_addresses: Vec<_> = monitors
         .iter()
-        .map(|m| m.active_workspace.get().id)
+        .map(|m| m.active_workspace.get().address)
         .collect();
 
     let mut rects = Vec::new();
@@ -155,7 +155,7 @@ fn build_window_rects() -> Vec<WindowRect> {
 
         // Only include windows on the active workspace of their monitor.
         let ws = client.workspace.get();
-        if !active_workspace_ids.contains(&ws.id) {
+        if !active_workspace_addresses.contains(&ws.address) {
             continue;
         }
 

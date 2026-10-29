@@ -166,15 +166,15 @@ impl Component for HyprlandLayoutModel {
                     let workspace = get_active_workspace_for_connector(&connector);
 
                     if let Some(active_workspace) = workspace {
-                        let workspace_id = active_workspace.id.get();
+                        let workspace_address = active_workspace.address.get();
                         let command = format!(
                             "hl.workspace_rule({{ workspace = \"{}\", layout = \"{}\"}})",
-                            workspace_id, layout
+                            workspace_address, layout
                         );
                         let hyprland = hyprland_service();
                         let result = hyprland.eval(&command).await;
                         if let Err(e) = result {
-                            error!(error = %e, workspace = workspace_id, "Failed set workspace layout");
+                            error!(error = %e, workspace = workspace_address, "Failed set workspace layout");
                         }
                     }
                     // if there are no windows on the workspace, then the `workspace.tiled_layout` property doesn't get updated
