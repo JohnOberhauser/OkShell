@@ -20,6 +20,13 @@ pub fn set_icon(
 ) {
     let should_recolor = apply_filter && embedded_clut(color_theme).is_some();
 
+    if let Some(class) = hyprland_class {
+        if class == "okshell" {
+            image.set_icon_name(Some("settings"));
+            return;
+        }
+    }
+
     let app = match app_info {
         Some(app) => app,
         None => {
