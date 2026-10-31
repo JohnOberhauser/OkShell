@@ -1,8 +1,12 @@
 .theme-card {
-  border-radius: var(--radius-widget);
-  border: 2px solid var(--outline);
+    border-radius: var(--radius-widget);
+    border: 2px solid var(--outline);
 
-  &:hover {
-    border: 2px solid var(--on-surface);
-  }
+    &:hover {
+        border: 2px solid var(--on-surface);
+    }
+}
+
+.theme-card-swatch {
+    border-radius: var(--radius-widget);
 }

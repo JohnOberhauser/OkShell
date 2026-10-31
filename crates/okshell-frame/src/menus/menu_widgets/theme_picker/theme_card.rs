@@ -39,6 +39,7 @@ impl FactoryComponent for ThemeCardModel {
         gtk::Overlay {
             set_width_request: 100,
             add_css_class: "theme-card",
+            set_overflow: gtk::Overflow::Hidden,
 
             #[name = "bg"]
             gtk::DrawingArea {
@@ -96,9 +97,21 @@ impl FactoryComponent for ThemeCardModel {
                     set_spacing: 8,
                     add_css_class: "theme-swatches",
 
-                    #[name = "swatch1"] gtk::DrawingArea { set_size_request: (16, 16), },
-                    #[name = "swatch2"] gtk::DrawingArea { set_size_request: (16, 16), },
-                    #[name = "swatch3"] gtk::DrawingArea { set_size_request: (16, 16), },
+                    #[name = "swatch1"] gtk::DrawingArea {
+                        set_size_request: (16, 16),
+                        add_css_class: "theme-card-swatch",
+                        set_overflow: gtk::Overflow::Hidden,
+                    },
+                    #[name = "swatch2"] gtk::DrawingArea {
+                       set_size_request: (16, 16),
+                       add_css_class: "theme-card-swatch",
+                       set_overflow: gtk::Overflow::Hidden,
+                    },
+                    #[name = "swatch3"] gtk::DrawingArea {
+                        set_size_request: (16, 16),
+                        add_css_class: "theme-card-swatch",
+                        set_overflow: gtk::Overflow::Hidden,
+                    },
                 },
 
                 gtk::Box {
@@ -108,9 +121,21 @@ impl FactoryComponent for ThemeCardModel {
                     set_spacing: 8,
                     add_css_class: "theme-swatches",
 
-                    #[name = "swatch4"] gtk::DrawingArea { set_size_request: (16, 16), },
-                    #[name = "swatch5"] gtk::DrawingArea { set_size_request: (16, 16), },
-                    #[name = "swatch6"] gtk::DrawingArea { set_size_request: (16, 16), },
+                    #[name = "swatch4"] gtk::DrawingArea {
+                        set_size_request: (16, 16),
+                        add_css_class: "theme-card-swatch",
+                        set_overflow: gtk::Overflow::Hidden,
+                    },
+                    #[name = "swatch5"] gtk::DrawingArea {
+                        set_size_request: (16, 16),
+                        add_css_class: "theme-card-swatch",
+                        set_overflow: gtk::Overflow::Hidden,
+                    },
+                    #[name = "swatch6"] gtk::DrawingArea {
+                        set_size_request: (16, 16),
+                        add_css_class: "theme-card-swatch",
+                        set_overflow: gtk::Overflow::Hidden,
+                    },
                 },
 
                 gtk::Box {
@@ -191,36 +216,15 @@ impl ThemeCardModel {
         // Background
         if let Some(colors) = &self.colors {
             let bg_color = colors[0].clone();
-            widgets.bg.set_draw_func(move |_, cr, w, h| {
+            widgets.bg.set_draw_func(move |_, cr, _, _| {
                 if let Ok(rgba) = gdk::RGBA::parse(&bg_color) {
-                    let r = 6.0_f64;
-                    let w = w as f64;
-                    let h = h as f64;
                     cr.set_source_rgba(
                         rgba.red() as f64,
                         rgba.green() as f64,
                         rgba.blue() as f64,
                         rgba.alpha() as f64,
                     );
-                    cr.new_sub_path();
-                    cr.arc(w - r, r, r, -std::f64::consts::FRAC_PI_2, 0.0);
-                    cr.arc(w - r, h - r, r, 0.0, std::f64::consts::FRAC_PI_2);
-                    cr.arc(
-                        r,
-                        h - r,
-                        r,
-                        std::f64::consts::FRAC_PI_2,
-                        std::f64::consts::PI,
-                    );
-                    cr.arc(
-                        r,
-                        r,
-                        r,
-                        std::f64::consts::PI,
-                        3.0 * std::f64::consts::FRAC_PI_2,
-                    );
-                    cr.close_path();
-                    let _ = cr.fill();
+                    let _ = cr.paint();
                 }
             });
 
@@ -235,7 +239,7 @@ impl ThemeCardModel {
             ];
             for (swatch, color) in swatches {
                 let color = color.clone();
-                swatch.set_draw_func(move |_, cr, w, h| {
+                swatch.set_draw_func(move |_, cr, _, _| {
                     if let Ok(rgba) = gdk::RGBA::parse(&color) {
                         cr.set_source_rgba(
                             rgba.red() as f64,
@@ -243,8 +247,7 @@ impl ThemeCardModel {
                             rgba.blue() as f64,
                             rgba.alpha() as f64,
                         );
-                        cr.rectangle(0.0, 0.0, w as f64, h as f64);
-                        let _ = cr.fill();
+                        let _ = cr.paint();
                     }
                 });
             }
