@@ -107,10 +107,16 @@ impl Component for CalendarModel {
 
                 if now.date() != self.current_date {
                     self.current_date = now.date();
-                    widgets.calendar.set_year(now.year());
-                    // GTK's months are 0-indexed, but time's is 1.
-                    widgets.calendar.set_month(now.month() as i32 - 1);
-                    widgets.calendar.set_day(now.day() as i32);
+                    if let Ok(date_time) = glib::DateTime::from_local(
+                        now.year(),
+                        now.month() as i32,
+                        now.day() as i32,
+                        0,
+                        0,
+                        0.0,
+                    ) {
+                        widgets.calendar.set_date(&date_time);
+                    }
                 }
             }
         }
