@@ -618,7 +618,7 @@ fn add_move_focused_client_to_menu(
             let workspaces = hyprland_clone.workspaces.get();
             if let Some(workspace) = workspaces
                 .iter()
-                .find(|ws| ws.address.get() == target_workspace_address)
+                .find(|ws| ws.address.get().to_string() == target_workspace_address)
             {
                 let workspace_address = workspace.address.get();
                 let hyprland_clone = hyprland.clone();
@@ -646,7 +646,10 @@ fn add_move_focused_client_to_menu(
             continue;
         }
         let item = gio::MenuItem::new(Some(&format!("Workspace address: {}", address)), None);
-        item.set_action_and_target_value(Some("main.move-focused"), Some(&(address).to_variant()));
+        item.set_action_and_target_value(
+            Some("main.move-focused"),
+            Some(&(address.to_string()).to_variant()),
+        );
         submenu.append_item(&item);
     }
 

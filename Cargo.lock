@@ -5842,20 +5842,6 @@ dependencies = [
 [[package]]
 name = "wayle-core"
 version = "0.1.2"
-source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-workspace-changes#80b60f8b382ea69c8e865011b7930f6270f3509f"
-dependencies = [
- "futures",
- "serde",
- "serde_json",
- "tokio",
- "tokio-stream",
- "tracing",
- "zbus",
-]
-
-[[package]]
-name = "wayle-core"
-version = "0.1.2"
 source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network#fca6e64fa9a132715015b6f89c3fdb916e4212a3"
 dependencies = [
  "futures",
@@ -5870,7 +5856,8 @@ dependencies = [
 [[package]]
 name = "wayle-hyprland"
 version = "0.3.0"
-source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-workspace-changes#80b60f8b382ea69c8e865011b7930f6270f3509f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c936ae492def8b71592ad662feefe4ed5fb578b8e2013b9e69fecb83acdd9e8"
 dependencies = [
  "async-trait",
  "derive_more",
@@ -5882,8 +5869,8 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-workspace-changes)",
- "wayle-traits 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-workspace-changes)",
+ "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -6020,11 +6007,6 @@ name = "wayle-traits"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0833629ad4481a1302cb6df07da2b438bdb1c99dc5e5844e3198d53945728a6d"
-
-[[package]]
-name = "wayle-traits"
-version = "0.1.2"
-source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=hyprland-workspace-changes#80b60f8b382ea69c8e865011b7930f6270f3509f"
 
 [[package]]
 name = "wayle-traits"

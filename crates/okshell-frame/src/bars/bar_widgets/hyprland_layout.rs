@@ -174,7 +174,7 @@ impl Component for HyprlandLayoutModel {
                         let hyprland = hyprland_service();
                         let result = hyprland.eval(&command).await;
                         if let Err(e) = result {
-                            error!(error = %e, workspace = workspace_address, "Failed set workspace layout");
+                            error!(error = %e, workspace = workspace_address.to_string(), "Failed set workspace layout");
                         }
                     }
                     // if there are no windows on the workspace, then the `workspace.tiled_layout` property doesn't get updated

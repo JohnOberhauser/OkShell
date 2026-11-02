@@ -18,7 +18,7 @@ use relm4::{
     gtk::prelude::*,
 };
 use std::sync::Arc;
-use wayle_hyprland::{HyprlandEvent, MonitorId, Workspace};
+use wayle_hyprland::{HyprlandEvent, MonitorId, Workspace, WorkspaceAddress};
 
 #[derive(Clone, Debug)]
 pub enum WsRow {
@@ -29,7 +29,7 @@ pub enum WsRow {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum WsRowKey {
     Divider(MonitorId),
-    Workspace(String),
+    Workspace(WorkspaceAddress),
 }
 
 pub(crate) struct HyprlandWorkspacesModel {

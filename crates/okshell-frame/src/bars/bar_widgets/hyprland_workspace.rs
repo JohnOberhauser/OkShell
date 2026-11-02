@@ -105,7 +105,7 @@ impl Component for HyprlandWorkspaceModel {
                     let command =
                         format!("hl.dsp.focus({{ workspace = \"{}\" }})", workspace_address);
                     if let Err(e) = hyprland.dispatch(&command).await {
-                        error!(error = %e, workspace = workspace_address, "Failed to switch workspace");
+                        error!(error = %e, workspace = workspace_address.to_string(), "Failed to switch workspace");
                     }
                 });
             }
