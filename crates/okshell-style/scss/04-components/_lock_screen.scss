@@ -1,53 +1,53 @@
 .lockscreen-entry {
-  all: unset;
-  line-height: 1.5;
-  box-shadow: none;
-  color: var(--on-surface);
-  background-color: transparent;
-  font-size: var(--font-xl);
-  caret-color: transparent;
-  placeholder {
-    font-size: var(--font-lg);
-    font-weight: bold;
+    all: unset;
+    line-height: 1.5;
+    box-shadow: none;
     color: var(--on-surface);
-  }
+    background-color: transparent;
+    font-size: var(--font-xl);
+    caret-color: transparent;
+    placeholder {
+        font-size: var(--font-lg);
+        font-weight: bold;
+        color: var(--on-surface);
+    }
 
-  image {
-    color: var(--on-surface);
-  }
+    image {
+        color: var(--on-surface);
+    }
 }
 
 .lockscreen-entry-wrapper {
-  padding: 0 16px;
-  background-color: var(--surface);
-  border: var(--border-width) solid var(--outline);
-  border-radius: 90px;
+    padding: 0 16px;
+    background-color: var(--surface);
+    border: var(--border-width) solid var(--outline);
+    border-radius: var(--radius-widget);
 }
 
 .lockscreen-label {
-  text-shadow: 2px 2px 4px var(--surface);
+    text-shadow: 2px 2px 4px var(--surface);
 }
 
 .lockscreen-content {
-  opacity: 0;
-  background-color: var(--surface);
-  transition: opacity 300ms ease;
+    opacity: 0;
+    background-color: var(--surface);
+    transition: opacity 300ms ease;
 }
 
 .lockscreen-content.revealed {
-  opacity: 1;
+    opacity: 1;
 }
 
 .lockscreen-fingerprint-icon {
-  -gtk-icon-size: 72px;
-  color: var(--on-surface);
-  transition: color 150ms ease;
+    -gtk-icon-size: 72px;
+    color: var(--on-surface);
+    transition: color 150ms ease;
 }
 
 .lockscreen-fingerprint-icon.fail {
-  color: var(--error)
+    color: var(--error);
 }
 
 .lockscreen-spinner {
-  color: var(--primary);
+    color: var(--primary);
 }
