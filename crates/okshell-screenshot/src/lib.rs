@@ -47,13 +47,16 @@ pub struct ScreenRecordRequest {
 #[derive(Debug, Clone)]
 pub enum ScreenSelectAreaRequest {
     SelectRegion,
-    SelectMonitor,
+    SelectMonitor {
+        auto_select_when_only_one_monitor: bool,
+    },
 }
 
 #[derive(Debug, Clone)]
 pub enum ScreenSelection {
     Region(RegionSelection),
     Monitor(String),
+    Workspace(String),
 }
 
 pub fn select_screen<F>(request: ScreenSelectAreaRequest, on_done: F)
@@ -70,12 +73,14 @@ where
                 on_done(region_result.map(ScreenSelection::Region));
             });
         }
-        ScreenSelectAreaRequest::SelectMonitor => {
+        ScreenSelectAreaRequest::SelectMonitor {
+            auto_select_when_only_one_monitor,
+        } => {
             let outputs = match query_outputs() {
                 Ok(o) => o,
                 Err(e) => return on_done(Err(e)),
             };
-            if outputs.len() == 1 {
+            if outputs.len() == 1 && auto_select_when_only_one_monitor {
                 on_done(Ok(ScreenSelection::Monitor(outputs[0].name.clone())));
             } else {
                 monitor_selector::select_monitor(&outputs, move |monitor_result| {

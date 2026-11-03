@@ -1,6 +1,7 @@
 use crate::common_widgets::big_button::BigButton;
 use gtk4_layer_shell::{KeyboardMode, LayerShell};
 use okshell_screenshot::{ScreenSelectAreaRequest, ScreenSelection, select_screen};
+use okshell_utils::hyprland::get_active_workspace_for_connector;
 use relm4::gtk::prelude::*;
 use relm4::gtk::{gdk, glib};
 use relm4::{Component, ComponentParts, ComponentSender, RelmWidgetExt, gtk};
@@ -32,6 +33,7 @@ pub(crate) enum ScreenshareMenuWidgetInput {
     SendReply(String),
     MonitorClicked,
     AreaClicked,
+    WorkspaceClicked,
 }
 
 #[derive(Debug)]
@@ -102,6 +104,30 @@ impl Component for ScreenshareMenuWidgetModel {
                         set_label: "Area",
                     },
                 },
+            },
+
+            gtk::Box {
+                set_orientation: gtk::Orientation::Horizontal,
+                set_spacing: 32,
+                set_focusable: true,
+                set_align: gtk::Align::Center,
+
+                #[template]
+                BigButton {
+                    connect_clicked[sender] => move |_| {
+                        sender.input(ScreenshareMenuWidgetInput::WorkspaceClicked);
+                    },
+
+                    #[template_child]
+                    icon {
+                        set_icon_name: Some("screenshot-all-symbolic"),
+                    },
+                    #[template_child]
+                    label {
+                        set_label: "Workspace",
+                    },
+                },
+
             },
 
             #[name = "programs_box"]
@@ -179,7 +205,9 @@ impl Component for ScreenshareMenuWidgetModel {
                 let _ = sender.output(ScreenshareMenuWidgetOutput::CloseMenu);
                 let sender_clone = sender.clone();
                 select_screen(
-                    ScreenSelectAreaRequest::SelectMonitor,
+                    ScreenSelectAreaRequest::SelectMonitor {
+                        auto_select_when_only_one_monitor: true,
+                    },
                     move |result| match result {
                         Ok(selection) => {
                             complete_selection(&selection, &sender_clone);
@@ -206,6 +234,33 @@ impl Component for ScreenshareMenuWidgetModel {
                     },
                 );
             }
+            ScreenshareMenuWidgetInput::WorkspaceClicked => {
+                let _ = sender.output(ScreenshareMenuWidgetOutput::CloseMenu);
+                let sender_clone = sender.clone();
+                select_screen(
+                    ScreenSelectAreaRequest::SelectMonitor {
+                        auto_select_when_only_one_monitor: false,
+                    },
+                    move |result| match result {
+                        Ok(selection) => match selection {
+                            ScreenSelection::Monitor(name) => {
+                                if let Some(workspace) = get_active_workspace_for_connector(&name) {
+                                    let workspace_selection =
+                                        ScreenSelection::Workspace(workspace.name.get());
+                                    complete_selection(&workspace_selection, &sender_clone);
+                                }
+                            }
+                            _ => {
+                                eprintln!("Selection failed");
+                            }
+                        },
+                        Err(e) => {
+                            eprintln!("Selection failed: {e}");
+                            sender.input(ScreenshareMenuWidgetInput::SendReply(String::new()));
+                        }
+                    },
+                );
+            }
         }
     }
 }
@@ -224,6 +279,11 @@ fn complete_selection(
             sender.input(ScreenshareMenuWidgetInput::SendReply(format!(
                 "[SELECTION]/region:{}@{},{},{},{}",
                 region.output, region.x, region.y, region.width, region.height
+            )));
+        }
+        ScreenSelection::Workspace(name) => {
+            sender.input(ScreenshareMenuWidgetInput::SendReply(format!(
+                "[SELECTION]/workspace:{name}"
             )));
         }
     }
