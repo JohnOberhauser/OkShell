@@ -3253,7 +3253,9 @@ dependencies = [
  "okshell-session",
  "okshell-settings",
  "okshell-sounds",
+ "okshell-style",
  "okshell-utils",
+ "pangocairo",
  "reactive_graph",
  "reactive_stores",
  "relm4",
@@ -3677,6 +3679,31 @@ dependencies = [
  "glib-sys 0.22.9",
  "gobject-sys 0.22.9",
  "libc 0.2.189",
+ "system-deps 9.0.0",
+]
+
+[[package]]
+name = "pangocairo"
+version = "0.22.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bd199a0fef965b3ebda91a929a1ab5e7729538882c68e8de38e1904d2e094757"
+dependencies = [
+ "cairo-rs",
+ "glib 0.22.10",
+ "pango",
+ "pangocairo-sys",
+]
+
+[[package]]
+name = "pangocairo-sys"
+version = "0.22.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a649a616d67ae68539bc85f00fb45d36fba742ed20fc20e6712a15d8ee52bd3f"
+dependencies = [
+ "cairo-sys-rs",
+ "glib-sys 0.22.9",
+ "libc 0.2.189",
+ "pango-sys",
  "system-deps 9.0.0",
 ]
 

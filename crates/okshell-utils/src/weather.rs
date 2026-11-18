@@ -38,6 +38,13 @@ pub fn get_weather_icon_name(weather_condition: &WeatherCondition, is_day: bool)
     }
 }
 
+pub fn get_temperature_value(t: &Temperature, unit: &TemperatureUnit) -> f32 {
+    match unit {
+        TemperatureUnit::Metric => t.celsius(),
+        TemperatureUnit::Imperial => t.fahrenheit(),
+    }
+}
+
 pub fn get_temperature_string(
     temperature: &Temperature,
     temperature_unit: &TemperatureUnit,

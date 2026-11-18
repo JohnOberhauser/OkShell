@@ -1,20 +1,28 @@
 .current-weather-icon {
-  color: var(--on-surface);
-  -gtk-icon-size: 48px;
+    color: var(--on-surface);
+    -gtk-icon-size: 48px;
 }
 
 .current-weather-detail-icon {
-  color: var(--on-surface);
-  -gtk-icon-size: 20px;
+    color: var(--on-surface);
+    -gtk-icon-size: 20px;
 }
 
 .hourly-weather-icon {
-  color: var(--on-surface);
-  -gtk-icon-size: 20px;
+    color: var(--on-surface);
+    -gtk-icon-size: 20px;
 }
 
 .weather-container {
-  border: solid var(--border-width) var(--outline);
-  border-radius: var(--radius-widget);
-  padding: 8px;
+    border: solid var(--border-width) var(--outline);
+    border-radius: var(--radius-widget);
+    padding: 8px;
+}
+
+.hourly-graph {
+    color: var(--on-surface);
+    --hourly-graph-temp-line: var(--primary);
+    --hourly-graph-grid: var(--outline-variant);
+    --hourly-graph-uv-low: var(--green);
+    --hourly-graph-uv-extreme: var(--purple);
 }

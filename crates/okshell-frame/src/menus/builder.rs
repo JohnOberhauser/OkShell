@@ -47,6 +47,7 @@ use crate::menus::menu_widgets::wallpaper::wallpaper_menu_widget::{
     WallpaperMenuWidgetInit, WallpaperMenuWidgetModel,
 };
 use crate::menus::menu_widgets::weather::weather::{WeatherInit, WeatherModel};
+use crate::menus::menu_widgets::weather::weather_column::{WeatherColumnInit, WeatherColumnModel};
 use okshell_common::dynamic_box::generic_widget_controller::GenericWidgetController;
 use okshell_config::schema::menu_widgets::MenuWidget;
 use relm4::{Component, ComponentSender, gtk};
@@ -170,5 +171,10 @@ pub fn build_widget(
                 .detach(),
         ),
         MenuWidget::Weather => Box::new(WeatherModel::builder().launch(WeatherInit {}).detach()),
+        MenuWidget::WeatherColumn => Box::new(
+            WeatherColumnModel::builder()
+                .launch(WeatherColumnInit {})
+                .detach(),
+        ),
     }
 }

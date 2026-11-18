@@ -1,3 +1,4 @@
+pub mod css_vars;
 pub mod style_manager;
 pub mod user_css;
 
