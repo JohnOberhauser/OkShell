@@ -254,6 +254,8 @@ impl Default for Menus {
                     MenuWidget::Calendar,
                     MenuWidget::Spacer(SpacerConfig { size: 20 }),
                     MenuWidget::Weather,
+                    MenuWidget::WeatherHourlyGraph,
+                    MenuWidget::WeatherDailyGraph,
                 ],
                 minimum_width: 410,
             },
