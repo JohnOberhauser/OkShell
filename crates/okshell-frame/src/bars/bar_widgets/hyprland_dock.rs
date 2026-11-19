@@ -79,6 +79,8 @@ impl Component for HyprlandDockModel {
             set_orientation: model.orientation,
             set_hexpand: model.orientation == Orientation::Vertical,
             set_vexpand: model.orientation == Orientation::Horizontal,
+            set_halign: gtk::Align::Center,
+            set_valign: gtk::Align::Center,
 
             model.dynamic_box.widget().clone() {},
 
