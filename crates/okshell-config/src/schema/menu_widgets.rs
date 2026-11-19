@@ -25,7 +25,8 @@ pub enum MenuWidget {
     ThemePicker,
     Wallpaper,
     Weather,
-    WeatherColumn,
+    WeatherDailyGraph,
+    WeatherHourlyGraph,
 }
 
 impl PatchField for MenuWidget {
@@ -66,7 +67,8 @@ impl MenuWidget {
             MenuWidget::ThemePicker => "Theme Picker",
             MenuWidget::Wallpaper => "Wallpaper",
             MenuWidget::Weather => "Weather",
-            MenuWidget::WeatherColumn => "Weather Column",
+            MenuWidget::WeatherDailyGraph => "Weather Daily Graph",
+            MenuWidget::WeatherHourlyGraph => "Weather Hourly Graph",
         }
     }
 
@@ -97,7 +99,8 @@ impl MenuWidget {
             MenuWidget::ThemePicker,
             MenuWidget::Wallpaper,
             MenuWidget::Weather,
-            MenuWidget::WeatherColumn,
+            MenuWidget::WeatherDailyGraph,
+            MenuWidget::WeatherHourlyGraph,
         ]
     }
 }

@@ -7,4 +7,5 @@ mod hourly;
 mod hourly_graph;
 mod hourly_item;
 pub(crate) mod weather;
-pub(crate) mod weather_column;
+pub(crate) mod weather_daily_graph;
+pub(crate) mod weather_hourly_graph;

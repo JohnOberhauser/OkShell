@@ -79,12 +79,6 @@ impl Component for WeatherModel {
             set_transition_type: gtk::StackTransitionType::Crossfade,
             set_transition_duration: 250,
             set_vhomogeneous: false,
-            #[watch]
-            set_visible_child_name: match model.loading_state {
-                LoadingState::Loading => "loading",
-                LoadingState::Loaded => "loaded",
-                LoadingState::Error => "error",
-            },
 
             add_named[Some("loading")] = &gtk::Box {
                 set_hexpand: true,
@@ -185,6 +179,13 @@ impl Component for WeatherModel {
                     set_hexpand: true,
                     set_vexpand: false,
                 }
+            },
+
+            #[watch]
+            set_visible_child_name: match model.loading_state {
+                LoadingState::Loading => "loading",
+                LoadingState::Loaded => "loaded",
+                LoadingState::Error => "error",
             },
         }
     }
