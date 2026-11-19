@@ -165,11 +165,15 @@ impl Component for WeatherHourlyGraphModel {
                         if let Some(weather) = service.weather.get() {
                             if let Some(controller) = &self.hourly_graph_controller {
                                 // Already built: push the new data to each widget.
-                                controller.emit(HourlyGraphInput::Update(weather.hourly.clone()));
+                                controller.emit(HourlyGraphInput::Update(
+                                    weather.hourly.clone(),
+                                    weather.astronomy.clone(),
+                                ));
                             } else {
                                 let hourly_graph_controller = HourlyGraphModel::builder()
                                     .launch(HourlyGraphInit {
                                         hourly: weather.hourly.clone(),
+                                        astronomy: weather.astronomy.clone(),
                                     })
                                     .detach();
                                 widgets.column.append(hourly_graph_controller.widget());

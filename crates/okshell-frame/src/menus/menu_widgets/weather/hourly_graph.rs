@@ -3,10 +3,10 @@ use std::rc::Rc;
 
 use crate::menus::menu_widgets::weather::graph_common::{
     AXIS_LABEL_PAD, GRAPH_HEIGHT, Geometry, GraphTheme, ICON_ROW_HEIGHT, ICON_SIZE, TempScale,
-    Y_DIVISIONS, content_width, draw_axis_column, draw_bottom_labels, draw_horizontal_grid,
-    draw_vertical_grid, follow_plot_width, item_spacing, item_x, rebuild_icon_row,
-    rounded_top_rect, set_color, set_themed_draw_func, smooth_path, stroke_curve, temp_ticks,
-    temp_unit_label, with_edge_leads,
+    X_INSET, Y_DIVISIONS, content_width, draw_axis_column, draw_bottom_labels,
+    draw_horizontal_grid, draw_vertical_grid, follow_plot_width, item_spacing, item_x,
+    rebuild_icon_row, rounded_top_rect, set_color, set_themed_draw_func, smooth_path, stroke_curve,
+    temp_ticks, temp_unit_label, vline, with_edge_leads,
 };
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
@@ -17,7 +17,7 @@ use reactive_graph::traits::{Get, GetUntracked};
 use relm4::gtk::prelude::*;
 use relm4::gtk::{self, cairo};
 use relm4::{Component, ComponentParts, ComponentSender};
-use wayle_weather::{HourlyForecast, TemperatureUnit};
+use wayle_weather::{Astronomy, HourlyForecast, TemperatureUnit};
 
 /// Horizontal space per hour.
 const PX_PER_HOUR: i32 = 22;
@@ -49,6 +49,9 @@ struct GraphData {
     scale: TempScale,
     /// "°C" / "°F", shown under the temp axis column.
     unit_label: &'static str,
+    /// Sunrise/sunset positions as fractional hour indices (3.5 = halfway
+    /// between hour 3 and hour 4).
+    sun_events: Vec<f64>,
 }
 
 fn uv_y(g: &Geometry, uv: f64) -> f64 {
@@ -57,6 +60,7 @@ fn uv_y(g: &Geometry, uv: f64) -> f64 {
 
 pub(crate) struct HourlyGraphModel {
     hourly: Vec<HourlyForecast>,
+    astronomy: Astronomy,
     temperature_unit: TemperatureUnit,
     format_24_h: bool,
     /// Shared with both draw funcs. Rebuilt on input, read on every draw.
@@ -66,7 +70,7 @@ pub(crate) struct HourlyGraphModel {
 
 #[derive(Debug)]
 pub(crate) enum HourlyGraphInput {
-    Update(Vec<HourlyForecast>),
+    Update(Vec<HourlyForecast>, Astronomy),
     UpdateTemperatureUnit(TemperatureUnit),
     ChangeFormat(bool),
 }
@@ -76,6 +80,7 @@ pub(crate) enum HourlyGraphOutput {}
 
 pub(crate) struct HourlyGraphInit {
     pub hourly: Vec<HourlyForecast>,
+    pub astronomy: Astronomy,
 }
 
 #[derive(Debug)]
@@ -181,6 +186,7 @@ impl Component for HourlyGraphModel {
 
         let model = HourlyGraphModel {
             hourly: params.hourly,
+            astronomy: params.astronomy,
             temperature_unit: TemperatureUnit::from(temperature_unit),
             format_24_h,
             data: Rc::new(RefCell::new(GraphData::default())),
@@ -207,7 +213,10 @@ impl Component for HourlyGraphModel {
         _root: &Self::Root,
     ) {
         match message {
-            HourlyGraphInput::Update(hourly) => self.hourly = hourly,
+            HourlyGraphInput::Update(hourly, astronomy) => {
+                self.hourly = hourly;
+                self.astronomy = astronomy;
+            }
             HourlyGraphInput::UpdateTemperatureUnit(unit) => self.temperature_unit = unit,
             HourlyGraphInput::ChangeFormat(format_24_h) => self.format_24_h = format_24_h,
         }
@@ -243,6 +252,7 @@ impl HourlyGraphModel {
             points,
             scale,
             unit_label: temp_unit_label(unit),
+            sun_events: sun_events(&self.hourly, &self.astronomy),
         };
 
         let width = content_width(self.hourly.len(), PX_PER_HOUR);
@@ -267,6 +277,44 @@ impl HourlyGraphModel {
 /// If `h.time` is a `time::OffsetDateTime`, you can replace this with `h.time.hour() as u32`.
 fn hour_of(h: &HourlyForecast) -> u32 {
     h.time.format("%H").to_string().parse().unwrap_or(0)
+}
+
+/// Sunrise and sunset as fractional hour indices into `hourly`.
+///
+/// Astronomy only has today's times, so they're applied to every day in the
+/// forecast: each hour whose hour-of-day matches gets a marker at that minute.
+/// Later days drift by a minute or two, which is invisible at this scale.
+/// Times are compared via `format` like the rest of the weather code, so no
+/// date arithmetic is needed.
+fn sun_events(hourly: &[HourlyForecast], astronomy: &Astronomy) -> Vec<f64> {
+    fn hour_minute(s: String) -> Option<(u32, u32)> {
+        let (h, m) = s.split_once(':')?;
+        Some((h.parse().ok()?, m.parse().ok()?))
+    }
+
+    let events: Vec<(u32, u32)> = [
+        hour_minute(astronomy.sunrise.format("%H:%M").to_string()),
+        hour_minute(astronomy.sunset.format("%H:%M").to_string()),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
+
+    let last_index = hourly.len().saturating_sub(1) as f64;
+    let mut out = Vec::new();
+    for (i, h) in hourly.iter().enumerate() {
+        let hour = hour_of(h);
+        for &(event_hour, event_minute) in &events {
+            if hour == event_hour {
+                let index = i as f64 + event_minute as f64 / 60.0;
+                // Past the last hour there's no data to mark against.
+                if index <= last_index {
+                    out.push(index);
+                }
+            }
+        }
+    }
+    out
 }
 
 // ---------------------------------------------------------------------------
@@ -340,6 +388,18 @@ fn draw_plot(
             .map(|(i, p)| (hour_x(i), p.hour_label.is_some())),
         theme,
     );
+
+    // ---- Sunrise / sunset ---------------------------------------------------
+    // Dashed so they read as markers, not as part of the hour grid.
+    let _ = cr.save();
+    cr.set_dash(&[3.0, 3.0], 0.0);
+    cr.set_line_width(1.0);
+    set_color(cr, theme.label, 0.6);
+    for index in &data.sun_events {
+        vline(cr, X_INSET + spacing * index, g.top, g.bottom);
+    }
+    let _ = cr.stroke();
+    let _ = cr.restore();
 
     // ---- UV bars (behind the temperature curve) ----------------------------
     // Grows with the spacing, but capped so bars stay bar-shaped on wide layouts.
