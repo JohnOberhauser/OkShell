@@ -3,10 +3,10 @@ use std::rc::Rc;
 
 use crate::menus::menu_widgets::weather::graph_common::{
     AXIS_LABEL_PAD, GRAPH_HEIGHT, Geometry, GraphTheme, ICON_ROW_HEIGHT, ICON_SIZE, TempScale,
-    X_INSET, Y_DIVISIONS, content_width, draw_axis_column, draw_bottom_labels,
+    X_INSET, Y_DIVISIONS, attach_icon_row, content_width, draw_axis_column, draw_bottom_labels,
     draw_horizontal_grid, draw_vertical_grid, follow_plot_width, item_spacing, item_x,
-    rebuild_icon_row, rounded_top_rect, set_color, set_themed_draw_func, smooth_path, stroke_curve,
-    temp_ticks, temp_unit_label, vline, with_edge_leads,
+    new_icon_row, rebuild_icon_row, rounded_top_rect, set_color, set_themed_draw_func, smooth_path,
+    stroke_curve, temp_ticks, temp_unit_label, vline, with_edge_leads,
 };
 use okshell_common::scoped_effects::EffectScope;
 use okshell_config::config_manager::config_manager;
@@ -65,6 +65,8 @@ pub(crate) struct HourlyGraphModel {
     format_24_h: bool,
     /// Shared with both draw funcs. Rebuilt on input, read on every draw.
     data: Rc<RefCell<GraphData>>,
+    /// Weather icon row, overlaid on the plot.
+    icons: gtk::Fixed,
     _effects: EffectScope,
 }
 
@@ -133,19 +135,24 @@ impl Component for HourlyGraphModel {
                     set_propagate_natural_height: true,
                     set_hexpand: true,
 
-                    gtk::Box {
-                        set_orientation: gtk::Orientation::Vertical,
+                    // The icon row is layered on top of this (see attach_icon_row),
+                    // so it never affects the graph's size.
+                    #[name = "overlay"]
+                    gtk::Overlay {
+                        #[wrap(Some)]
+                        set_child = &gtk::Box {
+                            set_orientation: gtk::Orientation::Vertical,
 
-                        #[name = "icons"]
-                        gtk::Fixed {
-                            add_css_class: "hourly-graph-icons",
-                            set_height_request: ICON_ROW_HEIGHT,
-                        },
+                            // Room for the icon row overlay.
+                            gtk::Box {
+                                set_height_request: ICON_ROW_HEIGHT,
+                            },
 
-                        #[name = "area"]
-                        gtk::DrawingArea {
-                            add_css_class: "hourly-graph",
-                            set_content_height: GRAPH_HEIGHT,
+                            #[name = "area"]
+                            gtk::DrawingArea {
+                                add_css_class: "hourly-graph",
+                                set_content_height: GRAPH_HEIGHT,
+                            }
                         }
                     }
                 },
@@ -190,6 +197,7 @@ impl Component for HourlyGraphModel {
             temperature_unit: TemperatureUnit::from(temperature_unit),
             format_24_h,
             data: Rc::new(RefCell::new(GraphData::default())),
+            icons: new_icon_row("hourly-graph-icons"),
             _effects: effects,
         };
 
@@ -197,9 +205,10 @@ impl Component for HourlyGraphModel {
 
         set_themed_draw_func(&widgets.area, model.data.clone(), draw_plot);
         set_themed_draw_func(&widgets.axis, model.data.clone(), draw_axis);
-        follow_plot_width(&widgets.area, &widgets.icons);
+        attach_icon_row(&widgets.overlay, &model.icons);
+        follow_plot_width(&widgets.area, &model.icons);
 
-        model.rebuild(&widgets.area, &widgets.axis, &widgets.icons);
+        model.rebuild(&widgets.area, &widgets.axis);
         wire_vertical_to_horizontal(&widgets.scroll_window, 32.0);
 
         ComponentParts { model, widgets }
@@ -221,14 +230,14 @@ impl Component for HourlyGraphModel {
             HourlyGraphInput::ChangeFormat(format_24_h) => self.format_24_h = format_24_h,
         }
 
-        self.rebuild(&widgets.area, &widgets.axis, &widgets.icons);
+        self.rebuild(&widgets.area, &widgets.axis);
         self.update_view(widgets, sender);
     }
 }
 
 impl HourlyGraphModel {
     /// Convert forecasts into plot-ready points, resize, and queue redraws.
-    fn rebuild(&self, area: &gtk::DrawingArea, axis: &gtk::DrawingArea, icons: &gtk::Fixed) {
+    fn rebuild(&self, area: &gtk::DrawingArea, axis: &gtk::DrawingArea) {
         let unit = &self.temperature_unit;
         let points: Vec<Point> = self
             .hourly
@@ -261,7 +270,7 @@ impl HourlyGraphModel {
         axis.queue_draw();
 
         rebuild_icon_row(
-            icons,
+            &self.icons,
             area,
             width,
             self.hourly

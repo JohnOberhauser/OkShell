@@ -214,6 +214,28 @@ pub(crate) fn set_themed_draw_func<T: 'static>(
 // Icon row
 // ---------------------------------------------------------------------------
 
+/// A new, empty icon row. Attach it with `attach_icon_row` after the view is built.
+pub(crate) fn new_icon_row(css_class: &str) -> gtk::Fixed {
+    let icons = gtk::Fixed::new();
+    icons.add_css_class(css_class);
+    icons.set_halign(gtk::Align::Fill);
+    icons.set_valign(gtk::Align::Start);
+    icons.set_height_request(ICON_ROW_HEIGHT);
+    icons
+}
+
+/// Layer the icon row over the top of the plot.
+///
+/// It must be an overlay rather than a normal sibling: a gtk::Fixed's minimum
+/// width is the right edge of its farthest child, so in a normal Box, once the
+/// icons spread out for a wider layout, the row would refuse to shrink back and
+/// pin the whole graph at its widest size. Overlay children don't count toward
+/// the overlay's size, so only the plot's minimum width matters.
+pub(crate) fn attach_icon_row(overlay: &gtk::Overlay, icons: &gtk::Fixed) {
+    overlay.add_overlay(icons);
+    overlay.set_clip_overlay(icons, true);
+}
+
 /// Replace the icon row with one icon per item, in order.
 /// Real gtk::Images (not cairo) so symbolic icons get recolored by CSS.
 ///
@@ -229,7 +251,6 @@ pub(crate) fn rebuild_icon_row<S: AsRef<str>>(
     while let Some(child) = icons.first_child() {
         icons.remove(&child);
     }
-    icons.set_width_request(min_width);
 
     for name in icon_names {
         let image = gtk::Image::from_icon_name(name.as_ref());
