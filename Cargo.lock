@@ -346,7 +346,7 @@ checksum = "82f6aeea286b8eb4dd3431a1be1b59d290ace00f5bfd8e2a159bc2a05e2c1667"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -555,9 +555,9 @@ checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "cairo-rs"
-version = "0.22.9"
+version = "0.22.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df683f1d30b457964673a5541a4603208ef95ab6873d2a55871895cf310f3b56"
+checksum = "62bf7f026ae17fe688938438ec1da2b69f69832f1428a17258f6ee9a7f6e1815"
 dependencies = [
  "bitflags 2.13.2",
  "cairo-sys-rs",
@@ -656,9 +656,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.6.7"
+version = "4.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aa8876b300ab35ba921adea3dfd70157a46249b33f95c9084ae5709785478946"
+checksum = "ac230478587d0269d8d6998b82ae69ea51509d55df66d9e92edd1f986904cd4a"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -678,14 +678,14 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.6.7"
+version = "4.6.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9c751b79415d4e559e3d1fcf128e09e720eb673a06d26cf6f392d37d75b66e0"
+checksum = "895c9d8d2ac2dd8b8a29f3724a14e72aaaa6debcf8c38c82f97305c6a172767a"
 dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -943,7 +943,7 @@ checksum = "c6232dd377dcc64799954cbd3a9bb882e9cdc1308ccd87b1c098f1fb2eaf82a8"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -1321,7 +1321,7 @@ checksum = "9fb9654ba8355388abeb8dcb4fc62f511300867002afc858860463bdd9fe0c44"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -1520,9 +1520,9 @@ dependencies = [
 
 [[package]]
 name = "gio-unix"
-version = "0.22.8"
+version = "0.22.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce8d768735e229742c135afa3d3326604088d2df0679901cdb05e791fe2fbe0a"
+checksum = "8e099bbdf44c366ee73046d564b7ffdc8b370b69e2c082a89e49df1b5c85251b"
 dependencies = [
  "gio",
  "gio-unix-sys",
@@ -1627,7 +1627,7 @@ dependencies = [
  "heck",
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -1813,7 +1813,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -2730,7 +2730,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustversion",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -2788,9 +2788,9 @@ dependencies = [
 
 [[package]]
 name = "nix"
-version = "0.31.3"
+version = "0.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
+checksum = "77730ed34f01f4990cb2ea67fec715ecebc6fab9a6396cf83c5529b13f581bdc"
 dependencies = [
  "bitflags 2.13.2",
  "cfg-if",
@@ -2854,16 +2854,16 @@ dependencies = [
 
 [[package]]
 name = "notify-rust"
-version = "4.18.2"
+version = "4.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4587364a9a0074333429b3df75a30a205340c56a536ca3eb6ca0e59b87bbf8af"
+checksum = "57da5b5d3b7809bf71858da5a2818c3404ca4688c02c8abecdda0fcdec235df3"
 dependencies = [
  "futures-lite",
  "log",
  "mac-notification-sys",
  "serde",
  "tauri-winrt-notification",
- "zbus",
+ "zbus 6.3.0",
 ]
 
 [[package]]
@@ -3118,7 +3118,7 @@ dependencies = [
  "futures",
  "tokio",
  "tracing",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -3229,7 +3229,7 @@ dependencies = [
  "wayle-audio",
  "wayle-brightness",
  "wayle-weather",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -3394,11 +3394,11 @@ dependencies = [
  "anyhow",
  "gtk4",
  "gtk4-layer-shell",
- "nix 0.31.3",
+ "nix 0.32.0",
  "relm4",
  "tokio",
  "tracing",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -3411,7 +3411,7 @@ dependencies = [
  "gtk4-layer-shell",
  "image",
  "memmap2",
- "nix 0.31.3",
+ "nix 0.32.0",
  "okshell-services",
  "okshell-style",
  "relm4",
@@ -3445,7 +3445,7 @@ dependencies = [
  "wayle-sysinfo",
  "wayle-systray",
  "wayle-weather",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -3563,7 +3563,7 @@ dependencies = [
  "okshell-cli-style",
  "serde",
  "tokio",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -3575,7 +3575,7 @@ dependencies = [
  "okshell-cli-style",
  "serde",
  "tokio",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -4307,14 +4307,14 @@ checksum = "92ecd8964f8453721699a1ed72037b0db49ce2f5a5138486ee89bed6f67cdf3a"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
 name = "regex"
-version = "1.13.1"
+version = "1.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f020237b6c8eed93db2e2cb53c00c60a8e1bc73da7d073199a1180401450218d"
+checksum = "9807af0e638c12e753aa1b4e601791bf2a8f71274023c8bbeec12fc149950857"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -4324,9 +4324,9 @@ dependencies = [
 
 [[package]]
 name = "regex-automata"
-version = "0.4.18"
+version = "0.4.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad8553b9b26413251cbf30e620595c7a41b3887f03da04579c0e6b0d6a06b4b2"
+checksum = "41d60ef07df457506a0a1a2073112eb4aae5733dbd2813c3da77d1b0fd441158"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -4335,9 +4335,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.8.11"
+version = "0.8.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
+checksum = "d902046e6a28a1e4c3cab97258a0ce11e994903f01c2d97a9447a0b3df85f4f6"
 
 [[package]]
 name = "relm4"
@@ -4632,7 +4632,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_derive_internals",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -4706,7 +4706,7 @@ checksum = "e7a5d71263a5a7d47b41f6b3f06ba276f10cc18b0931f1799f710578e2309348"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -4717,7 +4717,7 @@ checksum = "f852137cce035d6a4df67ccce505ff6b3e9fd3a10e3e52b24dc71e650bb1a9bd"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -4741,7 +4741,7 @@ checksum = "8d3b1629de253c70a0508c3899572da79ca359fdab27c7920ff00406df418906"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -5017,9 +5017,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "3.0.6"
+version = "3.0.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8593e8e72159ed2257d083c7a454a85cbf854f37a0966d8d483aff8c8a3ebcee"
+checksum = "4ae9ccbea3a7b0b09443036490c8f34a8b1b760fd345e5c0dae0aac718faea79"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5043,7 +5043,7 @@ checksum = "901704edd0dfe137f1987838ee4f259e4e063c31371bdb423f7ae38ec6f77f02"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -5165,7 +5165,7 @@ checksum = "fe5197923287db20a58125f0bc85c062f7f2c892de97b18c356f9efb14b28524"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -5265,7 +5265,7 @@ checksum = "78773a2a397f451582ce068015985c33193cf6dea8b74d2a639fe457b2f07b0e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -5691,7 +5691,7 @@ dependencies = [
  "bumpalo",
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
  "wasm-bindgen-shared",
 ]
 
@@ -5792,14 +5792,14 @@ dependencies = [
  "tracing",
  "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
 name = "wayle-battery"
-version = "0.1.2"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a84c4e68a9846ac0ef9bc9582595480250bfd189be6b4857965a7843766b7bb3"
+checksum = "647042eaef47de8ded711fd01fceebd63f9c5ca8b1dbf96996175fe603e2a71b"
 dependencies = [
  "async-trait",
  "derive_more",
@@ -5812,7 +5812,7 @@ dependencies = [
  "tracing",
  "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -5831,7 +5831,7 @@ dependencies = [
  "tracing",
  "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -5850,7 +5850,7 @@ dependencies = [
  "udev",
  "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -5865,7 +5865,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tracing",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -5879,7 +5879,7 @@ dependencies = [
  "tokio",
  "tokio-stream",
  "tracing",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -5923,7 +5923,7 @@ dependencies = [
  "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wildcard",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -5943,7 +5943,7 @@ dependencies = [
  "tracing",
  "wayle-core 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network)",
  "wayle-traits 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network)",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -5968,7 +5968,7 @@ dependencies = [
  "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wildcard",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -5988,7 +5988,7 @@ dependencies = [
  "tracing",
  "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -6009,9 +6009,9 @@ dependencies = [
 
 [[package]]
 name = "wayle-systray"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef04fd9cc1b2b603cb05872900bc620c10f93c8bf3e925fb2f1367a24474cf34"
+checksum = "390ef995853da9f761c5ea540813dc8c3e8688c01106089bb39acb586fd79a18"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -6028,7 +6028,7 @@ dependencies = [
  "tracing",
  "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "wayle-traits 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "zbus",
+ "zbus 5.19.0",
 ]
 
 [[package]]
@@ -6535,7 +6535,7 @@ checksum = "33811428bee40dbceb6d545e95754741d17a6aef9a4849f0fd62e2ba4f412a78"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
  "synstructure",
 ]
 
@@ -6570,9 +6570,36 @@ dependencies = [
  "uuid",
  "windows-sys 0.61.2",
  "winnow",
- "zbus_macros",
+ "zbus_macros 5.19.0",
  "zbus_names",
  "zvariant",
+]
+
+[[package]]
+name = "zbus"
+version = "6.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6b4aae740b23927ceabed962431abab2cdefb9f7f885e5bbab062da09bf580e4"
+dependencies = [
+ "async-trait",
+ "bitflags 2.13.2",
+ "endi",
+ "futures-core",
+ "hex",
+ "libc 0.2.189",
+ "ordered-stream",
+ "rustix",
+ "serde",
+ "serde_repr",
+ "socket2",
+ "uds_windows",
+ "uuid",
+ "windows-sys 0.61.2",
+ "winnow",
+ "zbus_macros 6.3.0",
+ "zbus_utils",
+ "zcheapstr",
+ "zruntime",
 ]
 
 [[package]]
@@ -6584,10 +6611,22 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
  "zbus_names",
  "zvariant",
  "zvariant_utils",
+]
+
+[[package]]
+name = "zbus_macros"
+version = "6.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37c9dd4beaf145c16fcb2902862f50da86e54aed13dd368ddf64a1d17e6b8529"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.10",
+ "zbus_utils",
 ]
 
 [[package]]
@@ -6599,6 +6638,19 @@ dependencies = [
  "serde",
  "winnow",
  "zvariant",
+]
+
+[[package]]
+name = "zbus_utils"
+version = "6.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af55e52da295311b368c45bcae221f020e28e97a2420360170ce389218e76ec7"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 3.0.10",
+ "winnow",
 ]
 
 [[package]]
@@ -6647,7 +6699,7 @@ checksum = "f75b4683f6c7f45248d4d64056a24298c6281e0993356d7d1b4a1a962ef10d4a"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
  "synstructure",
 ]
 
@@ -6687,7 +6739,7 @@ checksum = "34df6fc39dbd26ddc9c10e6a2984476e13acce22e64e4487636ef494369225da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
 ]
 
 [[package]]
@@ -6701,6 +6753,19 @@ name = "zmij"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
+
+[[package]]
+name = "zruntime"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce6a55d4f521760475a30f7b96779508fe8c40dc834478709454dd1d5f0ebc72"
+dependencies = [
+ "futures-core",
+ "futures-io",
+ "rustix",
+ "socket2",
+ "windows-sys 0.61.2",
+]
 
 [[package]]
 name = "zune-core"
@@ -6750,7 +6815,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 3.0.6",
+ "syn 3.0.10",
  "zvariant_utils",
 ]
 
@@ -6763,6 +6828,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde",
- "syn 3.0.6",
+ "syn 3.0.10",
  "winnow",
 ]

@@ -42,13 +42,13 @@ license = "GPL-3"
 [workspace.dependencies]
 anyhow = "1.0.104"
 any_spawner = { version = "0.3.0", features = ["glib", "async-executor"] }
-cairo-rs = "0.22.9"
-clap = { version = "4.6.7", features = ["color", "derive"] }
+cairo-rs = "0.22.11"
+clap = { version = "4.6.8", features = ["color", "derive"] }
 dirs = "7.0.0"
 figment = { version = "0.10.19", features = ["yaml"] }
 fontconfig = "0.11.0"
 futures = "0.3.34"
-gio-unix = "0.22.8"
+gio-unix = "0.22.11"
 grass = "0.13.4"
 gtk4 = { version = "0.11.5", features = ["v4_20"] }
 gtk4-layer-shell = "0.8.1"
@@ -57,9 +57,9 @@ image = { version = "0.25.10", features = ["png", "jpeg", "bmp"] }
 libc = "1.0.0-alpha.3"
 lutgen = { version = "0.15.0", default-features = false, features = ["rayon"] }
 memmap2 = "0.9.12"
-nix = { version = "0.31.3", features = ["signal", "user"] }
+nix = { version = "0.32.0", features = ["signal", "user"] }
 notify = "9.0.0-rc.1"
-notify-rust = "4.18.2"
+notify-rust = "4.19.0"
 okshell-auth = { path = "crates/okshell-auth" }
 okshell-cache = { path = "crates/okshell-cache" }
 okshell-cli-style = { path = "crates/okshell-cli-style" }
@@ -91,7 +91,7 @@ pangocairo = "0.22.9"
 rayon = "1.12.0"
 reactive_graph = { version = "0.2.16", features = ["effects"] }
 reactive_stores = "0.4.4"
-regex = "1.13.1"
+regex = "1.13.2"
 relm4 = { version = "0.11.0" }
 rodio = { version = "0.23.0", default-features = false, features = [
     "vorbis",
@@ -118,7 +118,7 @@ wayland-protocols = { version = "0.32.13", features = [
 ] }
 wayland-protocols-wlr = { version = "0.3.12", features = ["client"] }
 wayle-audio = "0.1.4"
-wayle-battery = "0.1.2"
+wayle-battery = "0.1.3"
 wayle-bluetooth = "0.1.2"
 wayle-brightness = "0.1.2"
 wayle-hyprland = "0.3.0"
@@ -127,6 +127,6 @@ wayle-network = { git = "https://github.com/JohnOberhauser/wayle-services.git", 
 wayle-notification = "0.1.4"
 wayle-power-profiles = "0.1.4"
 wayle-sysinfo = "0.1.2"
-wayle-systray = { version = "0.1.4", features = ["adapter-gtk"] }
+wayle-systray = { version = "0.1.5", features = ["adapter-gtk"] }
 wayle-weather = "0.1.2"
 zbus = "5.19.0"
