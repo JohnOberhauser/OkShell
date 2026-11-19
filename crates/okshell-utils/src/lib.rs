@@ -21,4 +21,5 @@ pub mod reboot;
 pub mod scroll_extensions;
 pub mod shutdown;
 pub mod strings;
+pub mod sys_info;
 pub mod weather;

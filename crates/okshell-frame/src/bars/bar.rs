@@ -4,6 +4,8 @@ use crate::bars::bar_widgets::battery::{BatteryInit, BatteryModel};
 use crate::bars::bar_widgets::bluetooth::{BluetoothInit, BluetoothModel};
 use crate::bars::bar_widgets::clipboard::{ClipboardInit, ClipboardModel, ClipboardOutput};
 use crate::bars::bar_widgets::clock::{ClockInit, ClockModel, ClockOutput};
+use crate::bars::bar_widgets::cpu::{CpuUsageInit, CpuUsageModel};
+use crate::bars::bar_widgets::disks::{DisksUsageInit, DisksUsageModel};
 use crate::bars::bar_widgets::hypr_picker::{HyprPickerInit, HyprPickerModel};
 use crate::bars::bar_widgets::hyprland_dock::{
     HyprlandDockInit, HyprlandDockModel, HyprlandDockOutput,
@@ -14,6 +16,7 @@ use crate::bars::bar_widgets::hyprland_workspaces::{
 };
 use crate::bars::bar_widgets::lock::{LockInit, LockModel, LockOutput};
 use crate::bars::bar_widgets::logout::{LogoutInit, LogoutModel};
+use crate::bars::bar_widgets::memory::{MemoryUsageInit, MemoryUsageModel};
 use crate::bars::bar_widgets::network::{NetworkInit, NetworkModel};
 use crate::bars::bar_widgets::notifications::{
     NotificationsInit, NotificationsModel, NotificationsOutput,
@@ -525,6 +528,14 @@ impl BarModel {
                         ClockOutput::Clicked => BarOutput::ClockClicked,
                     }),
             ),
+            BarWidget::CpuUsage => {
+                Box::new(CpuUsageModel::builder().launch(CpuUsageInit {}).detach())
+            }
+            BarWidget::DiskUsage => Box::new(
+                DisksUsageModel::builder()
+                    .launch(DisksUsageInit {})
+                    .detach(),
+            ),
             BarWidget::HyprlandDock => Box::new(
                 HyprlandDockModel::builder()
                     .launch(HyprlandDockInit {
@@ -563,6 +574,11 @@ impl BarModel {
             BarWidget::Logout => Box::new(
                 LogoutModel::builder()
                     .launch(LogoutInit { orientation })
+                    .detach(),
+            ),
+            BarWidget::MemoryUsage => Box::new(
+                MemoryUsageModel::builder()
+                    .launch(MemoryUsageInit {})
                     .detach(),
             ),
             BarWidget::QuickSettings => Box::new(

@@ -3270,6 +3270,7 @@ dependencies = [
  "wayle-network",
  "wayle-notification",
  "wayle-power-profiles",
+ "wayle-sysinfo",
  "wayle-systray",
  "wayle-weather",
 ]
@@ -3532,6 +3533,7 @@ dependencies = [
  "wayle-network",
  "wayle-notification",
  "wayle-power-profiles",
+ "wayle-sysinfo",
  "wayle-weather",
 ]
 

@@ -1,0 +1,11 @@
+.cpu-usage-bar-widget .usage-ring {
+    color: var(--primary);
+}
+
+.memory-usage-bar-widget .usage-ring {
+    color: var(--secondary);
+}
+
+.disk-usage-bar-widget .usage-ring {
+    color: var(--tertiary);
+}
