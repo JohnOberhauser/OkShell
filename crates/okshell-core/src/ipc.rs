@@ -362,9 +362,9 @@ impl IPCService {
 
 async fn start_shell_service(tx: mpsc::UnboundedSender<IPCCommand>) -> zbus::Result<()> {
     let service = IPCService::new(tx);
-    let _connection = connection::Builder::session()?
-        .name("com.okshell.Shell")?
-        .serve_at("/com/okshell/Shell", service)?
+    let _connection = connection::Builder::session()
+        .name("com.okshell.Shell")
+        .serve_at("/com/okshell/Shell", service)
         .build()
         .await?;
     std::future::pending::<()>().await;

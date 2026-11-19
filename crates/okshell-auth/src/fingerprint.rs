@@ -17,7 +17,7 @@ pub enum FingerprintEvent {
     default_path = "/net/reactivated/Fprint/Manager"
 )]
 trait FprintManager {
-    fn get_default_device(&self) -> zbus::Result<zbus::zvariant::OwnedObjectPath>;
+    fn get_default_device(&self) -> zbus::Result<zbus::OwnedObjectPath>;
 }
 
 #[proxy(
@@ -49,7 +49,7 @@ impl FingerprintAuth {
         let device_path = manager.get_default_device().await?;
 
         let device = FprintDeviceProxy::builder(&conn)
-            .path(device_path)?
+            .path(device_path)
             .build()
             .await?;
 

@@ -129,4 +129,5 @@ wayle-power-profiles = "0.1.4"
 wayle-sysinfo = "0.1.2"
 wayle-systray = { version = "0.1.5", features = ["adapter-gtk"] }
 wayle-weather = "0.1.2"
-zbus = "5.19.0"
+zbus = "6.3.0"
+zvariant = "5.15.1"

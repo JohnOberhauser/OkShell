@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use tracing::{debug, error, info};
+use zbus::OwnedVariant;
 use zbus::object_server::SignalEmitter;
-use zbus::zvariant::OwnedValue;
 use zbus::{Connection, fdo, interface};
 
 use crate::helper::{HelperEvent, PolkitAgentHelper};
@@ -29,7 +29,7 @@ impl PolkitAgentObject {
         icon_name: &str,
         _details: HashMap<String, String>,
         cookie: &str,
-        identities: Vec<(String, HashMap<String, OwnedValue>)>,
+        identities: Vec<(String, HashMap<String, OwnedVariant>)>,
     ) -> fdo::Result<()> {
         info!("[polkit] BeginAuthentication action={action_id} cookie={cookie}");
 
@@ -136,7 +136,7 @@ impl PolkitAgentObject {
     }
 }
 
-fn pick_username(identities: &[(String, HashMap<String, OwnedValue>)]) -> Option<String> {
+fn pick_username(identities: &[(String, HashMap<String, OwnedVariant>)]) -> Option<String> {
     for (kind, props) in identities {
         if kind == "unix-user"
             && let Some(uid_val) = props.get("uid")
@@ -191,10 +191,7 @@ pub async fn register_polkit_agent(
             &(
                 (
                     "unix-session",
-                    HashMap::from([(
-                        "session-id",
-                        zbus::zvariant::Value::from(session_id.as_str()),
-                    )]),
+                    HashMap::from([("session-id", zbus::Variant::from(session_id.as_str()))]),
                 ),
                 "en_US.UTF-8",     // locale
                 AGENT_OBJECT_PATH, // object path

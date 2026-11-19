@@ -24,3 +24,4 @@ wayle-sysinfo.workspace = true
 wayle-systray.workspace = true
 wayle-weather.workspace = true
 zbus.workspace = true
+zvariant.workspace = true

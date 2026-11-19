@@ -13,7 +13,7 @@ use wayle_power_profiles::PowerProfilesService;
 use wayle_sysinfo::SysinfoService;
 use wayle_systray::SystemTrayService;
 use wayle_weather::{LocationQuery, TemperatureUnit, WeatherService, WeatherServiceBuilder};
-use zbus::zvariant::OwnedObjectPath;
+use zbus::OwnedObjectPath;
 use zbus::{Connection, Error};
 
 pub async fn init_services(
@@ -23,6 +23,7 @@ pub async fn init_services(
     info!("Initializing services...");
     let line_power_fut = async {
         if let Some(path) = find_line_power_path().await? {
+            let path = zvariant::ObjectPath::try_from(path.as_str().to_owned())?;
             Ok::<_, anyhow::Error>(Some(
                 BatteryService::builder().device_path(path).build().await?,
             ))
