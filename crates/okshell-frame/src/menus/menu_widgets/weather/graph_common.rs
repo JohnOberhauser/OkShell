@@ -174,6 +174,7 @@ pub(crate) fn temp_unit_label(unit: &TemperatureUnit) -> &'static str {
 pub(crate) struct GraphTheme {
     pub primary: Rgba,
     pub secondary: Rgba,
+    pub tertiary: Rgba,
     /// Horizontal gridlines and minor vertical lines.
     pub grid: Rgba,
     /// Major vertical lines (labeled hours, days).
@@ -189,7 +190,8 @@ impl GraphTheme {
         let fg = |a: f64| (c.red() as f64, c.green() as f64, c.blue() as f64, a);
         Self {
             primary: css.color("--primary").unwrap_or(fg(1.0)),
-            secondary: css.color("--secondary").unwrap_or(fg(0.6)),
+            secondary: css.color("--secondary").unwrap_or(fg(1.0)),
+            tertiary: css.color("--tertiary").unwrap_or(fg(1.0)),
             grid: css.color("--outline-variant").unwrap_or(fg(0.08)),
             grid_strong: css.color("--outline").unwrap_or(fg(0.2)),
             label: css.color("--on-surface").unwrap_or(fg(1.0)),

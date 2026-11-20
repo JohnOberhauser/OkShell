@@ -353,7 +353,7 @@ fn draw_axis(
         uv_ticks,
         "UV",
         UV_AXIS_WIDTH - AXIS_COLUMN_GAP,
-        theme.secondary,
+        theme.tertiary,
     );
 
     draw_axis_column(
@@ -413,7 +413,7 @@ fn draw_plot(
     // ---- UV bars (behind the temperature curve) ----------------------------
     // Grows with the spacing, but capped so bars stay bar-shaped on wide layouts.
     let bw = (spacing * 0.6).min(ICON_SIZE as f64);
-    set_color(cr, theme.secondary, 0.5);
+    set_color(cr, theme.tertiary, 0.5);
     for (i, p) in pts.iter().enumerate() {
         let y = uv_y(&g, p.uv);
         let bh = g.bottom - y;
