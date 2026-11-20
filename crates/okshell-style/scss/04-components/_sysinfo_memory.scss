@@ -3,7 +3,7 @@
     padding: 0;
     border: none;
     border-radius: var(--radius-widget);
-    background-color: var(--primary-container);
+    background-color: var(--secondary-container);
 }
 
 .memory-usage-menu-widget levelbar block {
@@ -14,7 +14,7 @@
 }
 
 .memory-usage-menu-widget levelbar block.filled {
-    background-color: var(--primary);
+    background-color: var(--secondary);
 }
 
 .memory-usage-menu-widget levelbar block.empty {

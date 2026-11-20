@@ -1,0 +1,29 @@
+.disk-usage-menu-widget levelbar trough {
+    min-height: 8px;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-widget);
+    background-color: var(--tertiary-container);
+}
+
+.disk-usage-menu-widget levelbar block {
+    min-height: 8px;
+    min-width: 0;
+    border: none;
+    border-radius: var(--radius-widget);
+}
+
+.disk-usage-menu-widget levelbar block.filled {
+    background-color: var(--tertiary);
+}
+
+.disk-usage-menu-widget levelbar block.empty {
+    background-color: transparent;
+}
+
+.disk-usage-menu-widget {
+    border: solid var(--border-width) var(--outline);
+    border-radius: var(--radius-widget);
+    padding: 8px;
+}
