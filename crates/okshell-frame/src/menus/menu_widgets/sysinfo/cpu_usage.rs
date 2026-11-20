@@ -59,6 +59,7 @@ impl Component for CpuUsageModel {
             set_orientation: gtk::Orientation::Vertical,
             set_spacing: 8,
             set_hexpand: true,
+            set_vexpand: false,
 
             gtk::Label {
                 add_css_class: "label-large-bold",

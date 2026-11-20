@@ -57,6 +57,7 @@ where
         #[root]
         gtk::Box {
             set_orientation: Orientation::Vertical,
+            set_vexpand: false,
 
             gtk::Box {
                 set_orientation: Orientation::Horizontal,
