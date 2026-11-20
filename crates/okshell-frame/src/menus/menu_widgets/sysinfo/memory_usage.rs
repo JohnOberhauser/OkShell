@@ -45,9 +45,23 @@ impl Component for MemoryUsageModel {
             set_spacing: 8,
             set_hexpand: true,
 
-            gtk::Label {
-                add_css_class: "label-large-bold",
-                set_label: "Memory",
+            gtk::CenterBox {
+                set_hexpand: true,
+
+                #[wrap(Some)]
+                set_start_widget = &gtk::Image {
+                    set_hexpand: true,
+                    set_halign: gtk::Align::End,
+                    set_valign: gtk::Align::Center,
+                    set_margin_end: 8,
+                    set_icon_name: Some("memory-symbolic"),
+                },
+
+                #[wrap(Some)]
+                set_center_widget = &gtk::Label {
+                    add_css_class: "label-large-bold",
+                    set_label: "Memory",
+                },
             },
 
             gtk::Box {
