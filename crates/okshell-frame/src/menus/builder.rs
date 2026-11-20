@@ -41,6 +41,7 @@ use crate::menus::menu_widgets::screenshot::screenshot_menu_widget::{
 };
 use crate::menus::menu_widgets::spacer::{SpacerInit, SpacerModel};
 use crate::menus::menu_widgets::sysinfo::cpu_usage::{CpuUsageInit, CpuUsageModel};
+use crate::menus::menu_widgets::sysinfo::memory_usage::{MemoryUsageInit, MemoryUsageModel};
 use crate::menus::menu_widgets::theme_picker::theme_picker_menu_widget::{
     ThemePickerMenuWidgetInit, ThemePickerMenuWidgetModel,
 };
@@ -105,6 +106,11 @@ pub fn build_widget(
         MenuWidget::MediaPlayer => Box::new(
             MediaPlayersModel::builder()
                 .launch(MediaPlayersInit {})
+                .detach(),
+        ),
+        MenuWidget::MemoryUsage => Box::new(
+            MemoryUsageModel::builder()
+                .launch(MemoryUsageInit {})
                 .detach(),
         ),
         MenuWidget::Network => Box::new(
