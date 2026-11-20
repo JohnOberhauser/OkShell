@@ -81,6 +81,7 @@ impl Component for HyprlandDockModel {
             set_vexpand: model.orientation == Orientation::Horizontal,
             set_halign: gtk::Align::Center,
             set_valign: gtk::Align::Center,
+            set_spacing: 2,
 
             model.dynamic_box.widget().clone() {},
 
@@ -124,7 +125,7 @@ impl Component for HyprlandDockModel {
             .launch(DynamicBoxInit {
                 factory,
                 orientation: params.orientation,
-                spacing: 0,
+                spacing: 2,
                 transition_type,
                 transition_duration_ms: 200,
                 reverse: false,
