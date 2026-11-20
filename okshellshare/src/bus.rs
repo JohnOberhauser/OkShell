@@ -7,7 +7,7 @@ pub async fn bus_command_with_reply<
     method_name: &'static str,
     arg: &A,
 ) -> zbus::Result<R> {
-    let connection = connection::Builder::session()?.build().await?;
+    let connection = connection::Builder::session().build().await?;
     let reply = connection
         .call_method(
             Some("com.okshell.Shell"),
