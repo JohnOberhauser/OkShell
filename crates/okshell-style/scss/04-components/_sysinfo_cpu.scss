@@ -1,0 +1,29 @@
+.cpu-core-bars levelbar trough {
+    min-width: 3px;
+    min-height: 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-widget);
+    background-color: var(--primary-container);
+}
+
+.cpu-core-bars levelbar block {
+    min-width: 3px;
+    min-height: 0;
+    border: none;
+    border-radius: var(--radius-widget);
+}
+
+.cpu-core-bars levelbar block.filled {
+    background-color: var(--primary);
+}
+
+.cpu-core-bars levelbar block.empty {
+    background-color: transparent;
+}
+
+.cpu-usage-menu-widget {
+    border: solid var(--border-width) var(--outline);
+    border-radius: var(--radius-widget);
+    padding: 8px;
+}
