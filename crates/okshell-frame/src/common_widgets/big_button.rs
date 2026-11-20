@@ -5,7 +5,7 @@ use relm4::prelude::*;
 impl WidgetTemplate for BigButton {
     view! {
         gtk::Button {
-            set_css_classes: &["ok-button-primary", "ok-button-large"],
+            set_css_classes: &["ok-button-primary", "ok-button-large", "ok-button-bordered"],
 
             gtk::Box {
                 set_orientation: gtk::Orientation::Vertical,
