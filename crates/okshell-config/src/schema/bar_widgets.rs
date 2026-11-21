@@ -84,7 +84,7 @@ impl BarWidget {
     }
 
     pub fn action_name(&self) -> String {
-        format!("{:?}", self).to_lowercase().replace(' ', "-")
+        self.display_name().to_lowercase().replace(' ', "-")
     }
 
     pub fn all_defaults() -> Vec<BarWidget> {
@@ -139,7 +139,7 @@ impl Default for CavaConfig {
             autosens: true,
             stereo: false,
             noise_reduction: OrdF64(0.77),
-            monstercat: OrdF64(0.0),
+            monstercat: OrdF64(1.0),
             waves: 0,
             low_cutoff: 50,
             high_cutoff: 10000,

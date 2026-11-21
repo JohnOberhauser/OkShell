@@ -34,6 +34,7 @@ pub enum WidgetSectionInput {
     RemoveWidget(DynamicIndex),
     MoveUp(DynamicIndex),
     MoveDown(DynamicIndex),
+    WidgetChanged(DynamicIndex, BarWidget),
     SetWidgetsEffect(Vec<BarWidget>),
 }
 
@@ -94,6 +95,9 @@ impl Component for WidgetSectionModel {
                 ActiveWidgetOutput::MoveUp(idx) => WidgetSectionInput::MoveUp(idx),
                 ActiveWidgetOutput::MoveDown(idx) => WidgetSectionInput::MoveDown(idx),
                 ActiveWidgetOutput::Remove(idx) => WidgetSectionInput::RemoveWidget(idx),
+                ActiveWidgetOutput::WidgetChanged(idx, w) => {
+                    WidgetSectionInput::WidgetChanged(idx, w)
+                }
             });
 
         params.widgets.iter().for_each(|widget| {
@@ -149,7 +153,25 @@ impl Component for WidgetSectionModel {
                     self.emit_changed(&sender);
                 }
             }
+            WidgetSectionInput::WidgetChanged(index, widget) => {
+                let idx = index.current_index();
+                if let Some(row) = self.widgets.guard().get_mut(idx) {
+                    row.widget = widget;
+                }
+                self.emit_changed(&sender);
+            }
             WidgetSectionInput::SetWidgetsEffect(new_widgets) => {
+                // The config store echoes our own edits back here. Rebuilding
+                // the rows would destroy the spin button being edited, so skip
+                // when nothing actually differs.
+                if self
+                    .widgets
+                    .iter()
+                    .map(|w| &w.widget)
+                    .eq(new_widgets.iter())
+                {
+                    return;
+                }
                 let mut guard = self.widgets.guard();
                 guard.clear();
                 for widget in new_widgets {
