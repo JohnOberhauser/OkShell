@@ -2,10 +2,22 @@
     color: var(--primary);
 }
 
+.cpu-usage-bar-widget .usage-ring-track {
+    color: var(--primary-container);
+}
+
 .memory-usage-bar-widget .usage-ring {
     color: var(--secondary);
 }
 
+.memory-usage-bar-widget .usage-ring-track {
+    color: var(--secondary-container);
+}
+
 .disk-usage-bar-widget .usage-ring {
     color: var(--tertiary);
+}
+
+.disk-usage-bar-widget .usage-ring-track {
+    color: var(--tertiary-container);
 }

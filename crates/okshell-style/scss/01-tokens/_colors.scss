@@ -1,41 +1,63 @@
 :root {
-  --surface: #1E2326;
-  --on-surface: #D3C6AA;
-  --surface-variant: #2E383C;
-  --on-surface-variant: #9DA9A0;
-  --surface-container-highest: #414B50;
-  --surface-container-high: #374145;
-  --surface-container: #2E383C;
-  --surface-container-low: #272E33;
-  --surface-container-lowest: #1E2326;
-  --inverse-surface: #D3C6AA;
-  --inverse-on-surface: #1E2326;
-  --surface-tint: #7FBBB3;
-  --surface-tint-color: #7FBBB3;
-  --primary: #A7C080;
-  --on-primary: #1E2326;
-  --primary-container: #3C4841;
-  --on-primary-container: #A7C080;
-  --secondary: #7FBBB3;
-  --on-secondary: #1E2326;
-  --secondary-container: #384B55;
-  --on-secondary-container: #7FBBB3;
-  --tertiary: #83C092;
-  --on-tertiary: #1E2326;
-  --tertiary-container: #3C4841;
-  --on-tertiary-container: #83C092;
-  --error: #E67E80;
-  --on-error: #1E2326;
-  --error-container: #493B40;
-  --on-error-container: #E67E80;
-  --outline: #7A8478;
-  --outline-variant: #374145;
+    --surface: #1e2326;
+    --on-surface: #d3c6aa;
+    --surface-variant: #2e383c;
+    --on-surface-variant: #9da9a0;
+    --surface-container-highest: #414b50;
+    --surface-container-high: #374145;
+    --surface-container: #2e383c;
+    --surface-container-low: #272e33;
+    --surface-container-lowest: #1e2326;
+    --inverse-surface: #d3c6aa;
+    --inverse-on-surface: #1e2326;
+    --surface-tint: #7fbbb3;
+    --surface-tint-color: #7fbbb3;
+    --primary: #a7c080;
+    --on-primary: #1e2326;
+    --primary-container: #3c4841;
+    --on-primary-container: #a7c080;
+    --secondary: #7fbbb3;
+    --on-secondary: #1e2326;
+    --secondary-container: #384b55;
+    --on-secondary-container: #7fbbb3;
+    --tertiary: #83c092;
+    --on-tertiary: #1e2326;
+    --tertiary-container: #3c4841;
+    --on-tertiary-container: #83c092;
+    --error: #e67e80;
+    --on-error: #1e2326;
+    --error-container: #493b40;
+    --on-error-container: #e67e80;
+    --outline: #7a8478;
+    --outline-variant: #374145;
 
-  -gtk-icon-palette: warning var(--error), error var(--error), success var(--primary);
+    .color-primary {
+        color: var(--primary);
+    }
+    .color-primary-container {
+        color: var(--primary-container);
+    }
+    .color-secondary {
+        color: var(--secondary);
+    }
+    .color-secondary-container {
+        color: var(--secondary-container);
+    }
+    .color-tertiary {
+        color: var(--tertiary);
+    }
+    .color-tertiary-container {
+        color: var(--tertiary-container);
+    }
 
-  --frame-bg: var(--surface);
-  --frame-border: var(--outline);
+    -gtk-icon-palette:
+        warning var(--error),
+        error var(--error),
+        success var(--primary);
 
-  //overridden by style manager
-  --window-opacity: 1;
+    --frame-bg: var(--surface);
+    --frame-border: var(--outline);
+
+    //overridden by style manager
+    --window-opacity: 1;
 }
