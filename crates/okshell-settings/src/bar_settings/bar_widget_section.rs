@@ -172,13 +172,14 @@ impl WidgetSectionModel {
         let menu = gio::Menu::new();
         let action_group = gio::SimpleActionGroup::new();
 
-        for widget in BarWidget::all() {
+        for widget in BarWidget::all_defaults() {
             let action_name = widget.action_name();
             let action = gio::SimpleAction::new(&action_name, None);
 
             let sender = sender.input_sender().clone();
+            let widget_clone = widget.clone();
             action.connect_activate(move |_, _| {
-                sender.emit(WidgetSectionInput::AddWidget(widget.clone()));
+                sender.emit(WidgetSectionInput::AddWidget(widget_clone.clone()));
             });
 
             action_group.add_action(&action);

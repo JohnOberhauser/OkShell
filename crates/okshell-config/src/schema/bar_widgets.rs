@@ -2,13 +2,15 @@ use reactive_stores::{KeyMap, PatchField, Store, StorePath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::schema::location_query::OrdF64;
+
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
 pub enum BarWidget {
     AudioInput,
     AudioOutput,
     Battery,
     Bluetooth,
-    Cava,
+    Cava(CavaConfig),
     Clipboard,
     Clock,
     CpuUsage,
@@ -55,7 +57,7 @@ impl BarWidget {
             BarWidget::AudioOutput => "Audio Output",
             BarWidget::Battery => "Battery",
             BarWidget::Bluetooth => "Bluetooth",
-            BarWidget::Cava => "Cava",
+            BarWidget::Cava(_) => "Cava",
             BarWidget::Clipboard => "Clipboard",
             BarWidget::Clock => "Clock",
             BarWidget::CpuUsage => "CPU Usage",
@@ -85,13 +87,13 @@ impl BarWidget {
         format!("{:?}", self).to_lowercase().replace(' ', "-")
     }
 
-    pub fn all() -> &'static [BarWidget] {
-        &[
+    pub fn all_defaults() -> Vec<BarWidget> {
+        vec![
             BarWidget::AudioInput,
             BarWidget::AudioOutput,
             BarWidget::Battery,
             BarWidget::Bluetooth,
-            BarWidget::Cava,
+            BarWidget::Cava(CavaConfig::default()),
             BarWidget::Clipboard,
             BarWidget::Clock,
             BarWidget::CpuUsage,
@@ -115,5 +117,32 @@ impl BarWidget {
             BarWidget::VpnIndicator,
             BarWidget::Wallpaper,
         ]
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, JsonSchema)]
+pub struct CavaConfig {
+    pub bars: u16,
+    pub autosens: bool,
+    pub stereo: bool,
+    pub noise_reduction: OrdF64,
+    pub monstercat: OrdF64,
+    pub waves: u32,
+    pub low_cutoff: u32,
+    pub high_cutoff: u32,
+}
+
+impl Default for CavaConfig {
+    fn default() -> Self {
+        Self {
+            bars: 32,
+            autosens: true,
+            stereo: false,
+            noise_reduction: OrdF64(0.77),
+            monstercat: OrdF64(0.0),
+            waves: 0,
+            low_cutoff: 50,
+            high_cutoff: 10000,
+        }
     }
 }

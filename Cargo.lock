@@ -3219,6 +3219,7 @@ dependencies = [
  "wayle-audio",
  "wayle-battery",
  "wayle-bluetooth",
+ "wayle-cava",
  "wayle-hyprland",
  "wayle-media",
  "wayle-network",

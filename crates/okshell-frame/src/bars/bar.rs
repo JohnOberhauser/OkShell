@@ -515,9 +515,12 @@ impl BarModel {
             BarWidget::Bluetooth => {
                 Box::new(BluetoothModel::builder().launch(BluetoothInit {}).detach())
             }
-            BarWidget::Cava => Box::new(
+            BarWidget::Cava(config) => Box::new(
                 CavaModel::builder()
-                    .launch(CavaInit { orientation })
+                    .launch(CavaInit {
+                        orientation,
+                        config: config.clone(),
+                    })
                     .detach(),
             ),
             BarWidget::Clipboard => Box::new(
