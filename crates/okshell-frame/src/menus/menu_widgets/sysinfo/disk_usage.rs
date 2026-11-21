@@ -3,6 +3,7 @@ use okshell_utils::sys_info::spawn_disk_watcher;
 use relm4::factory::{DynamicIndex, FactoryComponent, FactorySender, FactoryVecDeque};
 use relm4::gtk::prelude::*;
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::rc::Rc;
 use wayle_sysinfo::types::DiskData;
@@ -10,6 +11,19 @@ use wayle_sysinfo::types::DiskData;
 use super::level_anim::{LevelAnim, percent_of}; // adjust path
 
 const BYTES_PER_GB: f64 = 1024.0 * 1024.0 * 1024.0;
+
+const IGNORED_FS: &[&str] = &[
+    "tmpfs",
+    "devtmpfs",
+    "overlay",
+    "squashfs",
+    "efivarfs",
+    "ramfs",
+    "proc",
+    "sysfs",
+    "cgroup2",
+    "fuse.portal",
+];
 
 // ---------------------------------------------------------------------------
 // Parent: "Disks" title + list of disks
@@ -113,15 +127,18 @@ impl Component for DiskUsageModel {
 
 impl DiskUsageModel {
     fn refresh(&mut self) {
-        let disks: Vec<DiskData> = sys_info_service()
-            .disks
-            .get()
-            .iter()
-            .filter(|disk| !disk.mount_point.starts_with("/var"))
-            .filter(|disk| !disk.mount_point.starts_with("/home"))
-            .filter(|disk| !disk.mount_point.starts_with("/boot"))
-            .filter(|disk| !disk.mount_point.starts_with("/.snapshot"))
-            .cloned()
+        let mut all = sys_info_service().disks.get().clone();
+        // shortest mount point first, so "/" wins over "/var/log" for the same fs
+        all.sort_by_key(|d| d.mount_point.as_os_str().len());
+
+        let mut seen = HashSet::new();
+
+        let disks: Vec<DiskData> = all
+            .into_iter()
+            .filter(|d| !IGNORED_FS.contains(&d.filesystem.as_str()))
+            .filter(|d| d.total_bytes > 0)
+            .filter(|d| !d.mount_point.starts_with("/boot") && !d.mount_point.starts_with("/efi"))
+            .filter(|d| seen.insert((d.filesystem.clone(), d.total_bytes)))
             .collect();
 
         // Same mounts in the same order: update rows in place so the bars animate.
