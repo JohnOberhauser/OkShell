@@ -5846,6 +5846,20 @@ dependencies = [
 [[package]]
 name = "wayle-core"
 version = "0.1.2"
+source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=disks#55691dd6a67f46881af8c7498ee49008e5092027"
+dependencies = [
+ "futures",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+ "zbus 5.19.0",
+]
+
+[[package]]
+name = "wayle-core"
+version = "0.1.2"
 source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=wireguard-network#fca6e64fa9a132715015b6f89c3fdb916e4212a3"
 dependencies = [
  "futures",
@@ -5968,9 +5982,8 @@ dependencies = [
 
 [[package]]
 name = "wayle-sysinfo"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "457d314fb55348d1f330217e158ad7892f13e6a5c3b37f4f118915615f0b6dda"
+version = "0.1.3"
+source = "git+https://github.com/JohnOberhauser/wayle-services.git?branch=disks#55691dd6a67f46881af8c7498ee49008e5092027"
 dependencies = [
  "derive_more",
  "futures",
@@ -5979,7 +5992,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
- "wayle-core 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wayle-core 0.1.2 (git+https://github.com/JohnOberhauser/wayle-services.git?branch=disks)",
 ]
 
 [[package]]

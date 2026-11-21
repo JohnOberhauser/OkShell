@@ -127,18 +127,17 @@ impl Component for DiskUsageModel {
 
 impl DiskUsageModel {
     fn refresh(&mut self) {
-        let mut all = sys_info_service().disks.get().clone();
-        // shortest mount point first, so "/" wins over "/var/log" for the same fs
-        all.sort_by_key(|d| d.mount_point.as_os_str().len());
+        let mut seen_devices = HashSet::new();
 
-        let mut seen = HashSet::new();
-
-        let disks: Vec<DiskData> = all
-            .into_iter()
+        let disks: Vec<DiskData> = sys_info_service()
+            .disks
+            .get()
+            .iter()
             .filter(|d| !IGNORED_FS.contains(&d.filesystem.as_str()))
-            .filter(|d| d.total_bytes > 0)
             .filter(|d| !d.mount_point.starts_with("/boot") && !d.mount_point.starts_with("/efi"))
-            .filter(|d| seen.insert((d.filesystem.clone(), d.total_bytes)))
+            // one entry per device: collapses all btrfs subvolumes into one
+            .filter(|d| seen_devices.insert(d.name.clone()))
+            .cloned()
             .collect();
 
         // Same mounts in the same order: update rows in place so the bars animate.
