@@ -2,7 +2,6 @@ use futures::StreamExt;
 use okshell_config::schema::bar_widgets::CavaConfig;
 use relm4::gtk::prelude::*;
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
-use tokio::sync::watch;
 use tracing::error;
 use wayle_cava::{CavaService, InputMethod};
 
@@ -17,9 +16,7 @@ const SOURCE: &str = "auto";
 
 #[derive(Debug)]
 pub(crate) struct CavaModel {
-    /// Latest desired config. The service task watches this and applies
-    /// changes one at a time, so rapid updates coalesce and restarts never overlap.
-    config: watch::Sender<CavaConfig>,
+    bar_width: i32,
     orientation: gtk::Orientation,
     bars: Vec<CavaBar>,
 }
@@ -32,9 +29,7 @@ struct CavaBar {
 }
 
 #[derive(Debug)]
-pub(crate) enum CavaInput {
-    SetConfig(CavaConfig),
-}
+pub(crate) enum CavaInput {}
 
 #[derive(Debug)]
 pub(crate) enum CavaOutput {}
@@ -86,10 +81,10 @@ impl Component for CavaModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let (config_tx, mut config_rx) = watch::channel(params.config);
+        let config = params.config;
 
         let model = CavaModel {
-            config: config_tx,
+            bar_width: config.bar_width as i32,
             orientation: params.orientation,
             bars: Vec::new(),
         };
@@ -103,15 +98,14 @@ impl Component for CavaModel {
             _ => widgets.bars.set_valign(gtk::Align::Fill),
         }
 
-        // The service lives entirely inside this task. When the component is
-        // destroyed the task is dropped, which drops the service and stops cava.
-        // GTK widgets can't be touched from here, so values go back to the main
-        // thread as command output.
-        sender.command(|out, shutdown| {
+        // The service lives entirely inside this task. A config change rebuilds
+        // the whole widget; dropping its controller shuts this task down, which
+        // drops the service and stops cava. GTK widgets can't be touched from
+        // here, so values go back to the main thread as command output.
+        sender.command(move |out, shutdown| {
             shutdown
                 .register(async move {
-                    let mut applied = config_rx.borrow_and_update().clone();
-                    let service = match build_service(&applied).await {
+                    let service = match build_service(&config).await {
                         Ok(service) => service,
                         Err(err) => {
                             error!(error = %err, "cava service failed to start");
@@ -119,26 +113,10 @@ impl Component for CavaModel {
                         }
                     };
 
-                    // `values` is the same Property across restarts, so this
-                    // stream keeps flowing after a setter restarts cava.
                     let mut values = service.values.watch();
-
-                    loop {
-                        tokio::select! {
-                            next = values.next() => {
-                                let Some(next) = next else { break };
-                                if out.send(CavaCommandOutput::Values(next)).is_err() {
-                                    break;
-                                }
-                            }
-                            changed = config_rx.changed() => {
-                                if changed.is_err() {
-                                    break;
-                                }
-                                let desired = config_rx.borrow_and_update().clone();
-                                apply_config(&service, &applied, &desired).await;
-                                applied = desired;
-                            }
+                    while let Some(frame) = values.next().await {
+                        if out.send(CavaCommandOutput::Values(frame)).is_err() {
+                            break;
                         }
                     }
                 })
@@ -146,28 +124,6 @@ impl Component for CavaModel {
         });
 
         ComponentParts { model, widgets }
-    }
-
-    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>, _root: &Self::Root) {
-        match message {
-            CavaInput::SetConfig(config) => {
-                let width_changed = self.config.borrow().bar_width != config.bar_width;
-                self.config.send_if_modified(|current| {
-                    if *current == config {
-                        false
-                    } else {
-                        *current = config;
-                        true
-                    }
-                });
-                // Bar width is purely visual: resize in place, no cava restart.
-                if width_changed {
-                    for bar in &self.bars {
-                        self.apply_bar_width(bar);
-                    }
-                }
-            }
-        }
     }
 
     fn update_cmd_with_view(
@@ -200,30 +156,6 @@ async fn build_service(config: &CavaConfig) -> Result<CavaService, wayle_cava::E
         .source(SOURCE)
         .build()
         .await
-}
-
-/// Every `set_*` on the service restarts cava, so only call the ones whose
-/// value actually changed. Setting the `Property` fields directly would update
-/// the value without restarting, and the stream would keep the old behavior.
-async fn apply_config(service: &CavaService, old: &CavaConfig, new: &CavaConfig) {
-    macro_rules! apply {
-        ($setter:ident, $field:ident $(. $inner:tt)?) => {
-            if old.$field != new.$field {
-                if let Err(err) = service.$setter(new.$field$(.$inner)?).await {
-                    error!(error = %err, setting = stringify!($field), "failed to apply cava setting");
-                }
-            }
-        };
-    }
-
-    apply!(set_bars, bars);
-    apply!(set_autosens, autosens);
-    apply!(set_stereo, stereo);
-    apply!(set_noise_reduction, noise_reduction.0);
-    apply!(set_monstercat, monstercat.0);
-    apply!(set_waves, waves);
-    apply!(set_low_cutoff, low_cutoff);
-    apply!(set_high_cutoff, high_cutoff);
 }
 
 impl CavaModel {
@@ -291,10 +223,9 @@ impl CavaModel {
 
     /// Thickness of a bar along the direction the bars are stacked.
     fn apply_bar_width(&self, bar: &CavaBar) {
-        let width = self.config.borrow().bar_width as i32;
         match self.orientation {
-            gtk::Orientation::Vertical => bar.container.set_height_request(width),
-            _ => bar.container.set_width_request(width),
+            gtk::Orientation::Vertical => bar.container.set_height_request(self.bar_width),
+            _ => bar.container.set_width_request(self.bar_width),
         }
     }
 
