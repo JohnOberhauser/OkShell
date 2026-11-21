@@ -119,6 +119,7 @@ impl DiskUsageModel {
             .filter(|disk| !disk.mount_point.starts_with("/var"))
             .filter(|disk| !disk.mount_point.starts_with("/home"))
             .filter(|disk| !disk.mount_point.starts_with("/boot"))
+            .filter(|disk| !disk.mount_point.starts_with("/.snapshot"))
             .cloned()
             .collect();
 
