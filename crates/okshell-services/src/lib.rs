@@ -5,6 +5,7 @@ use wayle_audio::AudioService;
 use wayle_battery::BatteryService;
 use wayle_bluetooth::BluetoothService;
 use wayle_brightness::BrightnessService;
+use wayle_cava::{CavaService, InputMethod};
 use wayle_hyprland::HyprlandService;
 use wayle_media::MediaService;
 use wayle_network::NetworkService;
@@ -37,6 +38,7 @@ pub async fn init_services(
         battery,
         bluetooth,
         brightness,
+        cava,
         hyprland,
         line_power,
         media,
@@ -49,6 +51,16 @@ pub async fn init_services(
         async { Ok::<_, anyhow::Error>(BatteryService::new().await?) },
         async { Ok::<_, anyhow::Error>(BluetoothService::new().await?) },
         async { Ok::<_, anyhow::Error>(BrightnessService::new().await?) },
+        async {
+            Ok::<_, anyhow::Error>(
+                CavaService::builder()
+                    .bars(32)
+                    .framerate(30)
+                    .input(InputMethod::PipeWire)
+                    .build()
+                    .await?,
+            )
+        },
         async { Ok::<_, anyhow::Error>(HyprlandService::new().await?) },
         line_power_fut,
         async { Ok::<_, anyhow::Error>(MediaService::new().await?) },
@@ -68,6 +80,7 @@ pub async fn init_services(
     BATTERY_SERVICE.set(Arc::new(battery)).ok();
     BLUETOOTH_SERVICE.set(Arc::new(bluetooth)).ok();
     BRIGHTNESS_SERVICE.set(brightness).ok();
+    CAVA_SERVICE.set(Arc::new(cava)).ok();
     HYPRLAND_SERVICE.set(hyprland).ok();
     if let Some(line_power) = line_power {
         LINE_POWER_SERVICE.set(Some(Arc::new(line_power))).ok();
@@ -140,6 +153,15 @@ pub fn brightness_service() -> Option<Arc<BrightnessService>> {
     BRIGHTNESS_SERVICE
         .get()
         .expect("BrightnessService not initialized")
+        .clone()
+}
+
+static CAVA_SERVICE: OnceLock<Arc<CavaService>> = OnceLock::new();
+
+pub fn cava_service() -> Arc<CavaService> {
+    CAVA_SERVICE
+        .get()
+        .expect("CavaService not initialized")
         .clone()
 }
 

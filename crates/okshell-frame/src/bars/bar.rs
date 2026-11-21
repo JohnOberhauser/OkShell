@@ -2,6 +2,7 @@ use crate::bars::bar_widgets::audio_input::{AudioInputInit, AudioInputModel};
 use crate::bars::bar_widgets::audio_output::{AudioOutputInit, AudioOutputModel};
 use crate::bars::bar_widgets::battery::{BatteryInit, BatteryModel};
 use crate::bars::bar_widgets::bluetooth::{BluetoothInit, BluetoothModel};
+use crate::bars::bar_widgets::cava::{CavaInit, CavaModel};
 use crate::bars::bar_widgets::clipboard::{ClipboardInit, ClipboardModel, ClipboardOutput};
 use crate::bars::bar_widgets::clock::{ClockInit, ClockModel, ClockOutput};
 use crate::bars::bar_widgets::cpu::{CpuUsageInit, CpuUsageModel};
@@ -514,6 +515,11 @@ impl BarModel {
             BarWidget::Bluetooth => {
                 Box::new(BluetoothModel::builder().launch(BluetoothInit {}).detach())
             }
+            BarWidget::Cava => Box::new(
+                CavaModel::builder()
+                    .launch(CavaInit { orientation })
+                    .detach(),
+            ),
             BarWidget::Clipboard => Box::new(
                 ClipboardModel::builder()
                     .launch(ClipboardInit { orientation })

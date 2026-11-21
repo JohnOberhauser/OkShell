@@ -15,6 +15,7 @@ wayle-audio.workspace = true
 wayle-battery.workspace = true
 wayle-bluetooth.workspace = true
 wayle-brightness.workspace = true
+wayle-cava.workspace = true
 wayle-hyprland.workspace = true
 wayle-media.workspace = true
 wayle-network.workspace = true

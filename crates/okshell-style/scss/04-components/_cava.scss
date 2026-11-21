@@ -1,0 +1,55 @@
+.cava-bars levelbar trough {
+    min-width: 4px;
+    min-height: 4px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-widget);
+    background-color: transparent;
+}
+
+.cava-bars levelbar block {
+    min-width: 0;
+    min-height: 0;
+    border: none;
+    border-radius: var(--radius-widget);
+}
+
+.cava-bars levelbar block.filled {
+    background-color: var(--primary);
+}
+
+.cava-bars levelbar block.empty {
+    background-color: transparent;
+}
+
+.cava-bar > levelbar.vertical:first-child block {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.cava-bar > levelbar.vertical:last-child block {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.cava-bar > levelbar.horizontal:first-child block {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.cava-bar > levelbar.horizontal:last-child block {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.bar-left .cava-bar-widget,
+.bar-right .cava-bar-widget {
+    min-width: 48px;
+    min-height: 36px;
+}
+
+.bar-top .cava-bar-widget,
+.bar-bottom .cava-bar-widget {
+    min-width: 36px;
+    min-height: 48px;
+}

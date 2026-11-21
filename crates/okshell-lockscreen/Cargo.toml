@@ -7,6 +7,11 @@ description = "OkShell lock screen"
 repository.workspace = true
 license.workspace = true
 
+[build-dependencies]
+# pam depends on pam-sys which depends on bindgen 0.69.
+# Other crates might use newer bindgen, so force the version here.
+bindgen = { version = "0.69", features = ["runtime"] }
+
 [dependencies]
 gtk4.workspace = true
 gtk4-layer-shell.workspace = true

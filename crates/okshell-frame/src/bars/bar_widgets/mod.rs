@@ -3,6 +3,7 @@ pub(crate) mod audio_input;
 pub(crate) mod audio_output;
 pub(crate) mod battery;
 pub(crate) mod bluetooth;
+pub(crate) mod cava;
 pub(crate) mod clipboard;
 pub(crate) mod clock;
 pub(crate) mod cpu;
