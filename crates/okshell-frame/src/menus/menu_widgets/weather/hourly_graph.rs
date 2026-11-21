@@ -28,7 +28,7 @@ const LABEL_EVERY_HOURS: u32 = 4;
 const UV_AXIS_WIDTH: f64 = 34.0;
 const TEMP_AXIS_WIDTH: f64 = 34.0;
 /// Space between the UV labels and the temp column (gap between the two axes).
-const AXIS_COLUMN_GAP: f64 = 12.0;
+const AXIS_COLUMN_GAP: f64 = 4.0;
 const AXIS_WIDTH: i32 = (UV_AXIS_WIDTH + TEMP_AXIS_WIDTH) as i32;
 
 /// UV scale top. Higher readings are clamped to the top.

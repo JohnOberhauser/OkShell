@@ -46,7 +46,7 @@ impl Component for HourlyItemModel {
             add_css_class: "hourly-daily-item",
 
             gtk::Label {
-                add_css_class: "label-small-bold-primary",
+                add_css_class: "label-small-bold",
                 set_label: model.time_label.as_str(),
             },
 
@@ -60,7 +60,7 @@ impl Component for HourlyItemModel {
             },
 
             gtk::Label {
-                add_css_class: "label-small-bold-primary",
+                add_css_class: "label-small-bold",
                 #[watch]
                 set_label: get_temperature_string(
                     &model.hourly.temperature,
@@ -69,7 +69,7 @@ impl Component for HourlyItemModel {
             },
 
             gtk::Label {
-                add_css_class: "label-small-bold-primary",
+                add_css_class: "label-small-bold",
                 #[watch]
                 set_label: format!("{} UV", model.hourly.uv_index).as_str(),
             },

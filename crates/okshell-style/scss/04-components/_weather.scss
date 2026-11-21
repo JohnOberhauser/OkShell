@@ -9,7 +9,7 @@
 }
 
 .hourly-weather-icon {
-    color: var(--on-primary);
+    color: var(--on-surface);
     -gtk-icon-size: 20px;
 }
 
@@ -24,7 +24,8 @@
 }
 
 .hourly-daily-item {
-    background-color: var(--primary);
+    background-color: var(--surface);
     border-radius: var(--radius-widget);
+    border: solid var(--border-width) var(--outline);
     padding: 8px;
 }
