@@ -33,7 +33,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.14.0"
+version = "0.15.0"
 edition = "2024"
 rust-version = "1.92.0"
 repository = "https://github.com/JohnOberhauser/OkShell"
@@ -43,7 +43,7 @@ license = "GPL-3"
 anyhow = "1.0.104"
 any_spawner = { version = "0.3.0", features = ["glib", "async-executor"] }
 cairo-rs = "0.22.11"
-clap = { version = "4.6.8", features = ["color", "derive"] }
+clap = { version = "4.6.9", features = ["color", "derive"] }
 dirs = "7.0.0"
 figment = { version = "0.10.19", features = ["yaml"] }
 fontconfig = "0.11.0"
@@ -130,5 +130,5 @@ wayle-power-profiles = "0.1.4"
 wayle-sysinfo = "0.1.2"
 wayle-systray = { version = "0.1.5", features = ["adapter-gtk"] }
 wayle-weather = "0.1.2"
-zbus = "6.3.0"
+zbus = "6.5.0"
 zvariant = "5.15.1"
