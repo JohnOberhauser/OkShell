@@ -62,7 +62,7 @@ impl Component for DailyModel {
                 #[name = "widget_container"]
                 gtk::Box {
                     set_orientation: gtk::Orientation::Horizontal,
-                    set_spacing: 32,
+                    set_spacing: 8,
                     set_align: gtk::Align::Center,
                 }
             },

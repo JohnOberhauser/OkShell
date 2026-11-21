@@ -41,9 +41,10 @@ impl Component for DailyItemModel {
         gtk::Box {
             set_orientation: gtk::Orientation::Vertical,
             set_spacing: 8,
+            add_css_class: "hourly-daily-item",
 
             gtk::Label {
-                add_css_class: "label-small-bold",
+                add_css_class: "label-small-bold-primary",
                 set_label: model.daily.date.format("%a").to_string().as_str(),
             },
 
@@ -57,7 +58,7 @@ impl Component for DailyItemModel {
             },
 
             gtk::Label {
-                add_css_class: "label-small-bold",
+                add_css_class: "label-small-bold-primary",
                 #[watch]
                 set_label: get_temperature_string(
                     &model.daily.temp_high,
@@ -66,7 +67,7 @@ impl Component for DailyItemModel {
             },
 
             gtk::Label {
-                add_css_class: "label-small-bold",
+                add_css_class: "label-small-bold-primary",
                 #[watch]
                 set_label: get_temperature_string(
                     &model.daily.temp_low,
