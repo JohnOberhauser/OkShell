@@ -175,6 +175,7 @@ pub struct SpacerConfig {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
+#[serde(default)]
 pub struct ContainerConfig {
     pub widgets: Vec<MenuWidget>,
     pub spacing: i32,

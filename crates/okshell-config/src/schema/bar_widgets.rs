@@ -121,6 +121,7 @@ impl BarWidget {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, JsonSchema)]
+#[serde(default)]
 pub struct CavaConfig {
     pub bars: u16,
     pub bar_width: u32,
