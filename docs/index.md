@@ -24,10 +24,16 @@ features:
     details: Have your theme change dynamically to match your wallpaper, or choose a built-in static theme
 ---
 
-<div style="width: 100%; margin-top: 2rem;">
-  <video 
-    src="https://github.com/JohnOberhauser/OkShell/releases/download/v0.1.2/demo.mp4" 
-    controls 
-    style="width: 100%; border-radius: 8px;"
-  ></video>
-</div>
+<script setup>
+import ScreenshotSlideshow from './components/ScreenshotSlideshow.vue'
+
+const shots = [
+  { src: '/assets/screenshot1.png',        alt: 'OkShell desktop' },
+  { src: '/assets/screenshot2.png', alt: 'Calendar and weather' },
+  { src: '/assets/screenshot3.png',      alt: 'Wallpaper picker and theme' },
+  { src: '/assets/screenshot4.png',      alt: 'Quick settings menu' },
+  { src: '/assets/screenshot5.png',      alt: 'Settings app' },
+]
+</script>
+
+<ScreenshotSlideshow :images="shots" :interval="4000" />
