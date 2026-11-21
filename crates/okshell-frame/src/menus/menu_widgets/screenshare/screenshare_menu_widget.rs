@@ -300,6 +300,7 @@ fn rebuild_programs_list(
 
     for program in programs {
         let program_box = gtk::Box::new(gtk::Orientation::Vertical, 6);
+        program_box.add_css_class("border-surface");
 
         // Header label
         let label = gtk::Label::new(Some(&truncate(&program.name, 30)));
@@ -316,7 +317,7 @@ fn rebuild_programs_list(
             button_label.set_xalign(0.0);
             button_label.set_ellipsize(gtk::pango::EllipsizeMode::End);
             button_label.set_hexpand(true);
-            button.add_css_class("ok-button-primary");
+            button.add_css_class("ok-button-surface");
             button.set_hexpand(true);
             button.set_child(Some(&button_label));
 

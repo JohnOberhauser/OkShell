@@ -145,6 +145,13 @@ button.ok-button-error {
     }
 }
 
+.ok-button-surface-bordered {
+    border: var(--border-width) solid var(--outline);
+    &:hover {
+        border: var(--border-width) solid var(--on-surface);
+    }
+}
+
 .ok-button-primary-bordered {
     border: var(--border-width) solid var(--primary-container);
     &:hover {
