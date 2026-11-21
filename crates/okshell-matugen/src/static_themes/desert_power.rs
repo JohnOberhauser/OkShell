@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn desert_power(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn desert_power(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#55504D"),
             primary: color("#55504D"),
             on_primary: color("#A1A09F"),
-            primary_container: color("#1E1C1B"),
+            primary_container: mix("#11100F", "#55504D", 0.20),
             on_primary_container: color("#55504D"),
             secondary: color("#8EBABB"),
             on_secondary: color("#11100F"),
-            secondary_container: color("#1E1C1B"),
+            secondary_container: mix("#11100F", "#8EBABB", 0.20),
             on_secondary_container: color("#8EBABB"),
             tertiary: color("#AF8F6B"),
             on_tertiary: color("#11100F"),
-            tertiary_container: color("#1E1C1B"),
+            tertiary_container: mix("#11100F", "#AF8F6B", 0.20),
             on_tertiary_container: color("#AF8F6B"),
             error: color("#B5745A"),
             on_error: color("#11100F"),
-            error_container: color("#1E1C1B"),
+            error_container: mix("#11100F", "#B5745A", 0.20),
             on_error_container: color("#B5745A"),
             outline: color("#33302D"),
             outline_variant: color("#22201E"),

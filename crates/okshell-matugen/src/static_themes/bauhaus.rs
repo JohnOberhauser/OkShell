@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn bauhaus(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn bauhaus(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#E37B66"),
             primary: color("#E37B66"),
             on_primary: color("#101318"),
-            primary_container: color("#222733"),
+            primary_container: mix("#101318", "#E37B66", 0.20),
             on_primary_container: color("#E37B66"),
             secondary: color("#E0A568"),
             on_secondary: color("#101318"),
-            secondary_container: color("#222733"),
+            secondary_container: mix("#101318", "#E0A568", 0.20),
             on_secondary_container: color("#E0A568"),
             tertiary: color("#809D9E"),
             on_tertiary: color("#101318"),
-            tertiary_container: color("#222733"),
+            tertiary_container: mix("#101318", "#809D9E", 0.20),
             on_tertiary_container: color("#809D9E"),
             error: color("#CB886D"),
             on_error: color("#101318"),
-            error_container: color("#222733"),
+            error_container: mix("#101318", "#CB886D", 0.20),
             on_error_container: color("#CB886D"),
             outline: color("#98A0AE"),
             outline_variant: color("#2B3040"),

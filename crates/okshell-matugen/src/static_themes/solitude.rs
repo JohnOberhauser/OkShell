@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn solitude(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn solitude(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#798186"),
             primary: color("#798186"),
             on_primary: color("#101315"),
-            primary_container: color("#1a1d1f"),
+            primary_container: mix("#101315", "#798186", 0.20),
             on_primary_container: color("#a8adb0"),
             secondary: color("#a8adb0"),
             on_secondary: color("#101315"),
-            secondary_container: color("#1a1d1f"),
+            secondary_container: mix("#101315", "#a8adb0", 0.20),
             on_secondary_container: color("#a8adb0"),
             tertiary: color("#de6145"),
             on_tertiary: color("#101315"),
-            tertiary_container: color("#1a1d1f"),
+            tertiary_container: mix("#101315", "#de6145", 0.20),
             on_tertiary_container: color("#de6145"),
             error: color("#de6145"),
             on_error: color("#101315"),
-            error_container: color("#1a1d1f"),
+            error_container: mix("#101315", "#de6145", 0.20),
             on_error_container: color("#de6145"),
             outline: color("#565d60"),
             outline_variant: color("#343d41"),

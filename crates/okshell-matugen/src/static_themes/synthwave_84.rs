@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn synthwave84(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn synthwave84(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#FF536C"),
             primary: color("#FF536C"),
             on_primary: color("#C4C4D6"),
-            primary_container: color("#343640"),
+            primary_container: mix("#18191F", "#FF536C", 0.20),
             on_primary_container: color("#FF536C"),
             secondary: color("#7F9FFF"),
             on_secondary: color("#C4C4D6"),
-            secondary_container: color("#343640"),
+            secondary_container: mix("#18191F", "#7F9FFF", 0.20),
             on_secondary_container: color("#7F9FFF"),
             tertiary: color("#C080FF"),
             on_tertiary: color("#C4C4D6"),
-            tertiary_container: color("#343640"),
+            tertiary_container: mix("#18191F", "#C080FF", 0.20),
             on_tertiary_container: color("#C080FF"),
             error: color("#FF536C"),
             on_error: color("#C4C4D6"),
-            error_container: color("#343640"),
+            error_container: mix("#18191F", "#FF536C", 0.20),
             on_error_container: color("#FF536C"),
             outline: color("#484953"),
             outline_variant: color("#343640"),

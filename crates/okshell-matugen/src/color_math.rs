@@ -1,4 +1,4 @@
-use crate::json_struct::{ThemedColor, color, tc};
+use crate::json_struct::{ThemedColor, color};
 
 fn srgb_to_linear(c: f32) -> f32 {
     if c <= 0.04045 {

@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn everforest_dark_hard(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn everforest_dark_hard(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#7FBBB3"),
             primary: color("#A7C080"),
             on_primary: color("#1E2326"),
-            primary_container: color("#3C4841"),
+            primary_container: mix("#1E2326", "#A7C080", 0.20),
             on_primary_container: color("#A7C080"),
             secondary: color("#7FBBB3"),
             on_secondary: color("#1E2326"),
-            secondary_container: color("#384B55"),
+            secondary_container: mix("#1E2326", "#7FBBB3", 0.20),
             on_secondary_container: color("#7FBBB3"),
             tertiary: color("#83C092"),
             on_tertiary: color("#1E2326"),
-            tertiary_container: color("#3C4841"),
+            tertiary_container: mix("#1E2326", "#83C092", 0.20),
             on_tertiary_container: color("#83C092"),
             error: color("#E67E80"),
             on_error: color("#1E2326"),
-            error_container: color("#493B40"),
+            error_container: mix("#1E2326", "#E67E80", 0.20),
             on_error_container: color("#E67E80"),
             outline: color("#7A8478"),
             outline_variant: color("#374145"),

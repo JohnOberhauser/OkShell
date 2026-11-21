@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn kanagawa_lotus(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn kanagawa_lotus(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#4d699b"),
             primary: color("#4d699b"),
             on_primary: color("#f2ecbc"),
-            primary_container: color("#c7d7e0"),
+            primary_container: mix("#f2ecbc", "#4d699b", 0.25),
             on_primary_container: color("#4d699b"),
             secondary: color("#624c83"),
             on_secondary: color("#f2ecbc"),
-            secondary_container: color("#c9cbd1"),
+            secondary_container: mix("#f2ecbc", "#624c83", 0.25),
             on_secondary_container: color("#624c83"),
             tertiary: color("#597b75"),
             on_tertiary: color("#f2ecbc"),
-            tertiary_container: color("#d7e3d8"),
+            tertiary_container: mix("#f2ecbc", "#597b75", 0.25),
             on_tertiary_container: color("#597b75"),
             error: color("#e82424"),
             on_error: color("#f2ecbc"),
-            error_container: color("#d9a594"),
+            error_container: mix("#f2ecbc", "#e82424", 0.25),
             on_error_container: color("#c84053"),
             outline: color("#716e61"),
             outline_variant: color("#a09cac"),

@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn crimson_moonlight(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn crimson_moonlight(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#e15774"),
             primary: color("#e15774"),
             on_primary: color("#0f0e0e"),
-            primary_container: color("#201c1c"),
+            primary_container: mix("#0f0e0e", "#e15774", 0.20),
             on_primary_container: color("#e15774"),
             secondary: color("#fca2ae"),
             on_secondary: color("#0f0e0e"),
-            secondary_container: color("#201c1c"),
+            secondary_container: mix("#0f0e0e", "#fca2ae", 0.20),
             on_secondary_container: color("#fca2ae"),
             tertiary: color("#714e75"),
             on_tertiary: color("#0f0e0e"),
-            tertiary_container: color("#201c1c"),
+            tertiary_container: mix("#0f0e0e", "#714e75", 0.20),
             on_tertiary_container: color("#714e75"),
             error: color("#dd5571"),
             on_error: color("#0f0e0e"),
-            error_container: color("#201c1c"),
+            error_container: mix("#0f0e0e", "#dd5571", 0.20),
             on_error_container: color("#dd5571"),
             outline: color("#796769"),
             outline_variant: color("#201c1c"),

@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn solarized_light(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn solarized_light(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#268bd2"),
             primary: color("#268bd2"),
             on_primary: color("#fdf6e3"),
-            primary_container: color("#eee8d5"),
+            primary_container: mix("#fdf6e3", "#268bd2", 0.25),
             on_primary_container: color("#268bd2"),
             secondary: color("#2aa198"),
             on_secondary: color("#fdf6e3"),
-            secondary_container: color("#eee8d5"),
+            secondary_container: mix("#fdf6e3", "#2aa198", 0.25),
             on_secondary_container: color("#2aa198"),
             tertiary: color("#b58900"),
             on_tertiary: color("#fdf6e3"),
-            tertiary_container: color("#eee8d5"),
+            tertiary_container: mix("#fdf6e3", "#b58900", 0.25),
             on_tertiary_container: color("#b58900"),
             error: color("#dc322f"),
             on_error: color("#fdf6e3"),
-            error_container: color("#eee8d5"),
+            error_container: mix("#fdf6e3", "#dc322f", 0.25),
             on_error_container: color("#dc322f"),
             outline: color("#657b83"),
             outline_variant: color("#93a1a1"),

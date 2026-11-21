@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn oceanic_next(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn oceanic_next(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#6699CC"),
             primary: color("#6699CC"),
             on_primary: color("#D8DEE9"),
-            primary_container: color("#343D46"),
+            primary_container: mix("#1B2B34", "#6699CC", 0.20),
             on_primary_container: color("#6699CC"),
             secondary: color("#5FB3B3"),
             on_secondary: color("#D8DEE9"),
-            secondary_container: color("#343D46"),
+            secondary_container: mix("#1B2B34", "#5FB3B3", 0.20),
             on_secondary_container: color("#5FB3B3"),
             tertiary: color("#99C794"),
             on_tertiary: color("#D8DEE9"),
-            tertiary_container: color("#343D46"),
+            tertiary_container: mix("#1B2B34", "#99C794", 0.20),
             on_tertiary_container: color("#99C794"),
             error: color("#EC5F67"),
             on_error: color("#D8DEE9"),
-            error_container: color("#343D46"),
+            error_container: mix("#1B2B34", "#EC5F67", 0.20),
             on_error_container: color("#EC5F67"),
             outline: color("#4F5B66"),
             outline_variant: color("#343D46"),

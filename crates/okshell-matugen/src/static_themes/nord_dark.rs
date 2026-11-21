@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn nord_dark(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn nord_dark(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#88C0D0"),
             primary: color("#88C0D0"),
             on_primary: color("#2E3440"),
-            primary_container: color("#3B4252"),
+            primary_container: mix("#2E3440", "#88C0D0", 0.20),
             on_primary_container: color("#88C0D0"),
             secondary: color("#81A1C1"),
             on_secondary: color("#2E3440"),
-            secondary_container: color("#3B4252"),
+            secondary_container: mix("#2E3440", "#81A1C1", 0.20),
             on_secondary_container: color("#81A1C1"),
             tertiary: color("#8FBCBB"),
             on_tertiary: color("#2E3440"),
-            tertiary_container: color("#3B4252"),
+            tertiary_container: mix("#2E3440", "#8FBCBB", 0.20),
             on_tertiary_container: color("#8FBCBB"),
             error: color("#BF616A"),
             on_error: color("#2E3440"),
-            error_container: color("#3B4252"),
+            error_container: mix("#2E3440", "#BF616A", 0.20),
             on_error_container: color("#BF616A"),
             outline: color("#4C566A"),
             outline_variant: color("#434C5E"),

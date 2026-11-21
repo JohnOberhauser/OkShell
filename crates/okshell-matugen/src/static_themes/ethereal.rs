@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn ethereal(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn ethereal(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#7d82d9"),
             primary: color("#7d82d9"),
             on_primary: color("#060B1E"),
-            primary_container: color("#1c2342"),
+            primary_container: mix("#060B1E", "#7d82d9", 0.20),
             on_primary_container: color("#7d82d9"),
             secondary: color("#ffcead"),
             on_secondary: color("#060B1E"),
-            secondary_container: color("#1c2342"),
+            secondary_container: mix("#060B1E", "#ffcead", 0.20),
             on_secondary_container: color("#ffcead"),
             tertiary: color("#c89dc1"),
             on_tertiary: color("#060B1E"),
-            tertiary_container: color("#1c2342"),
+            tertiary_container: mix("#060B1E", "#c89dc1", 0.20),
             on_tertiary_container: color("#c89dc1"),
             error: color("#ED5B5A"),
             on_error: color("#060B1E"),
-            error_container: color("#1c2342"),
+            error_container: mix("#060B1E", "#ED5B5A", 0.20),
             on_error_container: color("#ED5B5A"),
             outline: color("#6d7db6"),
             outline_variant: color("#3C486D"),

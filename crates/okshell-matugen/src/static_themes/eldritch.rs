@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn eldritch(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn eldritch(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#37f499"),
             primary: color("#37f499"),
             on_primary: color("#212337"),
-            primary_container: color("#323449"),
+            primary_container: mix("#212337", "#37f499", 0.20),
             on_primary_container: color("#37f499"),
             secondary: color("#04d1f9"),
             on_secondary: color("#212337"),
-            secondary_container: color("#323449"),
+            secondary_container: mix("#212337", "#04d1f9", 0.20),
             on_secondary_container: color("#04d1f9"),
             tertiary: color("#a48cf2"),
             on_tertiary: color("#212337"),
-            tertiary_container: color("#323449"),
+            tertiary_container: mix("#212337", "#a48cf2", 0.20),
             on_tertiary_container: color("#a48cf2"),
             error: color("#f16c75"),
             on_error: color("#212337"),
-            error_container: color("#323449"),
+            error_container: mix("#212337", "#f16c75", 0.20),
             on_error_container: color("#f16c75"),
             outline: color("#7081d0"),
             outline_variant: color("#3d4060"),

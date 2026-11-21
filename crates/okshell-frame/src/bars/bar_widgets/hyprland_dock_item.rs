@@ -194,7 +194,7 @@ impl Component for HyprlandDockItemModel {
                 gtk::Button {
                     #[watch]
                     set_css_classes: if model.is_selected {
-                        &["ok-button-primary", "ok-bar-widget"]
+                        &["ok-button-primary-container", "ok-bar-widget"]
                     } else {
                         &["ok-button-surface", "ok-bar-widget"]
                     },

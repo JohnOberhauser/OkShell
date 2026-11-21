@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn rose_pine_moon(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn rose_pine_moon(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#C4A7E7"),
             primary: color("#C4A7E7"),
             on_primary: color("#232136"),
-            primary_container: color("#393552"),
+            primary_container: mix("#232136", "#C4A7E7", 0.20),
             on_primary_container: color("#C4A7E7"),
             secondary: color("#9CCFD8"),
             on_secondary: color("#232136"),
-            secondary_container: color("#393552"),
+            secondary_container: mix("#232136", "#9CCFD8", 0.20),
             on_secondary_container: color("#9CCFD8"),
             tertiary: color("#EA9A97"),
             on_tertiary: color("#232136"),
-            tertiary_container: color("#393552"),
+            tertiary_container: mix("#232136", "#EA9A97", 0.20),
             on_tertiary_container: color("#EA9A97"),
             error: color("#EB6F92"),
             on_error: color("#232136"),
-            error_container: color("#393552"),
+            error_container: mix("#232136", "#EB6F92", 0.20),
             on_error_container: color("#EB6F92"),
             outline: color("#6E6A86"),
             outline_variant: color("#44415A"),

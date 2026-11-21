@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn black_turq(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn black_turq(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#ADF0E9"),
             primary: color("#ADF0E9"),
             on_primary: color("#0a0a0a"),
-            primary_container: color("#141416"),
+            primary_container: mix("#0a0a0a", "#ADF0E9", 0.20),
             on_primary_container: color("#ADF0E9"),
             secondary: color("#8FECD5"),
             on_secondary: color("#0a0a0a"),
-            secondary_container: color("#141416"),
+            secondary_container: mix("#0a0a0a", "#8FECD5", 0.20),
             on_secondary_container: color("#8FECD5"),
             tertiary: color("#A9D1D7"),
             on_tertiary: color("#0a0a0a"),
-            tertiary_container: color("#141416"),
+            tertiary_container: mix("#0a0a0a", "#A9D1D7", 0.20),
             on_tertiary_container: color("#A9D1D7"),
             error: color("#D35F5F"),
             on_error: color("#0a0a0a"),
-            error_container: color("#141416"),
+            error_container: mix("#0a0a0a", "#D35F5F", 0.20),
             on_error_container: color("#D35F5F"),
             outline: color("#485362"),
             outline_variant: color("#322F3B"),

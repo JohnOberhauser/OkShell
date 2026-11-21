@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn varda(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn varda(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#52677C"),
             primary: color("#52677C"),
             on_primary: color("#D0EBEE"),
-            primary_container: color("#38414F"),
+            primary_container: mix("#0C0E11", "#52677C", 0.20),
             on_primary_container: color("#52677C"),
             secondary: color("#665276"),
             on_secondary: color("#D0EBEE"),
-            secondary_container: color("#38414F"),
+            secondary_container: mix("#0C0E11", "#665276", 0.20),
             on_secondary_container: color("#665276"),
             tertiary: color("#257B76"),
             on_tertiary: color("#D0EBEE"),
-            tertiary_container: color("#38414F"),
+            tertiary_container: mix("#0C0E11", "#257B76", 0.20),
             on_tertiary_container: color("#257B76"),
             error: color("#733447"),
             on_error: color("#D0EBEE"),
-            error_container: color("#38414F"),
+            error_container: mix("#0C0E11", "#733447", 0.20),
             on_error_container: color("#733447"),
             outline: color("#8295A9"),
             outline_variant: color("#38414F"),

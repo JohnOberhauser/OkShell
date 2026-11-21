@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn inky_pinky(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn inky_pinky(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#EA90A8"),
             primary: color("#EA90A8"),
             on_primary: color("#13131D"),
-            primary_container: color("#2a2a38"),
+            primary_container: mix("#13131D", "#EA90A8", 0.20),
             on_primary_container: color("#EA90A8"),
             secondary: color("#7c7ca8"),
             on_secondary: color("#13131D"),
-            secondary_container: color("#2a2a38"),
+            secondary_container: mix("#13131D", "#7c7ca8", 0.20),
             on_secondary_container: color("#7c7ca8"),
             tertiary: color("#9f859f"),
             on_tertiary: color("#13131D"),
-            tertiary_container: color("#2a2a38"),
+            tertiary_container: mix("#13131D", "#9f859f", 0.20),
             on_tertiary_container: color("#9f859f"),
             error: color("#EA90A8"),
             on_error: color("#13131D"),
-            error_container: color("#2a2a38"),
+            error_container: mix("#13131D", "#EA90A8", 0.20),
             on_error_container: color("#EA90A8"),
             outline: color("#7c7ca8"),
             outline_variant: color("#434353"),

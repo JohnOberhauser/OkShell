@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn kanagawa_dragon(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn kanagawa_dragon(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#8ba4b0"),
             primary: color("#8ba4b0"),
             on_primary: color("#1D1C19"),
-            primary_container: color("#223249"),
+            primary_container: mix("#181616", "#8ba4b0", 0.20),
             on_primary_container: color("#7FB4CA"),
             secondary: color("#8992a7"),
             on_secondary: color("#1D1C19"),
-            secondary_container: color("#1D1C19"),
+            secondary_container: mix("#181616", "#8992a7", 0.20),
             on_secondary_container: color("#949fb5"),
             tertiary: color("#8ea4a2"),
             on_tertiary: color("#1D1C19"),
-            tertiary_container: color("#1D1C19"),
+            tertiary_container: mix("#181616", "#8ea4a2", 0.20),
             on_tertiary_container: color("#8ea4a2"),
             error: color("#E82424"),
             on_error: color("#1D1C19"),
-            error_container: color("#43242B"),
+            error_container: mix("#181616", "#E82424", 0.20),
             on_error_container: color("#E46876"),
             outline: color("#7a8382"),
             outline_variant: color("#625e5a"),

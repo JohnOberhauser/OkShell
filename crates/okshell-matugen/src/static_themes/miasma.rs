@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn miasma(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn miasma(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#5f875f"),
             primary: color("#5f875f"),
             on_primary: color("#222222"),
-            primary_container: color("#2c2c2c"),
+            primary_container: mix("#222222", "#5f875f", 0.20),
             on_primary_container: color("#5f875f"),
             secondary: color("#c9a554"),
             on_secondary: color("#222222"),
-            secondary_container: color("#2c2c2c"),
+            secondary_container: mix("#222222", "#c9a554", 0.20),
             on_secondary_container: color("#c9a554"),
             tertiary: color("#bb7744"),
             on_tertiary: color("#222222"),
-            tertiary_container: color("#2c2c2c"),
+            tertiary_container: mix("#222222", "#bb7744", 0.20),
             on_tertiary_container: color("#bb7744"),
             error: color("#685742"),
             on_error: color("#c2c2b0"),
-            error_container: color("#2c2c2c"),
+            error_container: mix("#222222", "#685742", 0.20),
             on_error_container: color("#685742"),
             outline: color("#666666"),
             outline_variant: color("#3a3a3a"),

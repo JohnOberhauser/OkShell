@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn sunset_cloud(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn sunset_cloud(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#bbc373"),
             primary: color("#bbc373"),
             on_primary: color("#0e0f06"),
-            primary_container: color("#262904"),
+            primary_container: mix("#0e0f06", "#bbc373", 0.20),
             on_primary_container: color("#bbc373"),
             secondary: color("#cd6d91"),
             on_secondary: color("#0e0f06"),
-            secondary_container: color("#262904"),
+            secondary_container: mix("#0e0f06", "#cd6d91", 0.20),
             on_secondary_container: color("#cd6d91"),
             tertiary: color("#71d17c"),
             on_tertiary: color("#0e0f06"),
-            tertiary_container: color("#262904"),
+            tertiary_container: mix("#0e0f06", "#71d17c", 0.20),
             on_tertiary_container: color("#71d17c"),
             error: color("#bc5050"),
             on_error: color("#0e0f06"),
-            error_container: color("#262904"),
+            error_container: mix("#0e0f06", "#bc5050", 0.20),
             on_error_container: color("#bc5050"),
             outline: color("#5d6f74"),
             outline_variant: color("#262904"),

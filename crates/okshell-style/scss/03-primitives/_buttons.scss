@@ -73,6 +73,13 @@ button.ok-button-primary {
     @include state-layers("--primary", "--on-primary");
 }
 
+.ok-button-primary-container {
+    @include button-base("--primary-container", "--on-primary-container");
+}
+button.ok-button-primary-container {
+    @include state-layers("--primary-container", "--on-primary-container");
+}
+
 .ok-button-error {
     @include button-base("--surface", "--on-surface", "--error");
 }

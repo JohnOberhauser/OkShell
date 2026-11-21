@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn poimandres(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn poimandres(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#ADD7FF"),
             primary: color("#ADD7FF"),
             on_primary: color("#303340"),
-            primary_container: color("#303340"),
+            primary_container: mix("#1B1E28", "#ADD7FF", 0.20),
             on_primary_container: color("#ADD7FF"),
             secondary: color("#5DE4C7"),
             on_secondary: color("#303340"),
-            secondary_container: color("#303340"),
+            secondary_container: mix("#1B1E28", "#5DE4C7", 0.20),
             on_secondary_container: color("#5DE4C7"),
             tertiary: color("#FCC5E9"),
             on_tertiary: color("#303340"),
-            tertiary_container: color("#303340"),
+            tertiary_container: mix("#1B1E28", "#FCC5E9", 0.20),
             on_tertiary_container: color("#FCC5E9"),
             error: color("#D0679D"),
             on_error: color("#303340"),
-            error_container: color("#303340"),
+            error_container: mix("#1B1E28", "#D0679D", 0.20),
             on_error_container: color("#D0679D"),
             outline: color("#767C9D"),
             outline_variant: color("#506477"),

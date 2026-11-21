@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn nightfox(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn nightfox(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#719cd6"),
             primary: color("#719cd6"),
             on_primary: color("#131a24"),
-            primary_container: color("#2b3b51"),
+            primary_container: mix("#192330", "#719cd6", 0.20),
             on_primary_container: color("#719cd6"),
             secondary: color("#9d79d6"),
             on_secondary: color("#131a24"),
-            secondary_container: color("#2b3b51"),
+            secondary_container: mix("#192330", "#9d79d6", 0.20),
             on_secondary_container: color("#9d79d6"),
             tertiary: color("#63cdcf"),
             on_tertiary: color("#131a24"),
-            tertiary_container: color("#2b3b51"),
+            tertiary_container: mix("#192330", "#63cdcf", 0.20),
             on_tertiary_container: color("#63cdcf"),
             error: color("#c94f6d"),
             on_error: color("#131a24"),
-            error_container: color("#2b3b51"),
+            error_container: mix("#192330", "#c94f6d", 0.20),
             on_error_container: color("#c94f6d"),
             outline: color("#39506d"),
             outline_variant: color("#29394f"),

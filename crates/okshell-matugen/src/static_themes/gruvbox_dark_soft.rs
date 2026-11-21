@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn gruvbox_dark_soft(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn gruvbox_dark_soft(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#83A598"),
             primary: color("#83A598"),
             on_primary: color("#32302F"),
-            primary_container: color("#504945"),
+            primary_container: mix("#32302F", "#83A598", 0.20),
             on_primary_container: color("#83A598"),
             secondary: color("#B8BB26"),
             on_secondary: color("#32302F"),
-            secondary_container: color("#504945"),
+            secondary_container: mix("#32302F", "#B8BB26", 0.20),
             on_secondary_container: color("#B8BB26"),
             tertiary: color("#8EC07C"),
             on_tertiary: color("#32302F"),
-            tertiary_container: color("#504945"),
+            tertiary_container: mix("#32302F", "#8EC07C", 0.20),
             on_tertiary_container: color("#8EC07C"),
             error: color("#FB4934"),
             on_error: color("#32302F"),
-            error_container: color("#504945"),
+            error_container: mix("#32302F", "#FB4934", 0.20),
             on_error_container: color("#FB4934"),
             outline: color("#928374"),
             outline_variant: color("#504945"),

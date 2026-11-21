@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn blood_rust(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn blood_rust(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#7C545F"),
             primary: color("#7C545F"),
             on_primary: color("#AFB3BD"),
-            primary_container: color("#293642"),
+            primary_container: mix("#1F2932", "#7C545F", 0.20),
             on_primary_container: color("#7C545F"),
             secondary: color("#54737C"),
             on_secondary: color("#AFB3BD"),
-            secondary_container: color("#293642"),
+            secondary_container: mix("#1F2932", "#54737C", 0.20),
             on_secondary_container: color("#54737C"),
             tertiary: color("#547C71"),
             on_tertiary: color("#AFB3BD"),
-            tertiary_container: color("#293642"),
+            tertiary_container: mix("#1F2932", "#547C71", 0.20),
             on_tertiary_container: color("#547C71"),
             error: color("#7C545F"),
             on_error: color("#AFB3BD"),
-            error_container: color("#293642"),
+            error_container: mix("#1F2932", "#7C545F", 0.20),
             on_error_container: color("#7C545F"),
             outline: color("#2F3E4C"),
             outline_variant: color("#2C3A47"),

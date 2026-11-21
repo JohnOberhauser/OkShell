@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn forest_stream(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn forest_stream(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#41b193"),
             primary: color("#41b193"),
             on_primary: color("#0b0c0b"),
-            primary_container: color("#101c14"),
+            primary_container: mix("#0b0c0b", "#41b193", 0.20),
             on_primary_container: color("#41b193"),
             secondary: color("#3788a2"),
             on_secondary: color("#0b0c0b"),
-            secondary_container: color("#101c14"),
+            secondary_container: mix("#0b0c0b", "#3788a2", 0.20),
             on_secondary_container: color("#3788a2"),
             tertiary: color("#7a77cd"),
             on_tertiary: color("#0b0c0b"),
-            tertiary_container: color("#101c14"),
+            tertiary_container: mix("#0b0c0b", "#7a77cd", 0.20),
             on_tertiary_container: color("#7a77cd"),
             error: color("#c7566f"),
             on_error: color("#0b0c0b"),
-            error_container: color("#101c14"),
+            error_container: mix("#0b0c0b", "#c7566f", 0.20),
             on_error_container: color("#c7566f"),
             outline: color("#3c7153"),
             outline_variant: color("#0d1f0f"),

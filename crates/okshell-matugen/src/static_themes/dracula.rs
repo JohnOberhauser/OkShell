@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn dracula(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn dracula(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#BD93F9"),
             primary: color("#BD93F9"),
             on_primary: color("#282A36"),
-            primary_container: color("#44475A"),
+            primary_container: mix("#282A36", "#BD93F9", 0.20),
             on_primary_container: color("#BD93F9"),
             secondary: color("#FF79C6"),
             on_secondary: color("#282A36"),
-            secondary_container: color("#44475A"),
+            secondary_container: mix("#282A36", "#FF79C6", 0.20),
             on_secondary_container: color("#FF79C6"),
             tertiary: color("#8BE9FD"),
             on_tertiary: color("#282A36"),
-            tertiary_container: color("#44475A"),
+            tertiary_container: mix("#282A36", "#8BE9FD", 0.20),
             on_tertiary_container: color("#8BE9FD"),
             error: color("#FF5555"),
             on_error: color("#282A36"),
-            error_container: color("#44475A"),
+            error_container: mix("#282A36", "#FF5555", 0.20),
             on_error_container: color("#FF5555"),
             outline: color("#6272A4"),
             outline_variant: color("#44475A"),

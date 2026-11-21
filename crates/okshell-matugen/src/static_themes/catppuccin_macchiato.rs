@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn catppuccin_macchiato(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn catppuccin_macchiato(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#b7bdf8"),
             primary: color("#b7bdf8"),
             on_primary: color("#363a4f"),
-            primary_container: color("#363a4f"),
+            primary_container: mix("#24273a", "#b7bdf8", 0.20),
             on_primary_container: color("#b7bdf8"),
             secondary: color("#f0c6c6"),
             on_secondary: color("#363a4f"),
-            secondary_container: color("#363a4f"),
+            secondary_container: mix("#24273a", "#f0c6c6", 0.20),
             on_secondary_container: color("#f0c6c6"),
             tertiary: color("#8bd5ca"),
             on_tertiary: color("#363a4f"),
-            tertiary_container: color("#363a4f"),
+            tertiary_container: mix("#24273a", "#8bd5ca", 0.20),
             on_tertiary_container: color("#8bd5ca"),
             error: color("#ed8796"),
             on_error: color("#363a4f"),
-            error_container: color("#363a4f"),
+            error_container: mix("#24273a", "#ed8796", 0.20),
             on_error_container: color("#ed8796"),
             outline: color("#a5adcb"),
             outline_variant: color("#6e738d"),

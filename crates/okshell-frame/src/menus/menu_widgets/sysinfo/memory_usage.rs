@@ -50,6 +50,7 @@ impl Component for MemoryUsageModel {
 
                 #[wrap(Some)]
                 set_start_widget = &gtk::Image {
+                    add_css_class: "image-surface",
                     set_hexpand: true,
                     set_halign: gtk::Align::End,
                     set_valign: gtk::Align::Center,

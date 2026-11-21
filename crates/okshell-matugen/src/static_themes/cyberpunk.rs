@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn cyberpunk(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn cyberpunk(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#00FFFF"),
             primary: color("#00FFFF"),
             on_primary: color("#000000"),
-            primary_container: color("#4B0082"),
+            primary_container: mix("#000000", "#00FFFF", 0.20),
             on_primary_container: color("#00FFFF"),
             secondary: color("#FF00FF"),
             on_secondary: color("#000000"),
-            secondary_container: color("#4B0082"),
+            secondary_container: mix("#000000", "#FF00FF", 0.20),
             on_secondary_container: color("#FF00FF"),
             tertiary: color("#00FF00"),
             on_tertiary: color("#000000"),
-            tertiary_container: color("#4B0082"),
+            tertiary_container: mix("#000000", "#00FF00", 0.20),
             on_tertiary_container: color("#00FF00"),
             error: color("#FF0000"),
             on_error: color("#000000"),
-            error_container: color("#4B0082"),
+            error_container: mix("#000000", "#FF0000", 0.20),
             on_error_container: color("#FF0000"),
             outline: color("#4B0082"),
             outline_variant: color("#00008B"),

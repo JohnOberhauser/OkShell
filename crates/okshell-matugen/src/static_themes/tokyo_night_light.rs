@@ -1,4 +1,5 @@
 use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::color_math::mix;
 
 pub fn tokyo_night_light(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +41,19 @@ pub fn tokyo_night_light(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#2959aa"),
             primary: color("#2959aa"),
             on_primary: color("#e6e7ed"),
-            primary_container: color("#d5d6db"),
+            primary_container: mix("#e6e7ed", "#2959aa", 0.25),
             on_primary_container: color("#2959aa"),
             secondary: color("#5a3e8e"),
             on_secondary: color("#e6e7ed"),
-            secondary_container: color("#d5d6db"),
+            secondary_container: mix("#e6e7ed", "#5a3e8e", 0.25),
             on_secondary_container: color("#5a3e8e"),
             tertiary: color("#33635c"),
             on_tertiary: color("#e6e7ed"),
-            tertiary_container: color("#d5d6db"),
+            tertiary_container: mix("#e6e7ed", "#33635c", 0.25),
             on_tertiary_container: color("#33635c"),
             error: color("#8c4351"),
             on_error: color("#e6e7ed"),
-            error_container: color("#d5d6db"),
+            error_container: mix("#e6e7ed", "#8c4351", 0.25),
             on_error_container: color("#8c4351"),
             outline: color("#6c6e75"),
             outline_variant: color("#c4c5ca"),
