@@ -59,9 +59,9 @@ impl Component for AppLauncherItemModel {
         gtk::Button {
             #[watch]
             set_css_classes: if model.is_selected {
-                &["ok-button-surface", "app-launcher-item", "selected"]
+                &["ok-button-surface-primary-container", "app-launcher-item", "selected"]
             } else {
-                &["ok-button-surface", "app-launcher-item"]
+                &["ok-button-surface-primary-container", "app-launcher-item"]
             },
             set_vexpand: false,
             set_hexpand: true,

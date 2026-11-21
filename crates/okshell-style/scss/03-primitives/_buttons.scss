@@ -66,6 +66,36 @@ button.ok-button-surface.ok-button-no-disabled {
     }
 }
 
+.ok-button-surface-primary-container {
+    @include button-base("--surface", "--on-surface");
+}
+button.ok-button-surface-primary-container {
+    @include state-layers("--surface", "--on-surface");
+    &:disabled {
+        background-color: var(--surface);
+    }
+}
+.ok-button-surface-primary-container.selected {
+    color: var(--on-primary-container);
+    background-color: var(--primary-container);
+    image,
+    label {
+        color: var(--on-primary-container);
+    }
+}
+button.ok-button-surface-primary-container.selected {
+    @include state-layers("--primary-container", "--on-primary-container");
+}
+button.ok-button-surface-primary-container.ok-button-no-disabled {
+    &:disabled {
+        background-color: var(--surface);
+        color: var(--on-surface);
+        > * {
+            color: var(--on-surface);
+        }
+    }
+}
+
 .ok-button-primary {
     @include button-base("--primary", "--on-primary");
 }
@@ -115,9 +145,9 @@ button.ok-button-error {
     }
 }
 
-.ok-button-bordered {
-    border: var(--border-width) solid var(--outline);
+.ok-button-primary-bordered {
+    border: var(--border-width) solid var(--primary-container);
     &:hover {
-        border: 2px solid var(--on-surface);
+        border: var(--border-width) solid var(--on-surface);
     }
 }
