@@ -123,6 +123,7 @@ impl BarWidget {
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, JsonSchema)]
 pub struct CavaConfig {
     pub bars: u16,
+    pub bar_width: u32,
     pub autosens: bool,
     pub stereo: bool,
     pub noise_reduction: OrdF64,
@@ -136,6 +137,7 @@ impl Default for CavaConfig {
     fn default() -> Self {
         Self {
             bars: 32,
+            bar_width: 3,
             autosens: true,
             stereo: false,
             noise_reduction: OrdF64(0.77),

@@ -42,6 +42,12 @@
     border-bottom-left-radius: 0;
 }
 
+.cava-bar levelbar trough,
+.cava-bar levelbar block {
+    min-width: 0;
+    min-height: 0;
+}
+
 .bar-left .cava-bar-widget,
 .bar-right .cava-bar-widget {
     min-width: 48px;

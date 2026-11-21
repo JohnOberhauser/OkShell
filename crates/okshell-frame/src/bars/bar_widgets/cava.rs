@@ -151,6 +151,7 @@ impl Component for CavaModel {
     fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>, _root: &Self::Root) {
         match message {
             CavaInput::SetConfig(config) => {
+                let width_changed = self.config.borrow().bar_width != config.bar_width;
                 self.config.send_if_modified(|current| {
                     if *current == config {
                         false
@@ -159,6 +160,12 @@ impl Component for CavaModel {
                         true
                     }
                 });
+                // Bar width is purely visual: resize in place, no cava restart.
+                if width_changed {
+                    for bar in &self.bars {
+                        self.apply_bar_width(bar);
+                    }
+                }
             }
         }
     }
@@ -273,10 +280,21 @@ impl CavaModel {
         container.append(&start);
         container.append(&end);
 
-        CavaBar {
+        let bar = CavaBar {
             container,
             start,
             end,
+        };
+        self.apply_bar_width(&bar);
+        bar
+    }
+
+    /// Thickness of a bar along the direction the bars are stacked.
+    fn apply_bar_width(&self, bar: &CavaBar) {
+        let width = self.config.borrow().bar_width as i32;
+        match self.orientation {
+            gtk::Orientation::Vertical => bar.container.set_height_request(width),
+            _ => bar.container.set_width_request(width),
         }
     }
 

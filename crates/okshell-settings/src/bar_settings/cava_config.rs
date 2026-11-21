@@ -11,6 +11,7 @@ pub struct CavaConfigModel {
 #[derive(Debug)]
 pub enum CavaConfigInput {
     BarsChanged(u16),
+    BarWidthChanged(u32),
     AutosensChanged(bool),
     StereoChanged(bool),
     NoiseReductionChanged(f64),
@@ -57,6 +58,28 @@ impl Component for CavaConfigModel {
                     set_value: model.config.bars as f64,
                     connect_value_changed[sender] => move |s| {
                         sender.input(CavaConfigInput::BarsChanged(s.value() as u16));
+                    },
+                },
+            },
+
+            // Bar width
+            gtk::Box {
+                set_orientation: gtk::Orientation::Horizontal,
+                set_spacing: 8,
+
+                gtk::Label {
+                    add_css_class: "label-small",
+                    set_label: "Bar width (px)",
+                    set_halign: gtk::Align::Start,
+                    set_hexpand: true,
+                },
+
+                gtk::SpinButton {
+                    set_range: (1.0, 50.0),
+                    set_increments: (1.0, 5.0),
+                    set_value: model.config.bar_width as f64,
+                    connect_value_changed[sender] => move |s| {
+                        sender.input(CavaConfigInput::BarWidthChanged(s.value() as u32));
                     },
                 },
             },
@@ -233,6 +256,7 @@ impl Component for CavaConfigModel {
         let config = &mut self.config;
         match message {
             CavaConfigInput::BarsChanged(v) => config.bars = v,
+            CavaConfigInput::BarWidthChanged(v) => config.bar_width = v,
             CavaConfigInput::AutosensChanged(v) => config.autosens = v,
             CavaConfigInput::StereoChanged(v) => config.stereo = v,
             CavaConfigInput::NoiseReductionChanged(v) => config.noise_reduction = OrdF64(v),
