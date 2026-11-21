@@ -1,17 +1,17 @@
-.revealer-button-icon-label-icon {
-  color: var(--on-surface);
-  -gtk-icon-size: 16px;
+image.revealer-button-icon-label-icon {
+    color: var(--primary);
+    -gtk-icon-size: 16px;
 }
 
 .revealer-button-content {
-  background-color: transparent;
-  border: 2px solid var(--outline);
-  border-radius: var(--radius-widget);
-  padding: 8px;
-  opacity: 0;
-  transition: opacity 200ms ease;
+    background-color: transparent;
+    border: 2px solid var(--outline);
+    border-radius: var(--radius-widget);
+    padding: 8px;
+    opacity: 0;
+    transition: opacity 200ms ease;
 }
 
 .revealer-button-content.revealed {
-  opacity: 1;
+    opacity: 1;
 }

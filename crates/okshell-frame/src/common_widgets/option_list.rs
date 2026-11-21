@@ -85,6 +85,7 @@ fn populate<T: OptionItem>(
 
         if let Some(icon) = item.icon_name() {
             let image = gtk::Image::from_icon_name(&icon);
+            image.set_css_classes(&["revealer-button-icon-label-icon"]);
             content_box.append(&image);
         }
 
