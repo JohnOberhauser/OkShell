@@ -1,3 +1,4 @@
+mod color_math;
 pub mod css_mapping;
 pub mod json_struct;
 pub mod matugen;

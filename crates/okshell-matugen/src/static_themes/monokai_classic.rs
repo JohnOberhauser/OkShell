@@ -1,4 +1,7 @@
-use crate::json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color};
+use crate::{
+    color_math::mix,
+    json_struct::{Base16, Colors, MatugenTheme, OkShell, Palettes, color},
+};
 
 pub fn monokai_classic(okshell: OkShell) -> MatugenTheme {
     MatugenTheme {
@@ -40,19 +43,19 @@ pub fn monokai_classic(okshell: OkShell) -> MatugenTheme {
             surface_tint: color("#A9DC76"),
             primary: color("#A9DC76"),
             on_primary: color("#221F22"),
-            primary_container: color("#403E41"),
+            primary_container: mix("#221F22", "#A9DC76", 0.20),
             on_primary_container: color("#A9DC76"),
             secondary: color("#FFD866"),
             on_secondary: color("#221F22"),
-            secondary_container: color("#403E41"),
+            secondary_container: mix("#221F22", "#FFD866", 0.20),
             on_secondary_container: color("#FFD866"),
-            tertiary: color("#FF6188"),
+            tertiary: color("#AB9DF2"),
             on_tertiary: color("#221F22"),
-            tertiary_container: color("#403E41"),
-            on_tertiary_container: color("#FF6188"),
+            tertiary_container: mix("#221F22", "#AB9DF2", 0.20),
+            on_tertiary_container: color("#AB9DF2"),
             error: color("#FF6188"),
             on_error: color("#221F22"),
-            error_container: color("#403E41"),
+            error_container: mix("#221F22", "#FF6188", 0.20),
             on_error_container: color("#FF6188"),
             outline: color("#727072"),
             outline_variant: color("#5B595C"),
