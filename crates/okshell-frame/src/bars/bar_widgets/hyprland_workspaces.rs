@@ -237,8 +237,13 @@ impl HyprlandWorkspacesModel {
     }
 
     fn workspaces_with_dividers(mut workspaces: Vec<Arc<Workspace>>) -> Vec<WsRow> {
-        // Sort by monitor then id
-        workspaces.sort_by_key(|w| (w.monitor.get(), w.address.get()));
+        // Sort by monitor then address
+        workspaces.sort_by_cached_key(|w| {
+            let address = w.address.get().to_string();
+            let number = address.parse::<i64>().ok();
+            // Numeric addresses first, in numeric order; named ones after, alphabetically.
+            (w.monitor.get(), number.is_none(), number, address)
+        });
 
         let mut out = Vec::with_capacity(workspaces.len() + 4);
         let mut last_monitor: Option<MonitorId> = None;
