@@ -15,6 +15,7 @@ pub struct HyprlandWorkspacesConfigModel {
 #[derive(Debug)]
 pub enum HyprlandWorkspacesConfigInput {
     FontSelected(Option<String>),
+    UseLettersChanged(bool),
 }
 
 #[derive(Debug)]
@@ -46,14 +47,14 @@ impl Component for HyprlandWorkspacesConfigModel {
                     set_hexpand: true,
 
                     gtk::Label {
-                        add_css_class: "label-small",
-                        set_label: "Number font",
+                        add_css_class: "label-small-bold",
+                        set_label: "Font",
                         set_halign: gtk::Align::Start,
                     },
 
                     gtk::Label {
                         add_css_class: "label-small",
-                        set_label: "Show workspace numbers in this font. (none) shows icons.",
+                        set_label: "Show workspace numbers/letters in this font. (none) shows icons.",
                         set_halign: gtk::Align::Start,
                         set_xalign: 0.0,
                         set_wrap: true,
@@ -78,6 +79,44 @@ impl Component for HyprlandWorkspacesConfigModel {
                             .and_downcast::<gtk::StringObject>()
                             .map(|s| s.string().to_string());
                         sender.input(HyprlandWorkspacesConfigInput::FontSelected(selected));
+                    },
+                },
+            },
+
+            // Letters
+            gtk::Box {
+                set_orientation: gtk::Orientation::Horizontal,
+                set_spacing: 8,
+                // Only matters when numbers are shown, i.e. a font is set.
+                #[watch]
+                set_sensitive: !model.config.font.trim().is_empty(),
+
+                gtk::Box {
+                    set_orientation: gtk::Orientation::Vertical,
+                    set_hexpand: true,
+
+                    gtk::Label {
+                        add_css_class: "label-small-bold",
+                        set_label: "Use letters",
+                        set_halign: gtk::Align::Start,
+                    },
+
+                    gtk::Label {
+                        add_css_class: "label-small",
+                        set_label: "Show a, b, c… instead of 1, 2, 3…",
+                        set_halign: gtk::Align::Start,
+                        set_xalign: 0.0,
+                        set_wrap: true,
+                        set_natural_wrap_mode: gtk::NaturalWrapMode::None,
+                    },
+                },
+
+                gtk::Switch {
+                    set_valign: gtk::Align::Center,
+                    // Set before connecting so init doesn't emit a change.
+                    set_active: model.config.use_letters,
+                    connect_active_notify[sender] => move |s| {
+                        sender.input(HyprlandWorkspacesConfigInput::UseLettersChanged(s.is_active()));
                     },
                 },
             },
@@ -116,6 +155,9 @@ impl Component for HyprlandWorkspacesConfigModel {
                     Some(NONE_LABEL) | None => String::new(),
                     Some(font) => font.to_string(),
                 };
+            }
+            HyprlandWorkspacesConfigInput::UseLettersChanged(use_letters) => {
+                self.config.use_letters = use_letters;
             }
         }
         let _ = sender.output(HyprlandWorkspacesConfigOutput::Changed(self.config.clone()));

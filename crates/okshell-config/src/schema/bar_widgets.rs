@@ -93,4 +93,5 @@ impl Default for CavaConfig {
 #[serde(default)]
 pub struct HyprlandWorkspacesConfig {
     pub font: String,
+    pub use_letters: bool,
 }

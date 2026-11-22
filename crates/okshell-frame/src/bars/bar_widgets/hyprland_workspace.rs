@@ -14,6 +14,7 @@ pub(crate) struct HyprlandWorkspaceModel {
     is_active: bool,
     /// `Some(font)` -> show the workspace number in that font; `None` -> show the icon.
     number_font: Option<String>,
+    use_letters: bool,
 }
 
 #[derive(Debug)]
@@ -73,7 +74,7 @@ impl Component for HyprlandWorkspaceModel {
                         set_vexpand: true,
                         set_halign: gtk::Align::Center,
                         set_valign: gtk::Align::Center,
-                        set_label: &model.workspace.id.get().unwrap().to_string(),
+                        set_label: &workspace_label(&model.workspace.address.get().to_string(), model.use_letters),
                     },
                 }
             }
@@ -94,6 +95,7 @@ impl Component for HyprlandWorkspaceModel {
             workspace: params.workspace,
             is_active,
             number_font,
+            use_letters: params.config.use_letters,
         };
 
         let widgets = view_output!();
@@ -164,4 +166,11 @@ fn font_attrs(font: &str) -> pango::AttrList {
     let desc = pango::FontDescription::from_string(font);
     attrs.insert(pango::AttrFontDesc::new(&desc));
     attrs
+}
+
+fn workspace_label(address: &str, use_letters: bool) -> String {
+    match address.parse::<u32>() {
+        Ok(n @ 1..=26) if use_letters => char::from(b'a' + (n - 1) as u8).to_string(),
+        _ => address.to_string(),
+    }
 }
