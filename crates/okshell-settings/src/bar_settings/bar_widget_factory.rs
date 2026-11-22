@@ -1,5 +1,8 @@
 use crate::bar_settings::cava_config::{CavaConfigModel, CavaConfigOutput};
-use okshell_config::schema::bar_widgets::{BarWidget, CavaConfig};
+use crate::bar_settings::hyprland_workspaces_config::{
+    HyprlandWorkspacesConfigModel, HyprlandWorkspacesConfigOutput,
+};
+use okshell_config::schema::bar_widgets::{BarWidget, CavaConfig, HyprlandWorkspacesConfig};
 use relm4::factory::{DynamicIndex, FactoryComponent};
 use relm4::gtk::prelude::{BoxExt, ButtonExt, OrientableExt, WidgetExt};
 use relm4::{Component, ComponentController, Controller, FactorySender, gtk};
@@ -8,12 +11,20 @@ use relm4::{Component, ComponentController, Controller, FactorySender, gtk};
 pub struct ActiveWidgetModel {
     pub widget: BarWidget,
     index: DynamicIndex,
-    cava_config: Option<Controller<CavaConfigModel>>,
+    config_controller: Option<ConfigController>,
+}
+
+/// Keeps the inline config component alive for the lifetime of the row.
+#[derive(Debug)]
+enum ConfigController {
+    Cava(Controller<CavaConfigModel>),
+    HyprlandWorkspaces(Controller<HyprlandWorkspacesConfigModel>),
 }
 
 #[derive(Debug)]
 pub enum ActiveWidgetInput {
     CavaChanged(CavaConfig),
+    HyprlandWorkspacesChanged(HyprlandWorkspacesConfig),
 }
 
 #[derive(Debug)]
@@ -82,7 +93,7 @@ impl FactoryComponent for ActiveWidgetModel {
                 set_orientation: gtk::Orientation::Vertical,
                 set_spacing: 4,
                 #[watch]
-                set_visible: self.has_config(),
+                set_visible: self.config_controller.is_some(),
             },
         }
     }
@@ -91,7 +102,7 @@ impl FactoryComponent for ActiveWidgetModel {
         Self {
             widget,
             index: index.clone(),
-            cava_config: None,
+            config_controller: None,
         }
     }
 
@@ -102,9 +113,16 @@ impl FactoryComponent for ActiveWidgetModel {
         _returned_widget: &<Self::ParentWidget as relm4::factory::FactoryView>::ReturnedWidget,
         sender: FactorySender<Self>,
     ) -> Self::Widgets {
+        // Build config first so the #[watch]ed visibility is right on first draw.
+        self.config_controller = self.build_config(&sender);
+
         let widgets = view_output!();
 
-        self.build_config(&widgets.config_area, &sender);
+        match &self.config_controller {
+            Some(ConfigController::Cava(c)) => widgets.config_area.append(c.widget()),
+            Some(ConfigController::HyprlandWorkspaces(c)) => widgets.config_area.append(c.widget()),
+            None => {}
+        }
 
         widgets
     }
@@ -112,36 +130,46 @@ impl FactoryComponent for ActiveWidgetModel {
     fn update(&mut self, message: Self::Input, sender: FactorySender<Self>) {
         match message {
             ActiveWidgetInput::CavaChanged(config) => {
-                if let BarWidget::Cava(ref mut current) = self.widget {
+                if let BarWidget::Cava(current) = &mut self.widget {
                     *current = config;
                 }
-                sender
-                    .output(ActiveWidgetOutput::WidgetChanged(
-                        self.index.clone(),
-                        self.widget.clone(),
-                    ))
-                    .unwrap();
+            }
+            ActiveWidgetInput::HyprlandWorkspacesChanged(config) => {
+                if let BarWidget::HyprlandWorkspaces(current) = &mut self.widget {
+                    *current = config;
+                }
             }
         }
+        sender
+            .output(ActiveWidgetOutput::WidgetChanged(
+                self.index.clone(),
+                self.widget.clone(),
+            ))
+            .unwrap();
     }
 }
 
 impl ActiveWidgetModel {
-    fn has_config(&self) -> bool {
-        matches!(self.widget, BarWidget::Cava(_))
-    }
-
-    fn build_config(&mut self, config_area: &gtk::Box, sender: &FactorySender<Self>) {
-        if let BarWidget::Cava(config) = &self.widget {
-            let cava = CavaConfigModel::builder().launch(config.clone()).forward(
-                sender.input_sender(),
-                |output| match output {
-                    CavaConfigOutput::Changed(config) => ActiveWidgetInput::CavaChanged(config),
-                },
-            );
-
-            config_area.append(cava.widget());
-            self.cava_config = Some(cava);
+    fn build_config(&self, sender: &FactorySender<Self>) -> Option<ConfigController> {
+        match &self.widget {
+            BarWidget::Cava(config) => Some(ConfigController::Cava(
+                CavaConfigModel::builder().launch(config.clone()).forward(
+                    sender.input_sender(),
+                    |output| match output {
+                        CavaConfigOutput::Changed(c) => ActiveWidgetInput::CavaChanged(c),
+                    },
+                ),
+            )),
+            BarWidget::HyprlandWorkspaces(config) => Some(ConfigController::HyprlandWorkspaces(
+                HyprlandWorkspacesConfigModel::builder()
+                    .launch(config.clone())
+                    .forward(sender.input_sender(), |output| match output {
+                        HyprlandWorkspacesConfigOutput::Changed(c) => {
+                            ActiveWidgetInput::HyprlandWorkspacesChanged(c)
+                        }
+                    }),
+            )),
+            _ => None,
         }
     }
 }

@@ -1,6 +1,7 @@
 use okshell_config::schema::bar_widgets::HyprlandWorkspacesConfig;
 use okshell_services::hyprland_service;
 use okshell_utils::hyprland::is_an_active_workspace;
+use relm4::gtk::pango;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
 use std::sync::Arc;
@@ -11,6 +12,8 @@ use wayle_hyprland::{Workspace, WorkspaceInfo};
 pub(crate) struct HyprlandWorkspaceModel {
     workspace: Arc<Workspace>,
     is_active: bool,
+    /// `Some(font)` -> show the workspace number in that font; `None` -> show the icon.
+    number_font: Option<String>,
 }
 
 #[derive(Debug)]
@@ -48,13 +51,30 @@ impl Component for HyprlandWorkspaceModel {
                     sender.input(HyprlandWorkspaceInput::WorkspaceClicked);
                 },
 
-                #[name="image"]
-                gtk::Image {
-                    set_hexpand: true,
-                    set_vexpand: true,
+                gtk::Box {
                     set_halign: gtk::Align::Center,
                     set_valign: gtk::Align::Center,
-                    set_icon_name: Some("workspace-symbolic"),
+
+                    #[name="image"]
+                    gtk::Image {
+                        set_visible: model.number_font.is_none(),
+                        set_hexpand: true,
+                        set_vexpand: true,
+                        set_halign: gtk::Align::Center,
+                        set_valign: gtk::Align::Center,
+                        set_icon_name: Some("workspace-symbolic"),
+                    },
+
+                    #[name="label"]
+                    gtk::Label {
+                        add_css_class: "label-medium",
+                        set_visible: model.number_font.is_some(),
+                        set_hexpand: true,
+                        set_vexpand: true,
+                        set_halign: gtk::Align::Center,
+                        set_valign: gtk::Align::Center,
+                        set_label: &model.workspace.id.get().unwrap().to_string(),
+                    },
                 }
             }
         }
@@ -67,18 +87,21 @@ impl Component for HyprlandWorkspaceModel {
     ) -> ComponentParts<Self> {
         let is_active = is_an_active_workspace(&params.workspace);
 
+        let font = params.config.font.trim();
+        let number_font = (!font.is_empty()).then(|| font.to_string());
+
         let model = HyprlandWorkspaceModel {
             workspace: params.workspace,
             is_active,
+            number_font,
         };
 
         let widgets = view_output!();
 
-        if model.is_active {
-            widgets
-                .image
-                .set_icon_name(Some("workspace-selected-symbolic"));
+        if let Some(font) = &model.number_font {
+            widgets.label.set_attributes(Some(&font_attrs(font)));
         }
+        model.apply_active(&widgets);
 
         ComponentParts { model, widgets }
     }
@@ -92,17 +115,9 @@ impl Component for HyprlandWorkspaceModel {
     ) {
         match message {
             HyprlandWorkspaceInput::ActiveUpdate(workspace_infos) => {
-                self.is_active = workspace_infos
-                    .iter()
-                    .find(|p| p.address == self.workspace.address.get())
-                    .is_some();
-                if self.is_active {
-                    widgets
-                        .image
-                        .set_icon_name(Some("workspace-selected-symbolic"));
-                } else {
-                    widgets.image.set_icon_name(Some("workspace-symbolic"));
-                }
+                let address = self.workspace.address.get();
+                self.is_active = workspace_infos.iter().any(|p| p.address == address);
+                self.apply_active(widgets);
             }
             HyprlandWorkspaceInput::WorkspaceClicked => {
                 let hyprland = hyprland_service();
@@ -117,4 +132,36 @@ impl Component for HyprlandWorkspaceModel {
             }
         }
     }
+}
+
+impl HyprlandWorkspaceModel {
+    fn apply_active(&self, widgets: &HyprlandWorkspaceModelWidgets) {
+        if self.number_font.is_some() {
+            if self.is_active {
+                widgets
+                    .label
+                    .add_css_class("hyprland-workspace-text-active");
+            } else {
+                widgets
+                    .label
+                    .remove_css_class("hyprland-workspace-text-active");
+            }
+        } else {
+            let icon = if self.is_active {
+                "workspace-selected-symbolic"
+            } else {
+                "workspace-symbolic"
+            };
+            widgets.image.set_icon_name(Some(icon));
+        }
+    }
+}
+
+/// Parses a Pango font string like "JetBrains Mono Bold 11" or just
+/// "JetBrains Mono". Fields left out (e.g. size) keep the label's CSS value.
+fn font_attrs(font: &str) -> pango::AttrList {
+    let attrs = pango::AttrList::new();
+    let desc = pango::FontDescription::from_string(font);
+    attrs.insert(pango::AttrFontDesc::new(&desc));
+    attrs
 }
