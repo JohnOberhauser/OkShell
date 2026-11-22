@@ -38,6 +38,7 @@ pub(crate) struct MediaPlayerModel {
     playback_state: PlaybackState,
     shuffle_mode: ShuffleMode,
     loop_mode: LoopMode,
+    _watcher_token: WatcherToken,
 }
 
 #[derive(Debug)]
@@ -327,6 +328,7 @@ impl Component for MediaPlayerModel {
             playback_state,
             shuffle_mode,
             loop_mode,
+            _watcher_token: watcher_token,
         };
 
         let widgets = view_output!();
@@ -593,5 +595,16 @@ fn format_duration(d: Duration) -> String {
         format!("{hours}:{minutes:02}:{seconds:02}")
     } else {
         format!("{minutes}:{seconds:02}")
+    }
+}
+
+impl Drop for MediaPlayerModel {
+    fn drop(&mut self) {
+        if let Some(id) = self.track_name_scroll_source.take() {
+            id.remove();
+        }
+        if let Some(id) = self.artist_name_scroll_source.take() {
+            id.remove();
+        }
     }
 }
