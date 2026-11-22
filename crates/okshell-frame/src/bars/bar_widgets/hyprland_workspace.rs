@@ -1,3 +1,4 @@
+use okshell_config::schema::bar_widgets::HyprlandWorkspacesConfig;
 use okshell_services::hyprland_service;
 use okshell_utils::hyprland::is_an_active_workspace;
 use relm4::gtk::prelude::{ButtonExt, WidgetExt};
@@ -18,6 +19,11 @@ pub(crate) enum HyprlandWorkspaceInput {
     WorkspaceClicked,
 }
 
+pub(crate) struct HyprlandWorkspaceInit {
+    pub(crate) workspace: Arc<Workspace>,
+    pub(crate) config: HyprlandWorkspacesConfig,
+}
+
 #[derive(Debug)]
 pub(crate) enum HyprlandWorkspaceOutput {}
 
@@ -26,7 +32,7 @@ impl Component for HyprlandWorkspaceModel {
     type CommandOutput = ();
     type Input = HyprlandWorkspaceInput;
     type Output = HyprlandWorkspaceOutput;
-    type Init = Arc<Workspace>;
+    type Init = HyprlandWorkspaceInit;
 
     view! {
         #[root]
@@ -59,10 +65,10 @@ impl Component for HyprlandWorkspaceModel {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let is_active = is_an_active_workspace(&params);
+        let is_active = is_an_active_workspace(&params.workspace);
 
         let model = HyprlandWorkspaceModel {
-            workspace: params,
+            workspace: params.workspace,
             is_active,
         };
 

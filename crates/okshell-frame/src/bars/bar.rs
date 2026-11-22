@@ -565,7 +565,10 @@ impl BarModel {
             ),
             BarWidget::HyprlandWorkspaces(config) => Box::new(
                 HyprlandWorkspacesModel::builder()
-                    .launch(HyprlandWorkspacesInit { orientation })
+                    .launch(HyprlandWorkspacesInit {
+                        orientation,
+                        config: config.clone(),
+                    })
                     .detach(),
             ),
             BarWidget::HyprPicker => Box::new(

@@ -1,5 +1,5 @@
 use crate::bars::bar_widgets::hyprland_workspace::{
-    HyprlandWorkspaceInput, HyprlandWorkspaceModel,
+    HyprlandWorkspaceInit, HyprlandWorkspaceInput, HyprlandWorkspaceModel,
 };
 use futures::StreamExt;
 use okshell_common::dynamic_box::dynamic_box::{
@@ -9,6 +9,7 @@ use okshell_common::dynamic_box::generic_widget_controller::{
     GenericWidgetController, GenericWidgetControllerExtSafe,
 };
 use okshell_common::dynamic_box::simple_widget_controller::SimpleWidgetController;
+use okshell_config::schema::bar_widgets::HyprlandWorkspacesConfig;
 use okshell_services::hyprland_service;
 use okshell_utils::hover_scroll::attach_hover_scroll;
 use okshell_utils::hyprland::{get_active_workspaces, go_down_workspace, go_up_workspace};
@@ -45,6 +46,7 @@ pub(crate) enum HyprlandWorkspacesOutput {}
 
 pub(crate) struct HyprlandWorkspacesInit {
     pub(crate) orientation: Orientation,
+    pub(crate) config: HyprlandWorkspacesConfig,
 }
 
 #[derive(Debug)]
@@ -94,7 +96,10 @@ impl Component for HyprlandWorkspacesModel {
                 WsRow::Workspace(workspace) => {
                     let controller: Controller<HyprlandWorkspaceModel> =
                         HyprlandWorkspaceModel::builder()
-                            .launch(workspace.clone())
+                            .launch(HyprlandWorkspaceInit {
+                                workspace: workspace.clone(),
+                                config: params.config.clone(),
+                            })
                             .detach();
                     Box::new(controller) as Box<dyn GenericWidgetController>
                 }
