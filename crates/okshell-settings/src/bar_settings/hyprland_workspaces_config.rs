@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::ffi::c_int;
 
 use okshell_config::schema::bar_widgets::HyprlandWorkspacesConfig;
 use relm4::gtk::prelude::*;
@@ -135,7 +136,17 @@ impl HyprlandWorkspacesConfigModel {
     }
 }
 
+unsafe extern "C" {
+    /// From libfontconfig, which the `fontconfig` crate already links.
+    fn FcInitReinitialize() -> c_int;
+}
+
 fn available_fonts() -> Vec<String> {
+    // fontconfig caches its font list for the whole process; force a reload.
+    unsafe {
+        FcInitReinitialize();
+    }
+
     let Some(fc) = fontconfig::Fontconfig::new() else {
         return vec![];
     };

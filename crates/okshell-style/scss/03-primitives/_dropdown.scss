@@ -2,47 +2,77 @@
 
 /* The button itself */
 dropdown button {
-  @include buttons.button-base('--surface', '--on-surface');
-  border: var(--border-width) solid var(--outline);
+    @include buttons.button-base("--surface", "--on-surface");
+    border: var(--border-width) solid var(--outline);
 }
 
 dropdown button {
-  @include buttons.state-layers('--surface', '--on-surface');
+    @include buttons.state-layers("--surface", "--on-surface");
 }
 
 dropdown popover > contents {
-  background-color: var(--surface);
-  border: var(--border-width) solid var(--outline);
-  border-radius: var(--radius-widget);
+    background-color: var(--surface);
+    border: var(--border-width) solid var(--outline);
+    border-radius: var(--radius-widget);
 }
 
 /* The popover list */
 dropdown popover listview {
-  background: var(--surface);
+    background: var(--surface);
 }
 
 dropdown popover listview label {
-  color: var(--on-surface);
+    color: var(--on-surface);
 }
 
 dropdown popover listview image {
-  color: var(--on-surface-variant);
+    color: var(--on-surface-variant);
 }
 
 /* Individual rows */
 dropdown popover listview row {
-  padding: 6px 12px;
-  @include buttons.button-base('--surface', '--on-surface');
+    padding: 6px 12px;
+    @include buttons.button-base("--surface", "--on-surface");
 }
 
 dropdown popover listview row {
-  @include buttons.state-layers('--surface', '--on-surface');
+    @include buttons.state-layers("--surface", "--on-surface");
 }
 
 dropdown popover listview row:selected {
-  @include buttons.button-base('--primary', '--on-primary');
+    @include buttons.button-base("--primary", "--on-primary");
 }
 
 dropdown popover listview row:selected {
-  @include buttons.state-layers('--primary', '--on-primary');
+    @include buttons.state-layers("--primary", "--on-primary");
+}
+
+/* Search bar (shown when enable_search is on) */
+dropdown popover entry.search {
+    background-color: var(--surface);
+    color: var(--on-surface);
+    border: var(--border-width) solid var(--outline);
+    border-radius: var(--radius-widget);
+    padding: 4px 8px;
+    margin-bottom: 6px;
+    box-shadow: none;
+    caret-color: var(--primary);
+}
+
+dropdown popover entry.search:focus-within {
+    outline: var(--border-width) solid var(--primary);
+    border-color: var(--primary);
+}
+
+dropdown popover entry.search image {
+    color: var(--on-surface-variant);
+}
+
+dropdown popover entry.search text placeholder {
+    color: var(--on-surface-variant);
+}
+
+dropdown popover entry.search text selection {
+    background-color: var(--primary);
+    color: var(--on-primary);
 }

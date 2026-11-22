@@ -12,6 +12,7 @@ use okshell_config::schema::wallpaper::{ContrastFilterStrength, ThemeFilterStren
 use okshell_style::user_css::style_utils::list_available_styles;
 use reactive_graph::prelude::{Get, GetUntracked};
 use relm4::gtk::glib;
+use relm4::gtk::glib::types::StaticType;
 use relm4::gtk::prelude::{BoxExt, CastNone, ListModelExt, OrientableExt, WidgetExt};
 use relm4::prelude::FactoryVecDeque;
 use relm4::{Component, ComponentParts, ComponentSender, gtk};
@@ -408,6 +409,12 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.available_fonts),
+                        set_enable_search: true,
+                        set_expression: Some(&gtk::PropertyExpression::new(
+                            gtk::StringObject::static_type(),
+                            None::<gtk::Expression>,
+                            "string",
+                        )),
                         #[watch]
                         #[block_signal(primary_font_handler)]
                         set_selected: (0..model.available_fonts.n_items())
@@ -451,6 +458,12 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.available_fonts),
+                        set_enable_search: true,
+                        set_expression: Some(&gtk::PropertyExpression::new(
+                            gtk::StringObject::static_type(),
+                            None::<gtk::Expression>,
+                            "string",
+                        )),
                         #[watch]
                         #[block_signal(secondary_font_handler)]
                         set_selected: (0..model.available_fonts.n_items())
@@ -494,6 +507,12 @@ impl Component for ThemeSettingsModel {
                         set_width_request: 200,
                         set_valign: gtk::Align::Center,
                         set_model: Some(&model.available_fonts),
+                        set_enable_search: true,
+                        set_expression: Some(&gtk::PropertyExpression::new(
+                            gtk::StringObject::static_type(),
+                            None::<gtk::Expression>,
+                            "string",
+                        )),
                         #[watch]
                         #[block_signal(tertiary_font_handler)]
                         set_selected: (0..model.available_fonts.n_items())
