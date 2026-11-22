@@ -563,7 +563,7 @@ impl BarModel {
                     })
                     .detach(),
             ),
-            BarWidget::HyprlandWorkspaces => Box::new(
+            BarWidget::HyprlandWorkspaces(config) => Box::new(
                 HyprlandWorkspacesModel::builder()
                     .launch(HyprlandWorkspacesInit { orientation })
                     .detach(),

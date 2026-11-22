@@ -1,35 +1,38 @@
 use crate::schema::position::Orientation;
+use crate::schema::widget_enum::widget_enum;
 use reactive_stores::{KeyMap, PatchField, Store, StorePath};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
-pub enum MenuWidget {
-    AppLauncher,
-    AudioInput,
-    AudioOutput,
-    Bluetooth,
-    Calendar,
-    Clipboard,
-    Clock,
-    Container(ContainerConfig),
-    CpuUsage,
-    DiskUsage,
-    Divider,
-    MediaPlayer,
-    MemoryUsage,
-    Network,
-    Notifications,
-    PowerProfiles,
-    QuickActions(QuickActionsConfig),
-    Screenshots,
-    ScreenRecording,
-    Spacer(SpacerConfig),
-    ThemePicker,
-    Wallpaper,
-    Weather,
-    WeatherDailyGraph,
-    WeatherHourlyGraph,
+widget_enum! {
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Store, JsonSchema)]
+    pub enum MenuWidget {
+        AppLauncher => "App Launcher",
+        AudioInput => "Audio Input",
+        AudioOutput => "Audio Output",
+        Bluetooth => "Bluetooth",
+        Calendar => "Calendar",
+        Clipboard => "Clipboard",
+        Clock => "Clock",
+        Container(ContainerConfig) => "Container",
+        CpuUsage => "CPU Usage",
+        DiskUsage => "Disk Usage",
+        Divider => "Divider",
+        MediaPlayer => "Media Player",
+        MemoryUsage => "Memory Usage",
+        Network => "Network",
+        Notifications => "Notifications",
+        PowerProfiles => "Power Profiles",
+        QuickActions(QuickActionsConfig) => "Quick Actions",
+        Screenshots => "Screenshots",
+        ScreenRecording => "Screen Recording",
+        Spacer(SpacerConfig) => "Spacer",
+        ThemePicker => "Theme Picker",
+        Wallpaper => "Wallpaper",
+        Weather => "Weather",
+        WeatherDailyGraph => "Weather Daily Graph",
+        WeatherHourlyGraph => "Weather Hourly Graph",
+    }
 }
 
 impl PatchField for MenuWidget {
@@ -48,130 +51,49 @@ impl PatchField for MenuWidget {
 }
 
 impl MenuWidget {
-    pub fn display_name(&self) -> &'static str {
-        match self {
-            MenuWidget::AppLauncher => "App Launcher",
-            MenuWidget::AudioInput => "Audio Input",
-            MenuWidget::AudioOutput => "Audio Output",
-            MenuWidget::Bluetooth => "Bluetooth",
-            MenuWidget::Calendar => "Calendar",
-            MenuWidget::Clipboard => "Clipboard",
-            MenuWidget::Clock => "Clock",
-            MenuWidget::Container(_) => "Container",
-            MenuWidget::CpuUsage => "CPU Usage",
-            MenuWidget::DiskUsage => "Disk Usage",
-            MenuWidget::Divider => "Divider",
-            MenuWidget::MediaPlayer => "Media Player",
-            MenuWidget::MemoryUsage => "Memory Usage",
-            MenuWidget::Network => "Network",
-            MenuWidget::Notifications => "Notifications",
-            MenuWidget::PowerProfiles => "Power Profiles",
-            MenuWidget::QuickActions(_) => "Quick Actions",
-            MenuWidget::Screenshots => "Screenshots",
-            MenuWidget::ScreenRecording => "Screen Recording",
-            MenuWidget::Spacer(_) => "Spacer",
-            MenuWidget::ThemePicker => "Theme Picker",
-            MenuWidget::Wallpaper => "Wallpaper",
-            MenuWidget::Weather => "Weather",
-            MenuWidget::WeatherDailyGraph => "Weather Daily Graph",
-            MenuWidget::WeatherHourlyGraph => "Weather Hourly Graph",
-        }
-    }
-
     pub fn action_name(&self) -> String {
         self.display_name().to_lowercase().replace(' ', "-")
-    }
-
-    /// Returns all widget types with default configs
-    pub fn all_defaults() -> Vec<MenuWidget> {
-        vec![
-            MenuWidget::AppLauncher,
-            MenuWidget::AudioInput,
-            MenuWidget::AudioOutput,
-            MenuWidget::Bluetooth,
-            MenuWidget::Calendar,
-            MenuWidget::Clipboard,
-            MenuWidget::Clock,
-            MenuWidget::Container(ContainerConfig::default()),
-            MenuWidget::CpuUsage,
-            MenuWidget::DiskUsage,
-            MenuWidget::Divider,
-            MenuWidget::MediaPlayer,
-            MenuWidget::MemoryUsage,
-            MenuWidget::Network,
-            MenuWidget::Notifications,
-            MenuWidget::PowerProfiles,
-            MenuWidget::QuickActions(QuickActionsConfig::default()),
-            MenuWidget::Screenshots,
-            MenuWidget::ScreenRecording,
-            MenuWidget::Spacer(SpacerConfig { size: 16 }),
-            MenuWidget::ThemePicker,
-            MenuWidget::Wallpaper,
-            MenuWidget::Weather,
-            MenuWidget::WeatherDailyGraph,
-            MenuWidget::WeatherHourlyGraph,
-        ]
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema, Default)]
+#[serde(default)]
 pub struct QuickActionsConfig {
     pub widgets: Vec<QuickActionWidget>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
-pub enum QuickActionWidget {
-    AirplaneMode,
-    DoNotDisturb,
-    HyprPicker,
-    IdleInhibitor,
-    Lock,
-    Logout,
-    Nightlight,
-    Reboot,
-    Settings,
-    Shutdown,
+widget_enum! {
+    #[derive(Debug, Clone, PartialEq, Eq, Serialize, Store, JsonSchema)]
+    pub enum QuickActionWidget {
+        AirplaneMode => "Airplane Mode",
+        DoNotDisturb => "Do Not Disturb",
+        HyprPicker => "Color Picker",
+        IdleInhibitor => "Idle Inhibitor",
+        Lock => "Lock",
+        Logout => "Logout",
+        Nightlight => "Night Light",
+        Reboot => "Reboot",
+        Settings => "Settings",
+        Shutdown => "Shutdown",
+    }
 }
 
 impl QuickActionWidget {
-    pub fn display_name(&self) -> &'static str {
-        match self {
-            QuickActionWidget::AirplaneMode => "Airplane Mode",
-            QuickActionWidget::DoNotDisturb => "Do Not Disturb",
-            QuickActionWidget::HyprPicker => "Color Picker",
-            QuickActionWidget::IdleInhibitor => "Idle Inhibitor",
-            QuickActionWidget::Lock => "Lock",
-            QuickActionWidget::Logout => "Logout",
-            QuickActionWidget::Nightlight => "Night Light",
-            QuickActionWidget::Reboot => "Reboot",
-            QuickActionWidget::Settings => "Settings",
-            QuickActionWidget::Shutdown => "Shutdown",
-        }
-    }
-
     pub fn action_name(&self) -> String {
         format!("{:?}", self).to_lowercase()
-    }
-
-    pub fn all() -> &'static [QuickActionWidget] {
-        &[
-            QuickActionWidget::AirplaneMode,
-            QuickActionWidget::DoNotDisturb,
-            QuickActionWidget::HyprPicker,
-            QuickActionWidget::IdleInhibitor,
-            QuickActionWidget::Lock,
-            QuickActionWidget::Logout,
-            QuickActionWidget::Nightlight,
-            QuickActionWidget::Reboot,
-            QuickActionWidget::Settings,
-            QuickActionWidget::Shutdown,
-        ]
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]
+#[serde(default)]
 pub struct SpacerConfig {
     pub size: i32,
+}
+
+impl Default for SpacerConfig {
+    fn default() -> Self {
+        Self { size: 16 }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, Store, JsonSchema)]

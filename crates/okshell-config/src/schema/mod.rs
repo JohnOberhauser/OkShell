@@ -8,3 +8,4 @@ pub mod quick_settings_icon;
 pub mod temperature;
 pub mod themes;
 pub mod wallpaper;
+mod widget_enum;

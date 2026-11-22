@@ -1,4 +1,4 @@
-use crate::schema::bar_widgets::BarWidget;
+use crate::schema::bar_widgets::{BarWidget, HyprlandWorkspacesConfig};
 use crate::schema::content_fit::ContentFit;
 use crate::schema::location_query::{LocationQueryConfig, OrdF64};
 use crate::schema::menu_widgets::{
@@ -185,7 +185,7 @@ impl Default for Bars {
                     BarWidget::CpuUsage,
                     BarWidget::MemoryUsage,
                     BarWidget::DiskUsage,
-                    BarWidget::HyprlandWorkspaces,
+                    BarWidget::HyprlandWorkspaces(HyprlandWorkspacesConfig::default()),
                 ],
                 center_widgets: vec![BarWidget::HyprlandDock],
                 bottom_widgets: vec![

@@ -134,7 +134,7 @@ impl QuickActionListModel {
         let menu = gio::Menu::new();
         let action_group = gio::SimpleActionGroup::new();
 
-        for action in QuickActionWidget::all() {
+        for action in QuickActionWidget::all_defaults() {
             let action_name = action.action_name();
             let gio_action = gio::SimpleAction::new(&action_name, None);
 
@@ -164,8 +164,8 @@ impl QuickActionListModel {
         let menu = gio::Menu::new();
         let action_group = gio::SimpleActionGroup::new();
 
-        for action in QuickActionWidget::all() {
-            if selected.contains(&action) {
+        for action in QuickActionWidget::all_defaults() {
+            if selected.contains(&&action) {
                 continue;
             }
 
