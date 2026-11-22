@@ -17,14 +17,18 @@ Audio Input
 Audio Output  
 Battery  
 Bluetooth  
+Cava  
 Clipboard  
 Clock  
+Cpu Usage  
+Disk Usage  
 Hyprland Dock  
 Hyprland Layout Switcher  
 Hyprland Workspaces  
 HyprPicker  
 Lock  
 Logout  
+Memory Usage  
 Network  
 Notifications  
 Power Profile  
@@ -82,9 +86,11 @@ Quick Action: Shutdown
 Screenshots  
 Screen Recording  
 Spacer  
-ThemePicker  
+Theme Picker  
 Wallpaper  
 Weather  
+Weather Daily Graph  
+Weather Hourly Graph  
 :::
 
 ### Notifications
