@@ -67,7 +67,7 @@ impl Component for HyprlandWorkspaceModel {
 
                     #[name="label"]
                     gtk::Label {
-                        add_css_class: "label-medium",
+                        add_css_class: "label-large-bold",
                         set_visible: model.number_font.is_some(),
                         set_hexpand: true,
                         set_vexpand: true,
